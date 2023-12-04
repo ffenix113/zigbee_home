@@ -2,6 +2,10 @@
 
 Project that aims to provide similar functionality to [ESPHome](https://github.com/esphome/esphome), but for Zigbee devices.
 
+# :information_source:  Note
+`dev` branch is for experiments and exploration. 
+It cannot be used to determine quality of resulting project.
+
 ## Status
 
 Extremely early development(exploratory), no working parts yet.
