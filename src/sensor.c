@@ -53,7 +53,7 @@ int sensor_init(void)
 	if (sensor) {
 		LOG_WRN("Sensor already initialized");
 	} else {
-		sensor = DEVICE_DT_GET(DT_INST(0, bosch_bme680));
+		sensor = DEVICE_DT_GET(DT_INST(0, bosch_bme280));
 		if (!sensor) {
 			LOG_ERR("Failed to get device");
 			err = ENODEV;

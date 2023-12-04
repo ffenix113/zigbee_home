@@ -18,6 +18,8 @@
 
 #ifdef CONFIG_USB_DEVICE_STACK
 #include <zephyr/usb/usb_device.h>
+#include <zephyr/usb/usbd.h>
+#include <zephyr/sys/printk.h>
 #endif /* CONFIG_USB_DEVICE_STACK */
 
 #include "weather_station.h"
@@ -55,7 +57,7 @@
 BUILD_ASSERT(DT_NODE_HAS_COMPAT(DT_CHOSEN(zephyr_console),
 				zephyr_cdc_acm_uart),
 	     "Console device is not ACM CDC UART device");
-LOG_MODULE_REGISTER(app, CONFIG_ZIGBEE_WEATHER_STATION_LOG_LEVEL);
+LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);// CONFIG_ZIGBEE_WEATHER_STATION_LOG_LEVEL);
 
 /* Stores all cluster-related attributes */
 static struct zb_device_ctx dev_ctx;
@@ -276,11 +278,16 @@ static void wait_for_console(void)
 		LOG_ERR("Failed to enable USB");
 	} else {
 		/* Wait for DTR flag or deadline (e.g. when USB is not connected) */
-		while (!dtr && time < WAIT_FOR_CONSOLE_DEADLINE_MSEC) {
+		// while (!dtr && time < WAIT_FOR_CONSOLE_DEADLINE_MSEC) {
+		// 	uart_line_ctrl_get(console, UART_LINE_CTRL_DTR, &dtr);
+		// 	/* Give CPU resources to low priority threads */
+		// 	k_sleep(K_MSEC(WAIT_FOR_CONSOLE_MSEC));
+		// 	time += WAIT_FOR_CONSOLE_MSEC;
+		// }
+		while (!dtr) {
 			uart_line_ctrl_get(console, UART_LINE_CTRL_DTR, &dtr);
-			/* Give CPU resources to low priority threads */
-			k_sleep(K_MSEC(WAIT_FOR_CONSOLE_MSEC));
-			time += WAIT_FOR_CONSOLE_MSEC;
+			/* Give CPU resources to low priority threads. */
+			k_sleep(K_MSEC(500));
 		}
 	}
 }
@@ -317,6 +324,28 @@ static void check_weather(zb_bufid_t bufid)
 							WEATHER_CHECK_PERIOD_MSEC));
 	if (zb_err) {
 		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
+	}
+}
+
+void log_data() {
+	int err = weather_station_check_weather();
+
+	if (err) {
+		LOG_ERR("Failed to check weather: %d", err);
+	} else {
+		float measured_temperature = 0.0f;
+		int16_t temperature_attribute = 0;
+
+		err = sensor_get_temperature(&measured_temperature);
+		if (err) {
+			LOG_ERR("Failed to get sensor temperature: %d", err);
+		} else {
+			/* Convert measured value to attribute value, as specified in ZCL */
+			temperature_attribute = (int16_t)
+						(measured_temperature *
+						ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+			LOG_INF("Attribute T:%10d", temperature_attribute);
+		}
 	}
 }
 
@@ -365,6 +394,8 @@ int main(void)
 	wait_for_console();
 	#endif /* CONFIG_USB_DEVICE_STACK */
 
+	LOG_INF("App init");
+
 	register_factory_reset_button(FACTORY_RESET_BUTTON);
 	gpio_init();
 	weather_station_init();
@@ -388,7 +419,21 @@ int main(void)
 	}
 
 	/* Start Zigbee stack */
+	zb_set_bdb_primary_channel_set(11);
 	zigbee_enable();
+
+	dk_set_led_on(LED_RED);
+
+	LOG_INF("app started");
+
+	// while (1) {
+	// 	k_sleep(K_SECONDS(5));
+	// 	dk_set_led_on(LED_BLUE);
+	// 	// k_sleep(K_SECONDS(1));
+	// 	// log_data();
+	// 	dk_set_led_off(LED_BLUE);
+	// 	// LOG_INF("weather checked");
+	// }
 
 	return 0;
 }
