@@ -37,10 +37,11 @@
 /* Time of LED on state while blinking for identify mode */
 #define IDENTIFY_LED_BLINK_TIME_MSEC 500
 
+#define LED_POWER DK_LED1
 /* In Thingy53 each LED is a RGB component of a single LED */
-#define LED_RED DK_LED1
-#define LED_GREEN DK_LED2
-#define LED_BLUE DK_LED3
+#define LED_RED DK_LED2
+#define LED_GREEN DK_LED3
+#define LED_BLUE DK_LED4
 
 /* LED indicating that device successfully joined Zigbee network */
 #define ZIGBEE_NETWORK_STATE_LED LED_BLUE
@@ -57,7 +58,7 @@
 BUILD_ASSERT(DT_NODE_HAS_COMPAT(DT_CHOSEN(zephyr_console),
 				zephyr_cdc_acm_uart),
 	     "Console device is not ACM CDC UART device");
-LOG_MODULE_REGISTER(app, LOG_LEVEL_INF);// CONFIG_ZIGBEE_WEATHER_STATION_LOG_LEVEL);
+LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);// CONFIG_ZIGBEE_WEATHER_STATION_LOG_LEVEL);
 
 /* Stores all cluster-related attributes */
 static struct zb_device_ctx dev_ctx;
@@ -327,28 +328,6 @@ static void check_weather(zb_bufid_t bufid)
 	}
 }
 
-void log_data() {
-	int err = weather_station_check_weather();
-
-	if (err) {
-		LOG_ERR("Failed to check weather: %d", err);
-	} else {
-		float measured_temperature = 0.0f;
-		int16_t temperature_attribute = 0;
-
-		err = sensor_get_temperature(&measured_temperature);
-		if (err) {
-			LOG_ERR("Failed to get sensor temperature: %d", err);
-		} else {
-			/* Convert measured value to attribute value, as specified in ZCL */
-			temperature_attribute = (int16_t)
-						(measured_temperature *
-						ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-			LOG_INF("Attribute T:%10d", temperature_attribute);
-		}
-	}
-}
-
 void zboss_signal_handler(zb_bufid_t bufid)
 {
 	zb_zdo_app_signal_hdr_t *signal_header = NULL;
@@ -419,21 +398,9 @@ int main(void)
 	}
 
 	/* Start Zigbee stack */
-	zb_set_bdb_primary_channel_set(11);
 	zigbee_enable();
 
-	dk_set_led_on(LED_RED);
-
-	LOG_INF("app started");
-
-	// while (1) {
-	// 	k_sleep(K_SECONDS(5));
-	// 	dk_set_led_on(LED_BLUE);
-	// 	// k_sleep(K_SECONDS(1));
-	// 	// log_data();
-	// 	dk_set_led_off(LED_BLUE);
-	// 	// LOG_INF("weather checked");
-	// }
+	dk_set_led_on(LED_POWER);
 
 	return 0;
 }
