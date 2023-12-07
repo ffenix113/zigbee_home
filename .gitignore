@@ -3,6 +3,6 @@
 *~
 
 # build
-base/build*/
+base/base/build*/
 .vscode/
 vendor
