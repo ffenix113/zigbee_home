@@ -1,4 +1,4 @@
-package config
+package appconfig
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ type ConfigValue struct {
 	Dependencies []ConfigValue
 }
 
-type Config struct {
+type AppConfig struct {
 	// a simple map, as we store already resolved values.
 	values map[string]string
 }
@@ -42,8 +42,8 @@ func (v ConfigValue) Value() string {
 
 // TODO: add ConfigValue.Depends(...ConfigValue)
 
-func NewDefaultConfig() *Config {
-	return (&Config{}).AddValue(
+func NewDefaultAppConfig() *AppConfig {
+	return (&AppConfig{}).AddValue(
 		CONFIG_LOG,
 		CONFIG_SERIAL,
 		CONFIG_CONSOLE,
@@ -70,7 +70,7 @@ func NewDefaultConfig() *Config {
 	)
 }
 
-func (c *Config) AddValue(configValues ...ConfigValue) *Config {
+func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 	for _, configValue := range configValues {
 		// Only single-level dependencies for now.
 		for _, dep := range configValue.Dependencies {
@@ -91,7 +91,7 @@ func (c *Config) AddValue(configValues ...ConfigValue) *Config {
 	return c
 }
 
-func (c *Config) Write(w io.StringWriter) error {
+func (c *AppConfig) Write(w io.StringWriter) error {
 	for name, value := range c.values {
 		if _, err := w.WriteString(name + "=" + value + "\n"); err != nil {
 			return fmt.Errorf("write to writer: %w", err)

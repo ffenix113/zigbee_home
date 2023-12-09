@@ -1,4 +1,4 @@
-package config
+package appconfig
 
 // NOTE: This values are fetched from original `prj.conf` of this project.
 // As such they do not represent good/best configurations,

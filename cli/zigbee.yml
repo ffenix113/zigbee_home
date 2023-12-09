@@ -1,0 +1,16 @@
+general:
+  board: nrf52840dongle_nrf52840
+  # Flasher tells which flashing method to use.
+  # Currently `nrfutil`, `mcuboot` and `west`
+  # are defined
+  flasher: nrfutil
+  # Flasheroptions are flasher-specific options
+  flasheroptions:
+    port: /dev/ttyACM1
+
+# This section is for defining peripherals
+# on the board. I.e. uart, spi, i2c, etc.
+board:
+  uart:
+    rx: 1.10
+    tx: 1.11
