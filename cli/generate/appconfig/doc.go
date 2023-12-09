@@ -8,4 +8,4 @@
 // Configuration values already added to global list
 // for now are treated as required, which is not
 // necessarily correct.
-package config
+package appconfig

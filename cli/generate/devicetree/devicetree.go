@@ -19,6 +19,10 @@ type DeviceTree struct {
 	Nodes []Node
 }
 
+func NewDeviceTree() *DeviceTree {
+	return &DeviceTree{}
+}
+
 func (t *DeviceTree) WriteTo(w io.StringWriter) error {
 	for _, node := range t.Nodes {
 		if err := node.WriteTo(w); err != nil {

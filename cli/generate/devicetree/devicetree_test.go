@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ffenix113/zigbee_home/generate/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/generate/devicetree"
 )
 
 func TestWriteOverlay(t *testing.T) {

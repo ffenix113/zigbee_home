@@ -27,9 +27,26 @@ Firmware provided by this project is already working on the Dongle and reporting
 
 ## CLI
 
-Go CLI application available in `/cli` will provide necessary options to build and upload firmware based on provided configuration.
+Go CLI application available in `/cli` will provide 
+necessary options to build and upload firmware based on provided configuration.
 
-For this to work user would need to already have nRF Connect SDK set up, with `west` and either [nrfutil](https://www.nordicsemi.com/Products/Development-tools/nRF-Util) or [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop) applications available and working.
+For this to work user would need to already have nRF Connect SDK set up, with `west` and probably some flash tool applications available and working.
+
+Defined flash tools are:
+* `nrfutil` - already working
+* `mcuboot`
+* `west`
+
+Default configuration file called `zigbee.yml` will be loaded 
+and used to configure. 
+See bare example in `cli/zigbee.yml`, or original configuration definition
+in `cli/config/device.go:Device`.
+
+To flash the board with built firmware run
+`go run ./cli/cmd/zigbee firmware --workdir <path_to_project> flash`
+
+Users can flash built applications with [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop) 
+as well, if CLI tool is not suited for some cases.
 
 This project needs nRF Connect SDK version 2.5.0. Other versions are not yet tested.
 
