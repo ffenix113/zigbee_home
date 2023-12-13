@@ -43,7 +43,11 @@ func (v ConfigValue) Value() string {
 // TODO: add ConfigValue.Depends(...ConfigValue)
 
 func NewDefaultAppConfig() *AppConfig {
-	return (&AppConfig{}).AddValue(
+	cfg := &AppConfig{
+		values: make(map[string]string),
+	}
+
+	return cfg.AddValue(
 		CONFIG_LOG,
 		CONFIG_SERIAL,
 		CONFIG_CONSOLE,
@@ -86,12 +90,13 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 			}
 		}
 
+		c.values[configValue.Name] = configValue.Value()
 	}
 
 	return c
 }
 
-func (c *AppConfig) Write(w io.StringWriter) error {
+func (c *AppConfig) WriteTo(w io.StringWriter) error {
 	for name, value := range c.values {
 		if _, err := w.WriteString(name + "=" + value + "\n"); err != nil {
 			return fmt.Errorf("write to writer: %w", err)

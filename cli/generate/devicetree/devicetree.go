@@ -14,6 +14,7 @@ const NodeNameRoot = "/"
 const NodeNameChosen = "chosen"
 
 const PropertyNameCompatible = "compatible"
+const PropertyNameStatus = "status"
 
 type DeviceTree struct {
 	Nodes []Node

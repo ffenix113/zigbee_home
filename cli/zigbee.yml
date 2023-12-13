@@ -1,3 +1,5 @@
+# Format for this file is not stable, and can change at any time.
+
 general:
   board: nrf52840dongle_nrf52840
   # Flasher tells which flashing method to use.
@@ -10,7 +12,15 @@ general:
 
 # This section is for defining peripherals
 # on the board. I.e. uart, spi, i2c, etc.
+# NOTE: Only changes should be defined here.
+# See https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/<arch>/<board_name>/<board_name>.dts
+# for existing definitions for the board.
+# For example nRF52840 Dongle would have board devicetree at
+# https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
 board:
   uart:
     rx: 1.10
     tx: 1.11
+
+sensors:
+  - type: bme280

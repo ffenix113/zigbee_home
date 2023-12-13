@@ -85,9 +85,15 @@ func runBuild(ctx context.Context, device config.Device, workDir string) error {
 	build := runner.NewCmd(
 		"west",
 		"build",
-		"-p", // For now let's always build Pristine.
-		"-b",
-		device.General.Board,
+		"--pristine", // For now let's always build Pristine.
+		"--board", device.General.Board,
+		"--no-sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
+		"--build-dir", workDir+"/build",
+		workDir,
+		"--",
+		"-DNCS_TOOLCHAIN_VERSION=NONE",
+		fmt.Sprintf("-DCONF_FILE=%s/prj.conf", workDir),
+		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
 	)
 
 	if err := build.Run(ctx, workDir); err != nil {
