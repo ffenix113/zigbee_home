@@ -7,6 +7,8 @@
 #ifndef WEATHER_STATION_H
 #define WEATHER_STATION_H
 
+#include <zboss_api.h>
+#include <zboss_api_addons.h>
 #include <zcl/zb_zcl_temp_measurement_addons.h>
 
 #include "sensor.h"
@@ -52,13 +54,15 @@
 
 /* Temperature sensor device version */
 #define ZB_HA_DEVICE_VER_TEMPERATURE_SENSOR     0
-/* Basic, identify, temperature, pressure, humidity */
-#define ZB_HA_WEATHER_STATION_IN_CLUSTER_NUM    5
+/* Basic, identify, temperature, pressure, humidity, on/off */
+#define ZB_HA_WEATHER_STATION_IN_CLUSTER_NUM    6
 /* Identify */
 #define ZB_HA_WEATHER_STATION_OUT_CLUSTER_NUM   1
 
-/* Temperature, pressure, humidity */
-#define ZB_HA_WEATHER_STATION_REPORT_ATTR_COUNT 3
+/* Temperature, pressure, humidity, on/off */
+#define ZB_HA_WEATHER_STATION_REPORT_ATTR_COUNT 4
+
+#define MANUFACTURER_CODE ZB_ZCL_MANUF_CODE_INVALID
 
 #define ZB_HA_DECLARE_WEATHER_STATION_CLUSTER_LIST(						\
 		cluster_list_name,								\
@@ -67,7 +71,8 @@
 		identify_server_attr_list,							\
 		temperature_measurement_attr_list,						\
 		pressure_measurement_attr_list,							\
-		humidity_measurement_attr_list							\
+		humidity_measurement_attr_list,							\
+		on_off_attr_list							\
 		)										\
 	zb_zcl_cluster_desc_t cluster_list_name[] =						\
 	{											\
@@ -76,42 +81,49 @@
 			ZB_ZCL_ARRAY_SIZE(basic_attr_list, zb_zcl_attr_t),			\
 			(basic_attr_list),							\
 			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
 			),									\
 		ZB_ZCL_CLUSTER_DESC(								\
 			ZB_ZCL_CLUSTER_ID_IDENTIFY,						\
 			ZB_ZCL_ARRAY_SIZE(identify_server_attr_list, zb_zcl_attr_t),		\
 			(identify_server_attr_list),						\
 			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
 			),									\
 		ZB_ZCL_CLUSTER_DESC(								\
 			ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,					\
 			ZB_ZCL_ARRAY_SIZE(temperature_measurement_attr_list, zb_zcl_attr_t),	\
 			(temperature_measurement_attr_list),					\
 			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
 			),									\
 		ZB_ZCL_CLUSTER_DESC(								\
 			ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,					\
 			ZB_ZCL_ARRAY_SIZE(pressure_measurement_attr_list, zb_zcl_attr_t),	\
 			(pressure_measurement_attr_list),					\
 			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
 			),									\
 		ZB_ZCL_CLUSTER_DESC(								\
 			ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,				\
 			ZB_ZCL_ARRAY_SIZE(humidity_measurement_attr_list, zb_zcl_attr_t),	\
 			(humidity_measurement_attr_list),					\
 			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
+			),									\
+		ZB_ZCL_CLUSTER_DESC(								\
+			ZB_ZCL_CLUSTER_ID_ON_OFF,				\
+			ZB_ZCL_ARRAY_SIZE(on_off_attr_list, zb_zcl_attr_t),	\
+			(on_off_attr_list),					\
+			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
+			MANUFACTURER_CODE						\
 			),									\
 		ZB_ZCL_CLUSTER_DESC(								\
 			ZB_ZCL_CLUSTER_ID_IDENTIFY,						\
 			ZB_ZCL_ARRAY_SIZE(identify_client_attr_list, zb_zcl_attr_t),		\
 			(identify_client_attr_list),						\
 			ZB_ZCL_CLUSTER_CLIENT_ROLE,						\
-			ZB_ZCL_MANUF_CODE_INVALID						\
+			MANUFACTURER_CODE						\
 			),									\
 	}
 
@@ -136,6 +148,7 @@
 			ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,				\
 			ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,				\
 			ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,			\
+			ZB_ZCL_CLUSTER_ID_ON_OFF,							\
 			ZB_ZCL_CLUSTER_ID_IDENTIFY,					\
 		}									\
 	}
@@ -174,11 +187,12 @@ struct zb_zcl_humidity_measurement_attrs_t {
 };
 
 struct zb_device_ctx {
-	zb_zcl_basic_attrs_t basic_attr;
+	zb_zcl_basic_attrs_ext_t basic_attr;
 	zb_zcl_identify_attrs_t identify_attr;
 	zb_zcl_temp_measurement_attrs_t temp_attrs;
 	struct zb_zcl_pressure_measurement_attrs_t pres_attrs;
 	struct zb_zcl_humidity_measurement_attrs_t humidity_attrs;
+	zb_zcl_on_off_attrs_t on_off_attr;
 };
 
 /**

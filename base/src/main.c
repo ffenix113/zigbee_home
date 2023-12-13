@@ -26,7 +26,7 @@
 
 /* Delay for console initialization */
 #define WAIT_FOR_CONSOLE_MSEC 100
-#define WAIT_FOR_CONSOLE_DEADLINE_MSEC 2000
+#define WAIT_FOR_CONSOLE_DEADLINE_MSEC 500
 
 /* Weather check period */
 #define WEATHER_CHECK_PERIOD_MSEC (1000 * CONFIG_WEATHER_CHECK_PERIOD_SECONDS)
@@ -64,9 +64,19 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);// CONFIG_ZIGBEE_WEATHER_STATION_LOG_LEV
 static struct zb_device_ctx dev_ctx;
 
 /* Attributes setup */
-ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST(
+ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 	basic_attr_list,
-	&dev_ctx.basic_attr.zcl_version, &dev_ctx.basic_attr.power_source);
+	&dev_ctx.basic_attr.zcl_version,
+	&dev_ctx.basic_attr.app_version,
+	&dev_ctx.basic_attr.stack_version,
+	&dev_ctx.basic_attr.hw_version,
+	dev_ctx.basic_attr.mf_name,
+	dev_ctx.basic_attr.model_id,
+	dev_ctx.basic_attr.date_code,
+	&dev_ctx.basic_attr.power_source,
+	dev_ctx.basic_attr.location_id,
+	&dev_ctx.basic_attr.ph_env,
+	dev_ctx.basic_attr.sw_ver);
 
 /* Declare attribute list for Identify cluster (client). */
 ZB_ZCL_DECLARE_IDENTIFY_CLIENT_ATTRIB_LIST(
@@ -100,6 +110,11 @@ ZB_ZCL_DECLARE_REL_HUMIDITY_MEASUREMENT_ATTRIB_LIST(
 	&dev_ctx.humidity_attrs.max_measure_value
 	);
 
+/* On/Off cluster attributes additions data */
+ZB_ZCL_DECLARE_ON_OFF_ATTRIB_LIST(
+	on_off_attr_list,
+	&dev_ctx.on_off_attr.on_off);
+
 /* Clusters setup */
 ZB_HA_DECLARE_WEATHER_STATION_CLUSTER_LIST(
 	weather_station_cluster_list,
@@ -108,7 +123,8 @@ ZB_HA_DECLARE_WEATHER_STATION_CLUSTER_LIST(
 	identify_server_attr_list,
 	temperature_measurement_attr_list,
 	pressure_measurement_attr_list,
-	humidity_measurement_attr_list);
+	humidity_measurement_attr_list,
+	on_off_attr_list);
 
 /* Endpoint setup (single) */
 ZB_HA_DECLARE_WEATHER_STATION_EP(
@@ -122,11 +138,67 @@ ZBOSS_DECLARE_DEVICE_CTX_1_EP(
 	weather_station_ep);
 
 
+/* Manufacturer name (32 bytes). */
+#define BULB_INIT_BASIC_MANUF_NAME      "FFenix113"
+
+/* Model number assigned by manufacturer (32-bytes long string). */
+#define BULB_INIT_BASIC_MODEL_ID        "dongle"
+
+/* First 8 bytes specify the date of manufacturer of the device
+ * in ISO 8601 format (YYYYMMDD). The rest (8 bytes) are manufacturer specific.
+ */
+#define BULB_INIT_BASIC_DATE_CODE       "20200329"
+
+/* Describes the physical location of the device (16 bytes).
+ * May be modified during commissioning process.
+ */
+#define BULB_INIT_BASIC_LOCATION_DESC   ""
+/* Describes the type of physical environment.
+ * For possible values see section 3.2.2.2.10 of ZCL specification.
+ */
+#define BULB_INIT_BASIC_PH_ENV          ZB_ZCL_BASIC_ENV_UNSPECIFIED
+
 static void mandatory_clusters_attr_init(void)
 {
 	/* Basic cluster attributes */
 	dev_ctx.basic_attr.zcl_version = ZB_ZCL_VERSION;
 	dev_ctx.basic_attr.power_source = ZB_ZCL_BASIC_POWER_SOURCE_BATTERY;
+	// Extended attributes
+	dev_ctx.basic_attr.app_version = 01;
+	dev_ctx.basic_attr.stack_version = 10;
+	dev_ctx.basic_attr.hw_version = 11;
+
+	/* Use ZB_ZCL_SET_STRING_VAL to set strings, because the first byte
+	 * should contain string length without trailing zero.
+	 *
+	 * For example "test" string will be encoded as:
+	 *   [(0x4), 't', 'e', 's', 't']
+	 */
+	ZB_ZCL_SET_STRING_VAL(
+		dev_ctx.basic_attr.mf_name,
+		BULB_INIT_BASIC_MANUF_NAME,
+		ZB_ZCL_STRING_CONST_SIZE(BULB_INIT_BASIC_MANUF_NAME));
+
+	ZB_ZCL_SET_STRING_VAL(
+		dev_ctx.basic_attr.model_id,
+		BULB_INIT_BASIC_MODEL_ID,
+		ZB_ZCL_STRING_CONST_SIZE(BULB_INIT_BASIC_MODEL_ID));
+
+	ZB_ZCL_SET_STRING_VAL(
+		dev_ctx.basic_attr.date_code,
+		BULB_INIT_BASIC_DATE_CODE,
+		ZB_ZCL_STRING_CONST_SIZE(BULB_INIT_BASIC_DATE_CODE));
+
+	ZB_ZCL_SET_STRING_VAL(
+		dev_ctx.basic_attr.location_id,
+		BULB_INIT_BASIC_LOCATION_DESC,
+		ZB_ZCL_STRING_CONST_SIZE(BULB_INIT_BASIC_LOCATION_DESC));
+
+	dev_ctx.basic_attr.ph_env = BULB_INIT_BASIC_PH_ENV;
+
+	/* Identify cluster attributes data. */
+	dev_ctx.identify_attr.identify_time =
+		ZB_ZCL_IDENTIFY_IDENTIFY_TIME_DEFAULT_VALUE;
 
 	/* Identify cluster attributes */
 	dev_ctx.identify_attr.identify_time = ZB_ZCL_IDENTIFY_IDENTIFY_TIME_DEFAULT_VALUE;
@@ -184,6 +256,8 @@ static void start_identifying(zb_bufid_t bufid)
 				WEATHER_STATION_ENDPOINT_NB);
 
 			if (zb_err_code == RET_OK) {
+				dk_set_led_off(LED_POWER);
+				dev_ctx.on_off_attr.on_off = 1;
 				LOG_INF("Manually enter identify mode");
 			} else if (zb_err_code == RET_INVALID_STATE) {
 				LOG_WRN("RET_INVALID_STATE - Cannot enter identify mode");
@@ -191,6 +265,8 @@ static void start_identifying(zb_bufid_t bufid)
 				ZB_ERROR_CHECK(zb_err_code);
 			}
 		} else {
+			dk_set_led_on(LED_POWER);
+			dev_ctx.on_off_attr.on_off = 0;
 			LOG_INF("Manually cancel identify mode");
 			zb_bdb_finding_binding_target_cancel();
 		}
@@ -279,17 +355,17 @@ static void wait_for_console(void)
 		LOG_ERR("Failed to enable USB");
 	} else {
 		/* Wait for DTR flag or deadline (e.g. when USB is not connected) */
-		// while (!dtr && time < WAIT_FOR_CONSOLE_DEADLINE_MSEC) {
-		// 	uart_line_ctrl_get(console, UART_LINE_CTRL_DTR, &dtr);
-		// 	/* Give CPU resources to low priority threads */
-		// 	k_sleep(K_MSEC(WAIT_FOR_CONSOLE_MSEC));
-		// 	time += WAIT_FOR_CONSOLE_MSEC;
-		// }
-		while (!dtr) {
+		while (!dtr && time < WAIT_FOR_CONSOLE_DEADLINE_MSEC) {
 			uart_line_ctrl_get(console, UART_LINE_CTRL_DTR, &dtr);
-			/* Give CPU resources to low priority threads. */
-			k_sleep(K_MSEC(500));
+			/* Give CPU resources to low priority threads */
+			k_sleep(K_MSEC(WAIT_FOR_CONSOLE_MSEC));
+			time += WAIT_FOR_CONSOLE_MSEC;
 		}
+		// while (!dtr) {
+		// 	uart_line_ctrl_get(console, UART_LINE_CTRL_DTR, &dtr);
+		// 	/* Give CPU resources to low priority threads. */
+		// 	k_sleep(K_MSEC(500));
+		// }
 	}
 }
 #endif /* CONFIG_USB_DEVICE_STACK */
@@ -326,6 +402,58 @@ static void check_weather(zb_bufid_t bufid)
 	if (zb_err) {
 		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
 	}
+}
+
+/**@brief Callback function for handling ZCL commands.
+ *
+ * @param[in]   bufid   Reference to Zigbee stack buffer
+ *                      used to pass received data.
+ */
+static void zcl_device_cb(zb_bufid_t bufid)
+{
+	zb_uint8_t cluster_id;
+	zb_uint8_t attr_id;
+	zb_zcl_device_callback_param_t  *device_cb_param =
+		ZB_BUF_GET_PARAM(bufid, zb_zcl_device_callback_param_t);
+
+	LOG_INF("%s id %hd", __func__, device_cb_param->device_cb_id);
+
+	/* Set default response value. */
+	device_cb_param->status = RET_OK;
+
+	switch (device_cb_param->device_cb_id) {
+	case ZB_ZCL_SET_ATTR_VALUE_CB_ID:
+		cluster_id = device_cb_param->cb_param.
+			     set_attr_value_param.cluster_id;
+		attr_id = device_cb_param->cb_param.
+			  set_attr_value_param.attr_id;
+
+		if (cluster_id == ZB_ZCL_CLUSTER_ID_ON_OFF) {
+			uint8_t value =
+				device_cb_param->cb_param.set_attr_value_param
+				.values.data8;
+
+			LOG_INF("on/off attribute setting to %hd", value);
+			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
+				// on_off_set_value((zb_bool_t)value);
+			}
+		} else if (cluster_id == ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
+		} else {
+			/* Other clusters can be processed here */
+			LOG_INF("Unhandled cluster attribute id: %d",
+				cluster_id);
+			device_cb_param->status = RET_NOT_IMPLEMENTED;
+		}
+		break;
+
+	default:
+		// if (zcl_scenes_cb(bufid) == ZB_FALSE) {
+		// 	device_cb_param->status = RET_NOT_IMPLEMENTED;
+		// }
+		break;
+	}
+
+	LOG_INF("%s status: %hd", __func__, device_cb_param->status);
 }
 
 void zboss_signal_handler(zb_bufid_t bufid)
@@ -381,6 +509,9 @@ int main(void)
 
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&weather_station_ctx);
+
+	/* Register callback for handling ZCL commands. */
+	ZB_ZCL_REGISTER_DEVICE_CB(zcl_device_cb);
 
 	/* Init Basic and Identify attributes */
 	mandatory_clusters_attr_init();
