@@ -50,6 +50,9 @@ as well, if CLI tool is not suited for some cases.
 
 This project needs nRF Connect SDK version 2.5.0. Other versions are not yet tested.
 
+### Licenses
+This project uses information from ZBOSS SDK, license for which can be found in `zboss_license.txt`. 
+
 ### References
 * nRF Connect SDK
 * * [Download page](https://www.nordicsemi.com/Products/Development-software/nRF-Connect-SDK)

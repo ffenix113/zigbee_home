@@ -173,25 +173,25 @@
 		(zb_af_simple_desc_1_1_t *)&simple_desc_##ep_name,				\
 		ZB_HA_WEATHER_STATION_REPORT_ATTR_COUNT, reporting_info##ep_name, 0, NULL)
 
-struct zb_zcl_pressure_measurement_attrs_t {
+typedef struct {
 	zb_int16_t measure_value;
 	zb_int16_t min_measure_value;
 	zb_int16_t max_measure_value;
 	zb_uint16_t tolerance;
-};
+} zb_zcl_pressure_measurement_attrs_t;
 
-struct zb_zcl_humidity_measurement_attrs_t {
+typedef struct {
 	zb_int16_t measure_value;
 	zb_int16_t min_measure_value;
 	zb_int16_t max_measure_value;
-};
+} zb_zcl_humidity_measurement_attrs_t;
 
 struct zb_device_ctx {
 	zb_zcl_basic_attrs_ext_t basic_attr;
 	zb_zcl_identify_attrs_t identify_attr;
 	zb_zcl_temp_measurement_attrs_t temp_attrs;
-	struct zb_zcl_pressure_measurement_attrs_t pres_attrs;
-	struct zb_zcl_humidity_measurement_attrs_t humidity_attrs;
+	zb_zcl_pressure_measurement_attrs_t pres_attrs;
+	zb_zcl_humidity_measurement_attrs_t humidity_attrs;
 	zb_zcl_on_off_attrs_t on_off_attr;
 };
 

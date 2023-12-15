@@ -4,7 +4,7 @@ general:
   board: nrf52840dongle_nrf52840
   # Flasher tells which flashing method to use.
   # Currently `nrfutil`, `mcuboot` and `west`
-  # are defined
+  # are defined(but not equally tested). Nrfutil works though.
   flasher: nrfutil
   # Flasheroptions are flasher-specific options
   flasheroptions:
@@ -24,3 +24,8 @@ board:
 
 sensors:
   - type: bme280
+    connection:
+      # Address is communication implementation detail, 
+      # so don't wont to expose it to sensor struct directly
+      # type: i2c1 # Commented out as this could be default value.
+      address: 0x76

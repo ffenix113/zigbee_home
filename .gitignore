@@ -6,3 +6,4 @@
 base/build
 .vscode/
 vendor
+test/
