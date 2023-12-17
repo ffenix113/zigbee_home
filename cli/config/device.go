@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ffenix113/zigbee_home/cli/sensor"
 	"gopkg.in/yaml.v3"
 )
 
@@ -13,7 +14,7 @@ type Device struct {
 	General General
 	Board   Board
 
-	Sensors []Sensor
+	Sensors sensor.Sensors
 }
 
 type General struct {
@@ -28,10 +29,6 @@ type General struct {
 
 type Board struct {
 	Uart Uart
-}
-
-type Sensor struct {
-	// ?
 }
 
 type Uart struct {

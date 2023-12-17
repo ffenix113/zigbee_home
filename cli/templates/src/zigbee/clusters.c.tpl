@@ -1,71 +1,39 @@
-{{ define "defin_cluster_list" }}
+{{ define "define_cluster_list" }}
+/* Number chosen for the single endpoint provided by device */
+#define DEVICE_ENDPOINT_NB 12
+
+/* Temperature sensor device version */
+#define ZB_HA_DEVICE_VER_TEMPERATURE_SENSOR     0
+/* Basic, identify, temperature, pressure, humidity, on/off */
+// Have basic + identify as always present, and other as optional.
+#define ZB_HA_DEVICE_IN_CLUSTER_NUM    2 + {{ .Clusters.ReportAttrCount }}
+/* Identify */ // Not for generated device for now.
+#define ZB_HA_DEVICE_OUT_CLUSTER_NUM   0
+
+/* Temperature, pressure, humidity, on/off */
+#define ZB_HA_DEVICE_REPORT_ATTR_COUNT {{ .Clusters.ReportAttrCount }}
+
 #define ZB_HA_DECLARE_DEVICE_CLUSTER_LIST(						\
 		cluster_list_name,								\
 		basic_attr_list,								\
         {{ range .Clusters }}
-        {{ clusterToCVar .}}_attr_list, \
+        {{ .CVarName }}_attr_list, \
         {{ end }}
-		identify_client_attr_list,							\
-		identify_server_attr_list,							\
-		temperature_measurement_attr_list,						\
-		pressure_measurement_attr_list,							\
-		humidity_measurement_attr_list,							\
-		on_off_attr_list							\
 		)										\
 	zb_zcl_cluster_desc_t cluster_list_name[] =						\
 	{											\
+		{{range .Clusters}}
 		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_BASIC,						\
-			ZB_ZCL_ARRAY_SIZE(basic_attr_list, zb_zcl_attr_t),			\
-			(basic_attr_list),							\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
+			{{.ID}},						\
+			ZB_ZCL_ARRAY_SIZE({{.CVarName}}, zb_zcl_attr_t),			\
+			({{.CVarName}}),							\
+			ZB_ZCL_CLUSTER_SERVER_ROLE,	 // For now let's say all are server role. Later this can be cluster paramter					\
 			MANUFACTURER_CODE						\
 			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_IDENTIFY,						\
-			ZB_ZCL_ARRAY_SIZE(identify_server_attr_list, zb_zcl_attr_t),		\
-			(identify_server_attr_list),						\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,					\
-			ZB_ZCL_ARRAY_SIZE(temperature_measurement_attr_list, zb_zcl_attr_t),	\
-			(temperature_measurement_attr_list),					\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,					\
-			ZB_ZCL_ARRAY_SIZE(pressure_measurement_attr_list, zb_zcl_attr_t),	\
-			(pressure_measurement_attr_list),					\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,				\
-			ZB_ZCL_ARRAY_SIZE(humidity_measurement_attr_list, zb_zcl_attr_t),	\
-			(humidity_measurement_attr_list),					\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_ON_OFF,				\
-			ZB_ZCL_ARRAY_SIZE(on_off_attr_list, zb_zcl_attr_t),	\
-			(on_off_attr_list),					\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_IDENTIFY,						\
-			ZB_ZCL_ARRAY_SIZE(identify_client_attr_list, zb_zcl_attr_t),		\
-			(identify_client_attr_list),						\
-			ZB_ZCL_CLUSTER_CLIENT_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
+		{{end}}
 	}
 
-#define ZB_ZCL_DECLARE_WEATHER_STATION_DESC(						\
+#define ZB_ZCL_DECLARE_DEVICE_DESC(						\
 		ep_name,								\
 		ep_id,									\
 		in_clust_num,								\
@@ -81,25 +49,21 @@
 		in_clust_num,								\
 		out_clust_num,								\
 		{									\
-			ZB_ZCL_CLUSTER_ID_BASIC,					\
-			ZB_ZCL_CLUSTER_ID_IDENTIFY,					\
-			ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,				\
-			ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT,				\
-			ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT,			\
-			ZB_ZCL_CLUSTER_ID_ON_OFF,							\
-			ZB_ZCL_CLUSTER_ID_IDENTIFY,					\
+			{{range .Clusters}}
+			{{.ID}}, \
+			{{end}}
 		}									\
 	}
 
-#define ZB_HA_DECLARE_WEATHER_STATION_EP(ep_name, ep_id, cluster_list)				\
-	ZB_ZCL_DECLARE_WEATHER_STATION_DESC(							\
+#define ZB_HA_DECLARE_DEVICE_EP(ep_name, ep_id, cluster_list)				\
+	ZB_ZCL_DECLARE_DEVICE_DESC(							\
 		ep_name,									\
 		ep_id,										\
-		ZB_HA_WEATHER_STATION_IN_CLUSTER_NUM,						\
-		ZB_HA_WEATHER_STATION_OUT_CLUSTER_NUM);						\
+		ZB_HA_DEVICE_IN_CLUSTER_NUM,						\
+		ZB_HA_DEVICE_OUT_CLUSTER_NUM);						\
 	ZBOSS_DEVICE_DECLARE_REPORTING_CTX(							\
 		reporting_info##ep_name,							\
-		ZB_HA_WEATHER_STATION_REPORT_ATTR_COUNT);					\
+		ZB_HA_DEVICE_REPORT_ATTR_COUNT);					\
 	ZB_AF_DECLARE_ENDPOINT_DESC(								\
 		ep_name,									\
 		ep_id,										\
@@ -109,5 +73,5 @@
 		ZB_ZCL_ARRAY_SIZE(cluster_list, zb_zcl_cluster_desc_t),				\
 		cluster_list,									\
 		(zb_af_simple_desc_1_1_t *)&simple_desc_##ep_name,				\
-		ZB_HA_WEATHER_STATION_REPORT_ATTR_COUNT, reporting_info##ep_name, 0, NULL)
+		ZB_HA_DEVICE_REPORT_ATTR_COUNT, reporting_info##ep_name, 0, NULL)
 {{ end }}

@@ -1,3 +1,5 @@
+{{ define "additional_types" }}
+
 // Types for some clusters
 typedef struct {
 	zb_int16_t measure_value;
@@ -13,3 +15,4 @@ typedef struct {
 } zb_zcl_humidity_measurement_attrs_t;
 
 //
+{{end}}

@@ -1,11 +1,20 @@
 package source
 
-type Source struct{}
+import (
+	"github.com/ffenix113/zigbee_home/cli/config"
+	"github.com/ffenix113/zigbee_home/cli/templates"
+)
 
-func NewSource() *Source {
-	return &Source{}
+type Source struct {
+	templates *templates.Templates
 }
 
-func (s *Source) WriteTo(srcDir string) error {
-	return nil
+func NewSource() *Source {
+	return &Source{
+		templates: templates.NewTemplates(templates.TemplateFS),
+	}
+}
+
+func (s *Source) WriteTo(srcDir string, device *config.Device) error {
+	return s.templates.WriteTo(srcDir, templates.ConfigToTemplateDevice(device))
 }

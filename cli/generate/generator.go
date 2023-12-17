@@ -24,7 +24,7 @@ func NewGenerator(device config.Device) *Generator {
 	}
 }
 
-func (g *Generator) Generate(workDir string) error {
+func (g *Generator) Generate(workDir string, device *config.Device) error {
 	// Write devicetree overlay (app.overlay)
 	overlayFile, err := os.Create(workDir + "/app.overlay")
 	if err != nil {
@@ -51,11 +51,11 @@ func (g *Generator) Generate(workDir string) error {
 
 	// Write app source
 	srcDir := workDir + "/src"
-	if err := os.Mkdir(srcDir, os.ModeDir); err != nil {
+	if err := os.Mkdir(srcDir, os.ModeDir|0o775); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("create src dir: %w", err)
 	}
 
-	if err := g.Source.WriteTo(srcDir); err != nil {
+	if err := g.Source.WriteTo(srcDir, device); err != nil {
 		return fmt.Errorf("write app src: %w", err)
 	}
 

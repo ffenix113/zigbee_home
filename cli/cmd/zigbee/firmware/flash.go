@@ -3,7 +3,6 @@ package firmware
 import (
 	"fmt"
 
-	"github.com/ffenix113/zigbee_home/cli/generate"
 	"github.com/urfave/cli/v2"
 )
 
@@ -23,11 +22,11 @@ func flashCmd() *cli.Command {
 				workDir = "."
 			}
 
-			generator := generate.NewGenerator(cfg)
+			// generator := generate.NewGenerator(cfg)
 
-			if err := generator.Generate(workDir); err != nil {
-				return fmt.Errorf("generate base: %w", err)
-			}
+			// if err := generator.Generate(workDir); err != nil {
+			// 	return fmt.Errorf("generate base: %w", err)
+			// }
 
 			flasher := NewFlasher(cfg.General)
 

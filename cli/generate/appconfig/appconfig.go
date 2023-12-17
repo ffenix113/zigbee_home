@@ -40,6 +40,22 @@ func (v ConfigValue) Value() string {
 	return v.DefaultValue
 }
 
+func (v ConfigValue) Depends(cfgs ...ConfigValue) ConfigValue {
+	v = v.Copy()
+	v.Dependencies = append(v.Dependencies, cfgs...)
+	return v
+}
+
+func (v ConfigValue) Copy() ConfigValue {
+	return ConfigValue{
+		Name:          v.Name,
+		DefaultValue:  v.DefaultValue,
+		RequiredValue: v.RequiredValue,
+
+		Dependencies: append([]ConfigValue(nil), v.Dependencies...),
+	}
+}
+
 // TODO: add ConfigValue.Depends(...ConfigValue)
 
 func NewDefaultAppConfig() *AppConfig {

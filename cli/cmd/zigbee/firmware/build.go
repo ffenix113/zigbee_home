@@ -40,7 +40,7 @@ func buildFirmware(ctx *cli.Context) error {
 
 	generator := generate.NewGenerator(cfg)
 
-	if err := generator.Generate(workDir); err != nil {
+	if err := generator.Generate(workDir, &cfg); err != nil {
 		return fmt.Errorf("generate base: %w", err)
 	}
 
