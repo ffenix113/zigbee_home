@@ -33,6 +33,10 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 
 	defer overlayFile.Close()
 
+	if err := updateDeviceTree(device, g.DeviceTree); err != nil {
+		return fmt.Errorf("update overlay: %w", err)
+	}
+
 	if err := g.DeviceTree.WriteTo(overlayFile); err != nil {
 		return fmt.Errorf("write overlay: %w", err)
 	}
@@ -44,6 +48,10 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	}
 
 	defer appConfigFile.Close()
+
+	if err := updateAppConfig(device, g.AppConfig); err != nil {
+		return fmt.Errorf("update app config: %w", err)
+	}
 
 	if err := g.AppConfig.WriteTo(appConfigFile); err != nil {
 		return fmt.Errorf("write app config: %w", err)
@@ -57,6 +65,18 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 
 	if err := g.Source.WriteTo(srcDir, device); err != nil {
 		return fmt.Errorf("write app src: %w", err)
+	}
+
+	return nil
+}
+
+func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree) error {
+	return nil
+}
+
+func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig) error {
+	for _, sensor := range device.Sensors {
+		appConfig.AddValue(sensor.AppConfig()...)
 	}
 
 	return nil

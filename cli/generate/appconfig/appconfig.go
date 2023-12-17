@@ -14,8 +14,7 @@ type ConfigValue struct {
 }
 
 type AppConfig struct {
-	// a simple map, as we store already resolved values.
-	values map[string]string
+	values map[string]ConfigValue
 }
 
 func NewValue(name string) ConfigValue {
@@ -42,6 +41,12 @@ func (v ConfigValue) Value() string {
 
 func (v ConfigValue) Depends(cfgs ...ConfigValue) ConfigValue {
 	v = v.Copy()
+
+	for i := range cfgs {
+		// Make value required, as we *require* it as a dependency
+		cfgs[i].RequiredValue = cfgs[i].Value()
+	}
+
 	v.Dependencies = append(v.Dependencies, cfgs...)
 	return v
 }
@@ -60,7 +65,7 @@ func (v ConfigValue) Copy() ConfigValue {
 
 func NewDefaultAppConfig() *AppConfig {
 	cfg := &AppConfig{
-		values: make(map[string]string),
+		values: make(map[string]ConfigValue),
 	}
 
 	return cfg.AddValue(
@@ -96,17 +101,22 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 		for _, dep := range configValue.Dependencies {
 			val, ok := c.values[dep.Name]
 			if !ok {
-				c.values[dep.Name] = dep.Value()
+				c.values[dep.Name] = dep
 
 				continue
 			}
 
-			if dep.RequiredValue != "" && val != dep.RequiredValue {
-				panic(fmt.Sprintf("config value %q already has value %q, but %q requires it to be %q", dep.Name, val, configValue.Name, dep.RequiredValue))
+			if dep.RequiredValue != "" {
+				if val.RequiredValue != "" && val.RequiredValue != dep.RequiredValue {
+					panic(fmt.Sprintf("config value %q already has required value %q, but %q requires it to be %q", dep.Name, val.RequiredValue, configValue.Name, dep.RequiredValue))
+				}
+
+				c.values[dep.Name] = dep
+				continue
 			}
 		}
 
-		c.values[configValue.Name] = configValue.Value()
+		c.values[configValue.Name] = configValue
 	}
 
 	return c
@@ -114,7 +124,7 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 
 func (c *AppConfig) WriteTo(w io.StringWriter) error {
 	for name, value := range c.values {
-		if _, err := w.WriteString(name + "=" + value + "\n"); err != nil {
+		if _, err := w.WriteString(name + "=" + value.Value() + "\n"); err != nil {
 			return fmt.Errorf("write to writer: %w", err)
 		}
 	}
