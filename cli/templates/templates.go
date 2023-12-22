@@ -75,5 +75,8 @@ func (t *Templates) render(tplName string, ctx any) (string, error) {
 }
 
 var knownClusterAttrTemplates = map[cluster.ID]string{
-	cluster.ID_TEMP_MEASUREMENT: "define_temperature_attr_list",
+	cluster.ID_TEMP_MEASUREMENT:         "define_temperature_attr_list",
+	cluster.ID_REL_HUMIDITY_MEASUREMENT: "define_humidity_attr_list",
+	cluster.ID_PRESSURE_MEASUREMENT:     "define_pressure_attr_list",
+	cluster.ID_ON_OFF:                   "define_on_off_attr_list",
 }

@@ -9,9 +9,9 @@ import (
 
 func TestWriteOverlay(t *testing.T) {
 	deviceTree := (&devicetree.DeviceTree{}).AddNodes(
-		devicetree.Node{
+		&devicetree.Node{
 			Name: devicetree.NodeNameRoot,
-			SubNodes: []devicetree.Node{
+			SubNodes: []*devicetree.Node{
 				{
 					Name: devicetree.NodeNameChosen,
 					Properties: []devicetree.Property{
@@ -22,9 +22,10 @@ func TestWriteOverlay(t *testing.T) {
 				},
 			},
 		},
-		devicetree.Node{
-			Name: "&zephyr_udc0",
-			SubNodes: []devicetree.Node{
+		&devicetree.Node{
+			Label:  "zephyr_udc0",
+			Upsert: true,
+			SubNodes: []*devicetree.Node{
 				{
 					Name:  "cdc_acm_uart0",
 					Label: "cdc_acm_uart0",

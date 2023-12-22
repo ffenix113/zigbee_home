@@ -14,6 +14,7 @@ import (
 type Sensors []Sensor
 
 type Sensor interface {
+	Name() string
 	Clusters() cluster.Clusters
 	AppConfig() []appconfig.ConfigValue
 	ApplyOverlay(overlay *devicetree.DeviceTree) error

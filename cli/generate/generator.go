@@ -71,6 +71,12 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 }
 
 func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree) error {
+	for _, sensor := range device.Sensors {
+		if err := sensor.ApplyOverlay(deviceTree); err != nil {
+			return fmt.Errorf("applying sensor %q to device tree: %w", sensor.Name(), err)
+		}
+	}
+
 	return nil
 }
 

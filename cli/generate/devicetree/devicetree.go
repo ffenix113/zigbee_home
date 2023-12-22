@@ -3,25 +3,42 @@ package devicetree
 import (
 	"fmt"
 	"io"
-	"strconv"
-	"strings"
 )
-
-const StatusOkay = rawValue(`"okay"`)
-const StatusDisabled = rawValue(`"disabled"`)
 
 const NodeNameRoot = "/"
 const NodeNameChosen = "chosen"
 
-const PropertyNameCompatible = "compatible"
-const PropertyNameStatus = "status"
+const NodeLabelPinctrl = "pinctrl"
+const NodeLabelI2c1 = "i2c1"
+
+type ErrNodeNotFound string
+
+func (f ErrNodeNotFound) Error() string {
+	return fmt.Sprintf("node %q was not found", f)
+}
+
+type NodeSearchFn func(n *Node) bool
 
 type DeviceTree struct {
-	Nodes []Node
+	Nodes []*Node
+}
+
+type Node struct {
+	Name, Label string
+	UnitAddress string
+	Upsert      bool
+
+	Properties []Property
+
+	SubNodes []*Node
 }
 
 func NewDeviceTree() *DeviceTree {
-	return &DeviceTree{}
+	return (&DeviceTree{}).
+		AddNodes((&Node{Name: NodeNameRoot}).
+			AddNodes(&Node{Name: NodeNameChosen})).
+		AddNodes(&Node{Label: NodeLabelPinctrl, Upsert: true}).
+		AddNodes(&Node{Label: NodeLabelI2c1, Upsert: true})
 }
 
 func (t *DeviceTree) WriteTo(w io.StringWriter) error {
@@ -34,60 +51,76 @@ func (t *DeviceTree) WriteTo(w io.StringWriter) error {
 	return nil
 }
 
-func (t *DeviceTree) AddNodes(nodes ...Node) *DeviceTree {
+func (t *DeviceTree) AddNodes(nodes ...*Node) *DeviceTree {
 	t.Nodes = append(t.Nodes, nodes...)
 
 	return t
 }
 
-type Node struct {
-	Name, Label string
-	UnitAddress string
-
-	Properties []Property
-
-	SubNodes []Node
+func (t *DeviceTree) FindSpecificNode(searchFns ...NodeSearchFn) *Node {
+	return findNode(t.Nodes, searchFns...)
 }
 
-type Property struct {
-	Name  string
-	Value PropertyValue
-}
-
-func NewProperty(name string, value PropertyValue) Property {
-	return Property{name, value}
-}
-
-func (p Property) writeTo(w io.StringWriter) error {
-	w.WriteString(p.Name)
-
-	if p.Value != nil {
-		w.WriteString(" = " + p.Value.Value())
+func findNode(nodes []*Node, searchFns ...NodeSearchFn) *Node {
+	if len(nodes) == 0 || len(searchFns) == 0 {
+		return nil
 	}
 
-	w.WriteString(";")
+	for _, node := range nodes {
+		if searchFns[0](node) {
+			if len(searchFns) == 1 {
+				return node
+			}
+
+			return findNode(node.SubNodes, searchFns[1:]...)
+		}
+	}
 
 	return nil
 }
 
-type PropertyValue interface {
-	Value() string
+const identationSymbol = "\t"
+
+func (n *Node) Ref() string {
+	return "&" + n.Label
 }
 
-type rawValue string
+func (n *Node) AddNodes(nodes ...*Node) *Node {
+	n.SubNodes = append(n.SubNodes, nodes...)
 
-const identationSymbol = "\t"
+	return n
+}
+
+func (n *Node) FindSpecificNode(searchFns ...NodeSearchFn) *Node {
+	return findNode(n.SubNodes, searchFns...)
+}
 
 func (n *Node) WriteTo(w io.StringWriter) error {
 	return n.writeTo("", w)
 }
 
 func (n *Node) writeTo(identation string, w io.StringWriter) error {
+	if n.Upsert && n.Name != "" {
+		return fmt.Errorf("node %q must not have name, as it is upserted", n.Name)
+	}
+
+	if !n.Upsert && n.Label != "" && n.Name == "" {
+		return fmt.Errorf("node with label %q must have a name", n.Label)
+	}
+
 	w.WriteString(identation)
 	if n.Label != "" {
-		w.WriteString(n.Label + ": ")
+		if n.Upsert {
+			w.WriteString("&")
+		}
+		w.WriteString(n.Label)
+		if !n.Upsert {
+			w.WriteString(": ")
+		}
 	}
-	w.WriteString(n.Name)
+	if !n.Upsert {
+		w.WriteString(n.Name)
+	}
 
 	if n.UnitAddress != "" {
 		w.WriteString("@" + n.UnitAddress)
@@ -100,70 +133,32 @@ func (n *Node) writeTo(identation string, w io.StringWriter) error {
 	for _, property := range n.Properties {
 		w.WriteString(nodeIdent)
 
-		property.writeTo(w)
+		if err := property.writeTo(w); err != nil {
+			return fmt.Errorf("write property %q to node %q: %w", property.Name, n.Ref(), err)
+		}
 
 		w.WriteString("\n")
 	}
 
 	for _, subNode := range n.SubNodes {
-		subNode.writeTo(nodeIdent, w)
+		if err := subNode.writeTo(nodeIdent, w); err != nil {
+			return fmt.Errorf("write subNode %q to node %q: %w", subNode.Ref(), n.Ref(), err)
+		}
 	}
 
-	w.WriteString(identation + "};\n")
+	w.WriteString(identation + "};\n\n")
 
 	return nil
 }
 
-func (v rawValue) Value() string {
-	return string(v)
-}
-
-func PropertyValueFn(fn func() string) PropertyValue {
-	return rawValue(fn())
-}
-
-func String(value string) PropertyValue {
-	return rawValue(`"` + value + `"`)
-}
-
-func Label(label string) PropertyValue {
-	return rawValue("&" + label)
-}
-
-// NrfPSel
-// Reference: https://docs.zephyrproject.org/apidoc/latest/nrf-pinctrl_8h.html
-func NrfPSel(fun string, port, pin int) PropertyValue {
-	portStr := strconv.Itoa(port)
-	pinStr := strconv.Itoa(pin)
-
-	return Angled("NRF_PSEL(" + fun + ", " + portStr + ", " + pinStr + ")")
-}
-
-func Angled(value string) PropertyValue {
-	return rawValue("<" + value + ">")
-}
-
-func Array(values ...PropertyValue) PropertyValue {
-	if len(values) < 2 {
-		panic("array must have at least two values")
+func SearchByLabel(label string) NodeSearchFn {
+	return func(n *Node) bool {
+		return n.Label == label
 	}
-
-	parts := make([]string, 0, len(values))
-
-	for _, value := range values {
-		parts = append(parts, value.Value())
-	}
-
-	return rawValue(strings.Join(parts, ", "))
 }
 
-func FromValue(val any) PropertyValue {
-	switch typed := val.(type) {
-	case string:
-		return String(typed)
-	case int:
-		return Angled(strconv.Itoa(typed))
+func SearchByName(name string) NodeSearchFn {
+	return func(n *Node) bool {
+		return n.Name == name
 	}
-
-	panic(fmt.Sprintf("unknown type to convert to property value: %T", val))
 }

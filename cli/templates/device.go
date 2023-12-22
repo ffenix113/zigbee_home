@@ -6,9 +6,7 @@ import (
 )
 
 func ConfigToTemplateDevice(device *config.Device) *types.TemplateDevice {
-	td := &types.TemplateDevice{
-		Config: device,
-	}
+	td := &types.TemplateDevice{}
 
 	for _, sensor := range device.Sensors {
 		sensorClusters := sensor.Clusters()

@@ -4,7 +4,7 @@ type Cluster interface {
 	ID() ID
 	CAttrType() string
 	CVarName() string
-
+	// Reports tells if this cluster sends data(i.e. state/measurements) to coordinator
 	Reports() bool
 }
 
