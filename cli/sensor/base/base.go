@@ -18,6 +18,10 @@ type Base struct {
 	Connection map[string]string
 }
 
+func (*Base) TemplatePrefix() string {
+	return ""
+}
+
 func (*Base) Clusters() cluster.Clusters {
 	return nil
 }

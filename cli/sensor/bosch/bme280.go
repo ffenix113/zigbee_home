@@ -11,15 +11,26 @@ type BME280 struct {
 	*base.Base `yaml:",inline"`
 }
 
-func (BME280) Name() string {
+func (BME280) String() string {
 	return "Bosch BME280"
 }
 
 func (BME280) Clusters() cluster.Clusters {
 	return []cluster.Cluster{
-		cluster.Temperature{},
-		cluster.Pressure{},
-		cluster.RelativeHumidity{},
+		cluster.Temperature{
+			MinMeasuredValue: -40,
+			MaxMeasuredValue: 85,
+			Tolerance:        1,
+		},
+		cluster.Pressure{
+			MinMeasuredValue: 30,
+			MaxMeasuredValue: 110,
+			Tolerance:        0,
+		},
+		cluster.RelativeHumidity{
+			MinMeasuredValue: 10,
+			MaxMeasuredValue: 90,
+		},
 	}
 }
 

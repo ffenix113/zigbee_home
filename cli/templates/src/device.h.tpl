@@ -2,34 +2,12 @@
 #define WAIT_FOR_CONSOLE_MSEC 100
 #define WAIT_FOR_CONSOLE_DEADLINE_MSEC 500
 
-/* Defines that should be specific for each sensor/component, but we don't do that yet. */
-#define SENSOR_TEMP_CELSIUS_MIN (-40)
-#define SENSOR_TEMP_CELSIUS_MAX (85)
-#define SENSOR_TEMP_CELSIUS_TOLERANCE (1)
-#define SENSOR_PRESSURE_KPA_MIN (30)
-#define SENSOR_PRESSURE_KPA_MAX (110)
-#define SENSOR_PRESSURE_KPA_TOLERANCE (0)
-#define SENSOR_HUMIDITY_PERCENT_MIN (10)
-#define SENSOR_HUMIDITY_PERCENT_MAX (90)
-#define SENSOR_HUMIDITY_PERCENT_TOLERANCE (3)
-
 /* Zigbee Cluster Library 4.4.2.2.1.1: MeasuredValue = 100x temperature in degrees Celsius */
 #define ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
 /* Zigbee Cluster Library 4.5.2.2.1.1: MeasuredValue = 10x pressure in kPa */
 #define ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 10
 /* Zigbee Cluster Library 4.7.2.1.1: MeasuredValue = 100x water content in % */
 #define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
-
-#define DEVICE_ATTR_TEMP_MIN (SENSOR_TEMP_CELSIUS_MIN * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_TEMP_MAX (SENSOR_TEMP_CELSIUS_MAX * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_TEMP_TOLERANCE (SENSOR_TEMP_CELSIUS_TOLERANCE *	ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_PRESSURE_MIN (SENSOR_PRESSURE_KPA_MIN * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_PRESSURE_MAX (SENSOR_PRESSURE_KPA_MAX * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_PRESSURE_TOLERANCE (SENSOR_PRESSURE_KPA_TOLERANCE *	ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_HUMIDITY_MIN (SENSOR_HUMIDITY_PERCENT_MIN * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_HUMIDITY_MAX (SENSOR_HUMIDITY_PERCENT_MAX * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-#define DEVICE_ATTR_HUMIDITY_TOLERANCE (SENSOR_HUMIDITY_PERCENT_TOLERANCE * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-/* End of sensor/component specific defines */
 
 /* Weather check period */
 #define WEATHER_CHECK_PERIOD_MSEC {{.Device.RunEvery.Milliseconds}}
@@ -181,20 +159,20 @@ static void measurements_clusters_attr_init(void)
 	{{ if eq .ID 1026 }}
 	/* Temperature */
 	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = DEVICE_ATTR_TEMP_MIN;
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = DEVICE_ATTR_TEMP_MAX;
-	dev_ctx.{{.CVarName}}_attrs.tolerance = DEVICE_ATTR_TEMP_TOLERANCE;
+	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_attrs.tolerance = ({{.Tolerance}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
 	{{ else if eq .ID 1027}}
 	/* Pressure */
 	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = DEVICE_ATTR_PRESSURE_MIN;
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = DEVICE_ATTR_PRESSURE_MAX;
-	dev_ctx.{{.CVarName}}_attrs.tolerance = DEVICE_ATTR_PRESSURE_TOLERANCE;
+	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_attrs.tolerance = ({{.Tolerance}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
 	{{ else if eq .ID 1029}}
 	/* Humidity */
 	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = DEVICE_ATTR_HUMIDITY_MIN;
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = DEVICE_ATTR_HUMIDITY_MAX;	
+	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);	
 	/* Humidity measurements tolerance is not supported at the moment */
 	{{- end}}
 	{{- end}}

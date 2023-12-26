@@ -14,7 +14,12 @@ import (
 type Sensors []Sensor
 
 type Sensor interface {
-	Name() string
+	// Stringer is for human-readable name
+	fmt.Stringer
+	// TemplatePrefix returns prefix for the templates.
+	// I.e. if this sensor needs some additional things.
+	// If this returns empty string - no additional(custom) code will be generated for it.
+	TemplatePrefix() string
 	Clusters() cluster.Clusters
 	AppConfig() []appconfig.ConfigValue
 	ApplyOverlay(overlay *devicetree.DeviceTree) error

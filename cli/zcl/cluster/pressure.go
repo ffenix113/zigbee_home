@@ -2,7 +2,11 @@ package cluster
 
 var _ Cluster = Pressure{}
 
-type Pressure struct{}
+type Pressure struct {
+	MinMeasuredValue int16
+	MaxMeasuredValue int16
+	Tolerance        uint16
+}
 
 func (t Pressure) ID() ID {
 	return ID_PRESSURE_MEASUREMENT

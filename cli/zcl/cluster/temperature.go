@@ -2,7 +2,11 @@ package cluster
 
 var _ Cluster = Temperature{}
 
-type Temperature struct{}
+type Temperature struct {
+	MinMeasuredValue int16
+	MaxMeasuredValue int16
+	Tolerance        uint16
+}
 
 func (t Temperature) ID() ID {
 	return ID_TEMP_MEASUREMENT

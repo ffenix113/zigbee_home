@@ -17,7 +17,7 @@ project(zigbee_common)
 ################################################################################
 
 # NORDIC SDK APP START
-FILE(GLOB app_sources src/*.c)
+FILE(GLOB app_sources src/*.c src/**/*.c)
 target_sources(app PRIVATE ${app_sources})
 
 # NORDIC SDK APP END

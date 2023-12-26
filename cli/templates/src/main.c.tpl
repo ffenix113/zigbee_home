@@ -82,40 +82,6 @@ static void wait_for_console(void)
 }
 #endif /* CONFIG_USB_DEVICE_STACK */
 
-static void check_weather(zb_bufid_t bufid)
-{
-	ZVUNUSED(bufid);
-
-	int err = weather_station_check_weather();
-
-	if (err) {
-		LOG_ERR("Failed to check weather: %d", err);
-	} else {
-		err = weather_station_update_temperature();
-		if (err) {
-			LOG_ERR("Failed to update temperature: %d", err);
-		}
-
-		err = weather_station_update_pressure();
-		if (err) {
-			LOG_ERR("Failed to update pressure: %d", err);
-		}
-
-		err = weather_station_update_humidity();
-		if (err) {
-			LOG_ERR("Failed to update humidity: %d", err);
-		}
-	}
-
-	zb_ret_t zb_err = ZB_SCHEDULE_APP_ALARM(check_weather,
-						0,
-						ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-							WEATHER_CHECK_PERIOD_MSEC));
-	if (zb_err) {
-		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
-	}
-}
-
 /**@brief Callback function for handling ZCL commands.
  *
  * @param[in]   bufid   Reference to Zigbee stack buffer

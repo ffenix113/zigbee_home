@@ -2,7 +2,12 @@ package cluster
 
 var _ Cluster = RelativeHumidity{}
 
-type RelativeHumidity struct{}
+type RelativeHumidity struct {
+	MinMeasuredValue int16
+	MaxMeasuredValue int16
+	// Tolerance is not supported for humidity in nRF Connect SDK v2.5.0
+	// Tolerance uint16
+}
 
 func (t RelativeHumidity) ID() ID {
 	return ID_REL_HUMIDITY_MEASUREMENT
