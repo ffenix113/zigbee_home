@@ -3,8 +3,8 @@ package sensor_test
 import (
 	"testing"
 
-	"github.com/ffenix113/zigbee_home/cli/sensor"
 	"github.com/ffenix113/zigbee_home/cli/sensor/bosch"
+	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )

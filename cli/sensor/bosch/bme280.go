@@ -1,9 +1,9 @@
 package bosch
 
 import (
-	"github.com/ffenix113/zigbee_home/cli/generate/appconfig"
-	dt "github.com/ffenix113/zigbee_home/cli/generate/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/sensor/base"
+	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
+	dt "github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
@@ -20,7 +20,6 @@ func (BME280) Clusters() cluster.Clusters {
 		cluster.Temperature{},
 		cluster.Pressure{},
 		cluster.RelativeHumidity{},
-		// TODO: humidity, pressure
 	}
 }
 

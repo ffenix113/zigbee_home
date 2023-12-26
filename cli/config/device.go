@@ -3,8 +3,8 @@ package config
 import (
 	"time"
 
-	"github.com/ffenix113/zigbee_home/cli/sensor"
 	"github.com/ffenix113/zigbee_home/cli/types"
+	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 )
 
 type Device struct {

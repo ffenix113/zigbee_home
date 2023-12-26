@@ -14,7 +14,7 @@ const NodeLabelI2c1 = "i2c1"
 type ErrNodeNotFound string
 
 func (f ErrNodeNotFound) Error() string {
-	return fmt.Sprintf("node %q was not found", f)
+	return fmt.Sprintf("node %q was not found", string(f))
 }
 
 type NodeSearchFn func(n *Node) bool

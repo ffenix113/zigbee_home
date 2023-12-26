@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
-	"github.com/ffenix113/zigbee_home/cli/generate/appconfig"
-	"github.com/ffenix113/zigbee_home/cli/generate/devicetree"
-	"github.com/ffenix113/zigbee_home/cli/generate/source"
+	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
+	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/types/source"
 )
 
 type Generator struct {
