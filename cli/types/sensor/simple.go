@@ -6,15 +6,22 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
+var _ Sensor = (*Simple)(nil)
+
 type Simple struct {
-	SensorName       string
-	SensorClusters   cluster.Clusters
-	SensorAppConfig  []appconfig.ConfigValue
-	SensorAppOverlay func(*devicetree.DeviceTree) error
+	SensorName           string
+	SensorTemplatePrefix string
+	SensorClusters       cluster.Clusters
+	SensorAppConfig      []appconfig.ConfigValue
+	SensorAppOverlay     func(*devicetree.DeviceTree) error
 }
 
-func (s *Simple) Name() string {
+func (s *Simple) String() string {
 	return s.SensorName
+}
+
+func (s *Simple) TemplatePrefix() string {
+	return s.SensorTemplatePrefix
 }
 
 func (s *Simple) Clusters() cluster.Clusters {

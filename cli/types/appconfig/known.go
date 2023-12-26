@@ -1,16 +1,17 @@
 package appconfig
 
-// NOTE: This values are fetched from original `prj.conf` of this project.
+// NOTE: This values are fetched from original `prj.conf` of this project,
+// and some were updated to disable/remove some things as default.
 // As such they do not represent good/best configurations,
 // but mostly the ones that work for this project.
 var (
 	// Logging
-	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(Yes)
-	CONFIG_SERIAL           = NewValue("CONFIG_SERIAL").Default(Yes)
-	CONFIG_CONSOLE          = NewValue("CONFIG_CONSOLE").Default(Yes)
+	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(No)
+	CONFIG_SERIAL           = NewValue("CONFIG_SERIAL").Default(No)
+	CONFIG_CONSOLE          = NewValue("CONFIG_CONSOLE").Default(No)
 	CONFIG_UART_CONSOLE     = NewValue("CONFIG_UART_CONSOLE").Default(No)
 	CONFIG_UART_LINE_CTRL   = NewValue("CONFIG_UART_LINE_CTRL").Default(Yes)
-	CONFIG_LOG_BACKEND_UART = NewValue("CONFIG_LOG_BACKEND_UART").Default(No)
+	CONFIG_LOG_BACKEND_UART = NewValue("CONFIG_LOG_BACKEND_UART").Default(Yes)
 
 	// USB
 	CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT = NewValue("CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT").Default(No)

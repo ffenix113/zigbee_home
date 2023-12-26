@@ -10,6 +10,21 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/types/source"
 )
 
+// TODO: Define some "modifier"/"injector" interface
+// 	that will allow to update generator state.
+// 	It is important that this interface be able to add
+// 	new files to generated source output!
+//
+// 	This is useful for common functionality for
+// 	sensors and peripherals.
+// 	I.e. to enable some sensors it is neeeded:
+// 	 - update proj.conf to add CONFIG_SENSOR=y
+// 	 - - maybe also add CONFIG_I2C=y
+// 	 - add include <zephyr/drivers/sensor.h>
+//
+// 	Sensors should also be able to tell that
+// 	they want to use such "modifier"/"injector"
+
 type Generator struct {
 	AppConfig  *appconfig.AppConfig
 	DeviceTree *devicetree.DeviceTree

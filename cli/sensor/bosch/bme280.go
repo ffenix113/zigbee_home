@@ -15,6 +15,10 @@ func (BME280) String() string {
 	return "Bosch BME280"
 }
 
+func (BME280) TemplatePrefix() string {
+	return "bosch_bme280"
+}
+
 func (BME280) Clusters() cluster.Clusters {
 	return []cluster.Cluster{
 		cluster.Temperature{
@@ -36,6 +40,8 @@ func (BME280) Clusters() cluster.Clusters {
 
 func (BME280) AppConfig() []appconfig.ConfigValue {
 	return []appconfig.ConfigValue{
+		appconfig.CONFIG_I2C.Required(appconfig.Yes),
+		appconfig.CONFIG_SENSOR.Required(appconfig.Yes),
 		appconfig.CONFIG_BME280.Required(appconfig.Yes),
 	}
 }
