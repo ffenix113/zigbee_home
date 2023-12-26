@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
 	"github.com/ffenix113/zigbee_home/cli/generate"
@@ -16,8 +17,13 @@ import (
 
 func buildCmd() *cli.Command {
 	return &cli.Command{
-		Name:   "build",
-		Usage:  "build the firmware",
+		Name:  "build",
+		Usage: "build the firmware",
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name: "only-generate",
+			},
+		},
 		Action: buildFirmware,
 	}
 }
@@ -44,7 +50,11 @@ func buildFirmware(ctx *cli.Context) error {
 		return fmt.Errorf("generate base: %w", err)
 	}
 
-	return runBuild(ctx.Context, cfg, workDir)
+	if !ctx.Bool("only-generate") {
+		return runBuild(ctx.Context, cfg, workDir)
+	}
+
+	return nil
 }
 
 func parseConfig(ctx *cli.Context) (config.Device, error) {
@@ -62,7 +72,11 @@ func parseConfig(ctx *cli.Context) (config.Device, error) {
 }
 
 func parseConfigFile(configPath string) (config.Device, error) {
-	var cfg config.Device
+	cfg := config.Device{
+		General: config.General{
+			RunEvery: time.Minute,
+		},
+	}
 
 	file, err := os.Open(configPath)
 	if err != nil {

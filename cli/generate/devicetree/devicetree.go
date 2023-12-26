@@ -38,7 +38,15 @@ func NewDeviceTree() *DeviceTree {
 		AddNodes((&Node{Name: NodeNameRoot}).
 			AddNodes(&Node{Name: NodeNameChosen})).
 		AddNodes(&Node{Label: NodeLabelPinctrl, Upsert: true}).
-		AddNodes(&Node{Label: NodeLabelI2c1, Upsert: true})
+		AddNodes(
+			&Node{
+				Label:  NodeLabelI2c1,
+				Upsert: true,
+				Properties: []Property{
+					PropertyStatusEnable,
+				},
+			},
+		)
 }
 
 func (t *DeviceTree) WriteTo(w io.StringWriter) error {

@@ -3,6 +3,7 @@ package appconfig
 import (
 	"fmt"
 	"io"
+	"sort"
 )
 
 type ConfigValue struct {
@@ -74,6 +75,7 @@ func NewDefaultAppConfig() *AppConfig {
 		CONFIG_CONSOLE,
 		CONFIG_UART_CONSOLE,
 		CONFIG_UART_LINE_CTRL,
+		CONFIG_USB_DEVICE_STACK,
 		CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
@@ -123,8 +125,14 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 }
 
 func (c *AppConfig) WriteTo(w io.StringWriter) error {
-	for name, value := range c.values {
-		if _, err := w.WriteString(name + "=" + value.Value() + "\n"); err != nil {
+	configNames := make([]string, 0, len(c.values))
+	for name := range c.values {
+		configNames = append(configNames, name)
+	}
+	sort.Strings(configNames)
+
+	for _, name := range configNames {
+		if _, err := w.WriteString(name + "=" + c.values[name].Value() + "\n"); err != nil {
 			return fmt.Errorf("write to writer: %w", err)
 		}
 	}

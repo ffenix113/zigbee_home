@@ -8,7 +8,7 @@ var (
 	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(Yes)
 	CONFIG_SERIAL           = NewValue("CONFIG_SERIAL").Default(Yes)
 	CONFIG_CONSOLE          = NewValue("CONFIG_CONSOLE").Default(Yes)
-	CONFIG_UART_CONSOLE     = NewValue("CONFIG_UART_CONSOLE").Default(Yes)
+	CONFIG_UART_CONSOLE     = NewValue("CONFIG_UART_CONSOLE").Default(No)
 	CONFIG_UART_LINE_CTRL   = NewValue("CONFIG_UART_LINE_CTRL").Default(Yes)
 	CONFIG_LOG_BACKEND_UART = NewValue("CONFIG_LOG_BACKEND_UART").Default(No)
 
@@ -16,7 +16,7 @@ var (
 	CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT = NewValue("CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT").Default(No)
 	CONFIG_USB_DEVICE_PRODUCT            = NewValue("CONFIG_USB_DEVICE_PRODUCT").Default(`"Dongle: Zigbee Device"`)
 	CONFIG_USB_DEVICE_PID                = NewValue("CONFIG_USB_DEVICE_PID").Default(`0x0004`)
-	CONFIG_USB_DEVICE_STACK              = NewValue("CONFIG_USB_DEVICE_STACK").Default(Yes)
+	CONFIG_USB_DEVICE_STACK              = NewValue("CONFIG_USB_DEVICE_STACK").Default(No)
 
 	// Drivers / peripherals
 	CONFIG_I2C        = NewValue("CONFIG_I2C").Default(Yes)

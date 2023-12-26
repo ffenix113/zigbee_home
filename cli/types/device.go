@@ -5,12 +5,14 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 	"gopkg.in/yaml.v3"
 )
 
 type TemplateDevice struct {
+	RunEvery  time.Duration
 	Endpoints Endpoints
 }
 

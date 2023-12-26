@@ -33,6 +33,8 @@ func NewTemplates(templateFS fs.FS) *Templates {
 	tpls.Funcs(template.FuncMap{
 		"clusterToAttrTemplate": t.clusterToAttrTemplate,
 		"render":                t.render,
+		"isLast":                isLast,
+		"sum":                   sum,
 	})
 
 	t.templates = template.Must(tpls.ParseFS(templateFS, "src/*.tpl", "src/**/*.tpl"))
@@ -41,18 +43,34 @@ func NewTemplates(templateFS fs.FS) *Templates {
 }
 
 func (t *Templates) WriteTo(srcDir string, device *types.TemplateDevice) error {
-	file, err := os.Create(srcDir + "/main.c")
-	if err != nil {
-		return fmt.Errorf("create main.c: %w", err)
-	}
-
 	ctx := Context{
 		GeneratedOn: time.Now().UTC(),
 		Version:     "0.0.0-dev",
 		Device:      device,
 	}
 
-	return t.templates.ExecuteTemplate(file, "main.c.tpl", ctx)
+	for _, sourceDefinition := range sourceFiles {
+		file, err := os.Create(srcDir + "/" + sourceDefinition[0])
+		if err != nil {
+			return fmt.Errorf("create %q: %w", sourceDefinition[0], err)
+		}
+		// This will be executed when `WriteTo` exits,
+		// but it is fine for us.
+		defer file.Close()
+
+		if err := t.templates.ExecuteTemplate(file, sourceDefinition[1], ctx); err != nil {
+			return fmt.Errorf("execute source template %q: %w", sourceDefinition[1], err)
+		}
+	}
+
+	return nil
+}
+
+var sourceFiles = [][2]string{
+	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
+	{"main.c", "main.c.tpl"},
+	{"device.h", "device.h.tpl"},
+	{"clusters.h", "clusters.h.tpl"},
 }
 
 func (t *Templates) clusterToAttrTemplate(cluster cluster.Cluster) (string, error) {
@@ -72,6 +90,14 @@ func (t *Templates) render(tplName string, ctx any) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func isLast(i, arrLen int) bool {
+	return i+1 == arrLen
+}
+
+func sum(a, b int) int {
+	return a + b
 }
 
 var knownClusterAttrTemplates = map[cluster.ID]string{

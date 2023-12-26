@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/ffenix113/zigbee_home/cli/sensor"
 	"github.com/ffenix113/zigbee_home/cli/types"
 )
@@ -16,7 +18,8 @@ type General struct {
 	Manufacturer string
 	DeviceName   string
 	// Zephyr name for the board
-	Board string
+	Board    string
+	RunEvery time.Duration
 	// Flasher defines the way the board should be flashed.
 	Flasher        string
 	FlasherOptions map[string]any

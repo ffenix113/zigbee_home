@@ -26,6 +26,10 @@ func NewGenerator(device config.Device) *Generator {
 
 func (g *Generator) Generate(workDir string, device *config.Device) error {
 	// Write devicetree overlay (app.overlay)
+	if err := updateDeviceTree(device, g.DeviceTree); err != nil {
+		return fmt.Errorf("update overlay: %w", err)
+	}
+
 	overlayFile, err := os.Create(workDir + "/app.overlay")
 	if err != nil {
 		return fmt.Errorf("create overlay file: %w", err)
@@ -33,25 +37,21 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 
 	defer overlayFile.Close()
 
-	if err := updateDeviceTree(device, g.DeviceTree); err != nil {
-		return fmt.Errorf("update overlay: %w", err)
-	}
-
 	if err := g.DeviceTree.WriteTo(overlayFile); err != nil {
 		return fmt.Errorf("write overlay: %w", err)
 	}
 
 	// Write app config (prj.conf)
+	if err := updateAppConfig(device, g.AppConfig); err != nil {
+		return fmt.Errorf("update app config: %w", err)
+	}
+
 	appConfigFile, err := os.Create(workDir + "/prj.conf")
 	if err != nil {
 		return fmt.Errorf("create app config file: %w", err)
 	}
 
 	defer appConfigFile.Close()
-
-	if err := updateAppConfig(device, g.AppConfig); err != nil {
-		return fmt.Errorf("update app config: %w", err)
-	}
 
 	if err := g.AppConfig.WriteTo(appConfigFile); err != nil {
 		return fmt.Errorf("write app config: %w", err)

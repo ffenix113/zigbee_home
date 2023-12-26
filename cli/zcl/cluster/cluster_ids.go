@@ -47,17 +47,17 @@ type ID int
 
 func (id ID) String() string {
 	switch id {
-	case 0x0000:
+	case 0:
 		return "ZB_ZCL_CLUSTER_ID_BASIC"
-	case 0x0003:
+	case 3:
 		return "ZB_ZCL_CLUSTER_ID_IDENTIFY"
-	case 0x0006:
+	case 6:
 		return "ZB_ZCL_CLUSTER_ID_ON_OFF"
-	case 0x0402:
+	case 1026:
 		return "ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT"
-	case 0x0403:
+	case 1027:
 		return "ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT"
-	case 0x0405:
+	case 1029:
 		return "ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT"
 	}
 

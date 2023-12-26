@@ -1,6 +1,8 @@
 # Format for this file is not stable, and can change at any time.
 
 general:
+  # Defines how much time a loop will sleep after each iteration.
+  runevery: 2m
   board: nrf52840dongle_nrf52840
   # Flasher tells which flashing method to use.
   # Currently `nrfutil`, `mcuboot` and `west`
