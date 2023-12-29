@@ -6,6 +6,10 @@ import (
 	"sort"
 )
 
+type Provider interface {
+	AppConfig() []ConfigValue
+}
+
 type ConfigValue struct {
 	Name          string
 	DefaultValue  string

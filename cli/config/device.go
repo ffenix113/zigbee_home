@@ -3,6 +3,7 @@ package config
 import (
 	"time"
 
+	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
 	"github.com/ffenix113/zigbee_home/cli/types"
 	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 )
@@ -26,7 +27,8 @@ type General struct {
 }
 
 type Board struct {
-	Uart Uart
+	DebugLog bool
+	I2C      *extenders.I2C
 }
 
 type Uart struct {

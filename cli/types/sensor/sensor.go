@@ -3,26 +3,43 @@ package sensor
 import (
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/ffenix113/zigbee_home/cli/sensor/base"
 	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/types/generator"
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 	"gopkg.in/yaml.v3"
 )
+
+var sensorCounter int
+
+// SensorLabelFn returns a unique label for a sensor.
+var SensorLabelFn = func(s Sensor) string {
+	sensorCounter += 1
+	cleanLabel := strings.ReplaceAll(strings.ToLower(fmt.Sprintf("%T_", s)), ".", "_")
+	return strings.TrimPrefix(cleanLabel, "*") + strconv.Itoa(sensorCounter)
+}
 
 type Sensors []Sensor
 
 type Sensor interface {
 	// Stringer is for human-readable name
 	fmt.Stringer
-	// TemplatePrefix returns prefix for the templates.
-	// I.e. if this sensor needs some additional things.
-	// If this returns empty string - no additional(custom) code will be generated for it.
-	TemplatePrefix() string
-	Clusters() cluster.Clusters
-	AppConfig() []appconfig.ConfigValue
-	ApplyOverlay(overlay *devicetree.DeviceTree) error
+	// Label returns unique label value for the sensor.
+	// Generally this method should not be defined by user,
+	// intstead it will be defined in embedded `*base.Base`
+	Label() string
+	Template() string
+	cluster.Provider
+	appconfig.Provider
+	devicetree.Applier
+}
+
+type WithExtenders interface {
+	Extenders() []generator.Extender
 }
 
 func (s *Sensors) UnmarshalYAML(value *yaml.Node) error {
@@ -58,5 +75,9 @@ func unmarshalSensor(node *yaml.Node) (Sensor, error) {
 		return nil, fmt.Errorf("decode sensor type %q: %w", sensorType.Type, err)
 	}
 
-	return rVal.Elem().Interface().(Sensor), nil
+	sensor := rVal.Interface().(Sensor)
+	base := rVal.Elem().FieldByName("Base").Interface().(*base.Base)
+	base.SetLabel(SensorLabelFn(sensor))
+
+	return sensor, nil
 }

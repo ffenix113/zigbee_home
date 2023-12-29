@@ -18,11 +18,33 @@
 #include <zigbee/zigbee_app_utils.h>
 #include <zigbee/zigbee_error_handler.h>
 
+// Extender includes
+{{- range .Extenders}}
+{{- range .Includes}}
+#include "{{.}}"
+{{- end}}
+{{- end}}
+// Extender includes end
+
+// Extender top levels
+{{- range .Extenders}}
+{{- maybeRenderExtender .Template "top_level" (sensorCtx 0 $.Device nil .)}}
+{{- end}}
+// Extender top levels end
+
+// Sensor templates top level
+{{- range $i, $sensor := .Device.Sensors}}
+{{- maybeRenderExtender .Template "top_level" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+{{- end}}
+// Sensor templates top end
+
 LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 // Header only, why not?
 #include "clusters.h"
 #include "device.h"
+
+#define DEVICE_INITIAL_DELAY_MSEC 10000
 
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
@@ -115,7 +137,6 @@ static void zcl_device_cb(zb_bufid_t bufid)
 			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
 				// on_off_set_value((zb_bool_t)value);
 			}
-		} else if (cluster_id == ZB_ZCL_CLUSTER_ID_LEVEL_CONTROL) {
 		} else {
 			/* Other clusters can be processed here */
 			LOG_INF("Unhandled cluster attribute id: %d",
@@ -134,6 +155,30 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	LOG_INF("%s status: %hd", __func__, device_cb_param->status);
 }
 
+static void loop(zb_bufid_t bufid) 
+{
+	ZVUNUSED(bufid);
+
+	// -- Extenders start
+	{{- range .Extenders}}
+	{{- maybeRenderExtender .Template "loop" (sensorCtx 0 $.Device nil .)}}
+	{{- end}}
+	// -- Extenders end
+
+	{{- range $i, $sensor := .Device.Sensors}}
+	// -- {{$sensor}}, for endpoint {{$i}}
+	{{- maybeRenderExtender $sensor.Template "loop" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	// -- {{$sensor}}, for endpoint {{$i}} end
+	{{- end}}
+
+	zb_ret_t zb_err = ZB_SCHEDULE_APP_ALARM(loop,
+					0,
+					ZB_MILLISECONDS_TO_BEACON_INTERVAL({{.Device.General.RunEvery.Milliseconds}}));
+	if (zb_err) {
+		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
+	}
+}
+
 void zboss_signal_handler(zb_bufid_t bufid)
 {
 	zb_zdo_app_signal_hdr_t *signal_header = NULL;
@@ -149,10 +194,10 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
 		/* ZBOSS framework has started - schedule first weather check */
-		err = ZB_SCHEDULE_APP_ALARM(check_weather,
+		err = ZB_SCHEDULE_APP_ALARM(loop,
 					    0,
 					    ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-						    WEATHER_CHECK_INITIAL_DELAY_MSEC));
+						    DEVICE_INITIAL_DELAY_MSEC));
 		if (err) {
 			LOG_ERR("Failed to schedule app alarm: %d", err);
 		}
@@ -173,6 +218,24 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	}
 }
 
+int init_templates() {
+	// --- Extenders start
+	{{- range .Extenders}}
+	{{- maybeRenderExtender .Template "main" (sensorCtx 0 $.Device nil .)}}
+	// ---
+	{{- end}}
+	// --- Extenders end
+
+	// --- Sensors start
+	{{- range $i, $sensor := .Device.Sensors}}
+	{{- maybeRenderExtender $sensor.Template "main" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	// ---
+	{{- end}}
+	// --- Sensors end
+
+	return 0;
+}
+
 int main(void)
 {
 	#ifdef CONFIG_USB_DEVICE_STACK
@@ -181,7 +244,6 @@ int main(void)
 
 	register_factory_reset_button(FACTORY_RESET_BUTTON);
 	gpio_init();
-	weather_station_init();
 
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);
@@ -195,6 +257,12 @@ int main(void)
 	/* Init measurements-related attributes */
 	measurements_clusters_attr_init();
 
+	int init_result = 0;
+	init_result = init_templates();
+	if (init_result != 0) {
+		return init_result;
+	}
+
 	/* Register callback to identify notifications */
 	// ZB_AF_SET_IDENTIFY_NOTIFICATION_HANDLER(DEVICE_ENDPOINT_NB, identify_callback);
 
@@ -207,31 +275,9 @@ int main(void)
 	/* Start Zigbee stack */
 	zigbee_enable();
 
+	#if CONFIG_LOG
 	dk_set_led_on(LED_POWER);
+	#endif
 
 	return 0;
 }
-
-
-/*
-
-So the app should have some following steps:
-- define the device ctx
-- use macros to set clusters
-- use macros to register clusters with device &/ endpoint
-- init cluster values
-- define per-(sensor|component) code for setup & per-iteration
-
-- run per-iteration logic for each sensor
-- - Behavior should be per-endpoint
-
----
-As such sensors may have at least such templates defined:
-* <sensor_name>_include - common for all sensors of this make/model. Nice to be guarded with `ifndef`.
-* <sensor_name>_base - includes imports, sensor struct and functions necessary to manipulate sensor
-* <sensor_name>_init - function to call to init the sensor
-* <sensor_name>_loop - function to call on each iteration/update
-* <sensor_name>_receive - function to call on received message from other devices.
-	Let's introduce this later on. For sending this is not as interesting.
-
-*/

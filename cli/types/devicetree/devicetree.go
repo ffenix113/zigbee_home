@@ -17,6 +17,10 @@ func (f ErrNodeNotFound) Error() string {
 	return fmt.Sprintf("node %q was not found", string(f))
 }
 
+type Applier interface {
+	ApplyOverlay(dt *DeviceTree) error
+}
+
 type NodeSearchFn func(n *Node) bool
 
 type DeviceTree struct {
@@ -36,7 +40,13 @@ type Node struct {
 func NewDeviceTree() *DeviceTree {
 	return (&DeviceTree{}).
 		AddNodes((&Node{Name: NodeNameRoot}).
-			AddNodes(&Node{Name: NodeNameChosen})).
+			AddNodes(&Node{
+				Name: NodeNameChosen,
+				Properties: []Property{
+					NewProperty("ncs,zigbee-timer", Label("timer2")),
+					NewProperty("zephyr,entropy", Label("rng")),
+				},
+			})).
 		AddNodes(&Node{Label: NodeLabelPinctrl, Upsert: true}).
 		AddNodes(
 			&Node{
@@ -45,6 +55,30 @@ func NewDeviceTree() *DeviceTree {
 				Properties: []Property{
 					PropertyStatusEnable,
 				},
+			},
+			&Node{
+				Label:  "timer2",
+				Upsert: true,
+				Properties: []Property{
+					PropertyStatusEnable,
+				},
+			},
+			// Disable unused peripherals to reduce power consumption
+			// &pwm0 {
+			// 	status = "disabled";
+			// };
+			// &pwm1 {
+			// 	status = "disabled";
+			// };
+			&Node{
+				Label:      "pwm0",
+				Upsert:     true,
+				Properties: []Property{PropertyStatusDisable},
+			},
+			&Node{
+				Label:      "pwm1",
+				Upsert:     true,
+				Properties: []Property{PropertyStatusDisable},
 			},
 		)
 }
@@ -95,6 +129,12 @@ func (n *Node) Ref() string {
 
 func (n *Node) AddNodes(nodes ...*Node) *Node {
 	n.SubNodes = append(n.SubNodes, nodes...)
+
+	return n
+}
+
+func (n *Node) AddProperties(props ...Property) *Node {
+	n.Properties = append(n.Properties, props...)
 
 	return n
 }

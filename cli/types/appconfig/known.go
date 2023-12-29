@@ -21,8 +21,8 @@ var (
 
 	// Drivers / peripherals
 	CONFIG_I2C        = NewValue("CONFIG_I2C").Default(Yes)
-	CONFIG_SENSOR     = NewValue("CONFIG_SENSOR").Default(Yes)
-	CONFIG_BME280     = NewValue("CONFIG_BME280").Default(Yes).Depends(CONFIG_I2C, CONFIG_SENSOR)
+	CONFIG_SENSOR     = NewValue("CONFIG_SENSOR").Default(No)
+	CONFIG_BME280     = NewValue("CONFIG_BME280").Default(No).Depends(CONFIG_I2C.Required(Yes), CONFIG_SENSOR.Required(Yes))
 	CONFIG_DK_LIBRARY = NewValue("CONFIG_DK_LIBRARY").Default(Yes)
 
 	// Zigbee

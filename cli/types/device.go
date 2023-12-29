@@ -5,28 +5,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 	"gopkg.in/yaml.v3"
 )
-
-type TemplateDevice struct {
-	RunEvery  time.Duration
-	Endpoints Endpoints
-}
-
-func (d *TemplateDevice) AddCluster(cluster cluster.Cluster) error {
-	endpoint := d.Endpoints.LastEndpoint()
-
-	if endpoint.HasCluster(cluster.ID()) {
-		endpoint = d.Endpoints.AddEndpoint()
-	}
-
-	endpoint.Clusters = append(endpoint.Clusters, cluster)
-
-	return nil
-}
 
 type Pin struct {
 	Port int

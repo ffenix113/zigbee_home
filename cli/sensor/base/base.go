@@ -13,9 +13,22 @@ type SensorType struct {
 
 // Sensor defines all information necessary about the attached sensor.
 type Base struct {
-	Type string `yaml:"type"`
+	Type  string
+	label string
 	// Connection provides information about communication protocol.
 	Connection map[string]string
+}
+
+func (b *Base) Label() string {
+	return b.label
+}
+
+func (b *Base) SetLabel(label string) {
+	if b.label != "" {
+		panic("trying to set label second time")
+	}
+
+	b.label = label
 }
 
 func (*Base) TemplatePrefix() string {

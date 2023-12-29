@@ -10,7 +10,7 @@
 #define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
 
 /* Weather check period */
-#define WEATHER_CHECK_PERIOD_MSEC {{.Device.RunEvery.Milliseconds}}
+#define WEATHER_CHECK_PERIOD_MSEC {{.Device.General.RunEvery.Milliseconds}}
 
 /* Delay for first weather check */
 #define CONFIG_FIRST_WEATHER_CHECK_DELAY_SECONDS 5
@@ -37,7 +37,7 @@
 /* Button to start Factory Reset */
 #define FACTORY_RESET_BUTTON IDENTIFY_MODE_BUTTON
 
-{{template "device_ctx" index .Device.Endpoints 0}}
+{{template "device_ctx" .Device.Sensors }}
 
 /* Stores all cluster-related attributes */
 static zb_device_ctx dev_ctx;
@@ -57,9 +57,9 @@ ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 	&dev_ctx.basic_attr.ph_env,
 	dev_ctx.basic_attr.sw_ver);
 
-{{ range .Device.Endpoints }}
-	{{range $_, $cluster := .Clusters}}
-		{{with $template := clusterToAttrTemplate .}}{{render $template $cluster}}{{end}}
+{{ range $i, $sensor := .Device.Sensors }}
+	{{range $_, $cluster := $sensor.Clusters}}
+		{{with $template := clusterToAttrTemplate .}}{{render $template (clusterCtx $i $cluster)}}{{end}}
 	{{end}}
 {{end}}
 
@@ -67,9 +67,12 @@ ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 ZB_HA_DECLARE_DEVICE_CLUSTER_LIST(
 	device_cluster_list,
 	basic_attr_list,
-	{{- $clustersLen := len (index .Device.Endpoints 0).Clusters}}
-	{{- range $i, $cluster := (index .Device.Endpoints 0).Clusters}}
-	{{$cluster.CVarName}}_attr_list{{if not (isLast $i $clustersLen)}},{{end}}
+	{{- $sensorsLen := len .Device.Sensors}}
+	{{- range $sensorIdx, $sensor := .Device.Sensors}}
+	{{- $clustersLen := len $sensor.Clusters}}
+	{{- range $i, $cluster := $sensor.Clusters}}
+	{{$cluster.CVarName}}_{{$sensorIdx}}_attr_list{{if not (and (isLast $i $clustersLen) (isLast $sensorIdx $sensorsLen))}},{{end}}
+	{{- end}}
 	{{- end}}
 	// identify_client_attr_list,
 	// identify_server_attr_list,
@@ -155,25 +158,27 @@ static void mandatory_clusters_attr_init(void)
 
 static void measurements_clusters_attr_init(void)
 {
-	{{- range (index .Device.Endpoints 0).Clusters}}
+	{{- range $i, $sensor := .Device.Sensors}}
+	{{- range $sensor.Clusters}}
 	{{ if eq .ID 1026 }}
 	/* Temperature */
-	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_attrs.tolerance = ({{.Tolerance}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_UNKNOWN;
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.tolerance = ({{.Tolerance}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
 	{{ else if eq .ID 1027}}
 	/* Pressure */
-	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_attrs.tolerance = ({{.Tolerance}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN;
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.tolerance = ({{.Tolerance}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
 	{{ else if eq .ID 1029}}
 	/* Humidity */
-	dev_ctx.{{.CVarName}}_attrs.measure_value = ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);	
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_UNKNOWN;
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
+	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);	
 	/* Humidity measurements tolerance is not supported at the moment */
+	{{- end}}
 	{{- end}}
 	{{- end}}
 }

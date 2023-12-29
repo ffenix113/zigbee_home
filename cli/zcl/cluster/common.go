@@ -1,5 +1,9 @@
 package cluster
 
+type Provider interface {
+	Clusters() Clusters
+}
+
 type Cluster interface {
 	ID() ID
 	CAttrType() string

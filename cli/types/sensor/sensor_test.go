@@ -20,6 +20,6 @@ func TestSensorsUnmarshal(t *testing.T) {
 
 	require.NoError(t, yaml.Unmarshal(bts, &sensors))
 
-	require.Equal(t, "bme280", sensors[0].(bosch.BME280).Base.Type)
-	require.Equal(t, "0x76", sensors[0].(bosch.BME280).Connection["address"])
+	require.Equal(t, "bme280", sensors[0].(*bosch.BME280).Base.Type)
+	require.Equal(t, "0x76", sensors[0].(*bosch.BME280).Connection["address"])
 }

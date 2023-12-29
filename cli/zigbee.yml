@@ -20,9 +20,14 @@ general:
 # For example nRF52840 Dongle would have board devicetree at
 # https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
 board:
-  uart:
-    rx: 1.10
-    tx: 1.11
+  # This option will add USB UART loggin functionality.
+  # Quite limited for now, but can be easily extended
+  debuglog: false
+  # I2C is optional, only to provide different pins for i2c instance(only one instance currently)
+  i2c:
+    port: 0
+    sda: 29
+    scl: 31
 
 sensors:
   - type: bme280

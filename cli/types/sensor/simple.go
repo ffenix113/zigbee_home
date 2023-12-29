@@ -9,19 +9,24 @@ import (
 var _ Sensor = (*Simple)(nil)
 
 type Simple struct {
-	SensorName           string
-	SensorTemplatePrefix string
-	SensorClusters       cluster.Clusters
-	SensorAppConfig      []appconfig.ConfigValue
-	SensorAppOverlay     func(*devicetree.DeviceTree) error
+	SensorName       string
+	SensorLabel      string
+	SensorTemplate   string
+	SensorClusters   cluster.Clusters
+	SensorAppConfig  []appconfig.ConfigValue
+	SensorAppOverlay func(*devicetree.DeviceTree) error
 }
 
 func (s *Simple) String() string {
 	return s.SensorName
 }
 
-func (s *Simple) TemplatePrefix() string {
-	return s.SensorTemplatePrefix
+func (s *Simple) Label() string {
+	return s.SensorLabel
+}
+
+func (s *Simple) Template() string {
+	return s.SensorTemplate
 }
 
 func (s *Simple) Clusters() cluster.Clusters {

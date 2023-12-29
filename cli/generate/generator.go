@@ -5,8 +5,11 @@ import (
 	"os"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
+	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
 	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/types/generator"
+	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 	"github.com/ffenix113/zigbee_home/cli/types/source"
 )
 
@@ -40,8 +43,41 @@ func NewGenerator(device config.Device) *Generator {
 }
 
 func (g *Generator) Generate(workDir string, device *config.Device) error {
+	var providedExtenders []generator.Extender
+	uniqueExtenders := map[string]struct{}{}
+
+	for _, deviceSensor := range device.Sensors {
+		if withExtender, ok := deviceSensor.(sensor.WithExtenders); ok {
+			sensorExtenders := withExtender.Extenders()
+			cleanedExtenders := sensorExtenders[:0]
+
+			for _, extender := range sensorExtenders {
+				extenderName := generator.ExtenderName(extender)
+
+				if _, ok := uniqueExtenders[extenderName]; !ok {
+					cleanedExtenders = append(cleanedExtenders, extender)
+					uniqueExtenders[extenderName] = struct{}{}
+				}
+			}
+
+			providedExtenders = append(providedExtenders, cleanedExtenders...)
+		}
+	}
+
+	if device.Board.I2C != nil {
+		providedExtenders = append(providedExtenders,
+			extenders.NewI2C(device.Board.I2C.Port, device.Board.I2C.SDA, device.Board.I2C.SCL),
+		)
+	}
+
+	if device.Board.DebugLog {
+		providedExtenders = append(providedExtenders,
+			extenders.NewUSBUARTLog(),
+		)
+	}
+
 	// Write devicetree overlay (app.overlay)
-	if err := updateDeviceTree(device, g.DeviceTree); err != nil {
+	if err := updateDeviceTree(device, g.DeviceTree, providedExtenders); err != nil {
 		return fmt.Errorf("update overlay: %w", err)
 	}
 
@@ -57,7 +93,7 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	}
 
 	// Write app config (prj.conf)
-	if err := updateAppConfig(device, g.AppConfig); err != nil {
+	if err := updateAppConfig(device, g.AppConfig, providedExtenders); err != nil {
 		return fmt.Errorf("update app config: %w", err)
 	}
 
@@ -78,14 +114,22 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 		return fmt.Errorf("create src dir: %w", err)
 	}
 
-	if err := g.Source.WriteTo(srcDir, device); err != nil {
+	if err := g.Source.WriteTo(srcDir, device, providedExtenders); err != nil {
 		return fmt.Errorf("write app src: %w", err)
 	}
 
 	return nil
 }
 
-func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree) error {
+func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree, extenders []generator.Extender) error {
+	for _, extender := range extenders {
+		if withOverlayApplier, ok := extender.(devicetree.Applier); ok {
+			if err := withOverlayApplier.ApplyOverlay(deviceTree); err != nil {
+				return fmt.Errorf("apply extender: %w", err)
+			}
+		}
+	}
+
 	for _, sensor := range device.Sensors {
 		if err := sensor.ApplyOverlay(deviceTree); err != nil {
 			return fmt.Errorf("applying sensor %q to device tree: %w", sensor, err)
@@ -95,7 +139,13 @@ func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree) 
 	return nil
 }
 
-func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig) error {
+func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig, extenders []generator.Extender) error {
+	for _, extender := range extenders {
+		if withAppConfigProvider, ok := extender.(appconfig.Provider); ok {
+			appConfig.AddValue(withAppConfigProvider.AppConfig()...)
+		}
+	}
+
 	for _, sensor := range device.Sensors {
 		appConfig.AddValue(sensor.AppConfig()...)
 	}

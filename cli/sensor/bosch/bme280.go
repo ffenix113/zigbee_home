@@ -2,8 +2,10 @@ package bosch
 
 import (
 	"github.com/ffenix113/zigbee_home/cli/sensor/base"
+	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
 	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
 	dt "github.com/ffenix113/zigbee_home/cli/types/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/types/generator"
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
@@ -15,8 +17,8 @@ func (BME280) String() string {
 	return "Bosch BME280"
 }
 
-func (BME280) TemplatePrefix() string {
-	return "bosch_bme280"
+func (BME280) Template() string {
+	return "sensors/bosch/bme280_extender"
 }
 
 func (BME280) Clusters() cluster.Clusters {
@@ -41,12 +43,11 @@ func (BME280) Clusters() cluster.Clusters {
 func (BME280) AppConfig() []appconfig.ConfigValue {
 	return []appconfig.ConfigValue{
 		appconfig.CONFIG_I2C.Required(appconfig.Yes),
-		appconfig.CONFIG_SENSOR.Required(appconfig.Yes),
 		appconfig.CONFIG_BME280.Required(appconfig.Yes),
 	}
 }
 
-func (BME280) ApplyOverlay(tree *dt.DeviceTree) error {
+func (b BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 	i2c1Node := tree.FindSpecificNode(dt.SearchByLabel(dt.NodeLabelI2c1))
 	if i2c1Node == nil {
 		return dt.ErrNodeNotFound(dt.NodeLabelI2c1)
@@ -54,6 +55,7 @@ func (BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 
 	i2c1Node.AddNodes(&dt.Node{
 		Name:        "bme280",
+		Label:       b.Label(),
 		UnitAddress: "76",
 		Properties: []dt.Property{
 			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("bosch,bme280")),
@@ -63,4 +65,11 @@ func (BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 	})
 
 	return nil
+}
+
+func (BME280) Extenders() []generator.Extender {
+	return []generator.Extender{
+		extenders.NewSensor(),
+		extenders.NewBoschBME680(),
+	}
 }
