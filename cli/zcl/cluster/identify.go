@@ -2,6 +2,7 @@ package cluster
 
 var _ Cluster = Identify{}
 
+// ZCL 3.5
 type Identify struct{}
 
 func (t Identify) ID() ID {
@@ -15,6 +16,12 @@ func (Identify) CVarName() string {
 	return "identify"
 }
 
-func (Identify) Reports() bool {
-	return true
+func (Identify) ReportAttrCount() int {
+	return 0
+}
+
+func (Identify) Side() Side {
+	// Can be added as client as well,
+	// when supported by templates.
+	return Server
 }

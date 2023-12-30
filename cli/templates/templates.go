@@ -18,10 +18,11 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
-//go:embed src/*.tpl src/*/*.tpl src/*/*/*/*.tpl
+//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl src/*/*/*/*.tpl
 var TemplateFS embed.FS
 
 var knownClusterAttrTemplates = map[cluster.ID]string{
+	cluster.ID_DEVICE_TEMP_CONFIG:       "define_device_temp_config_attr_list",
 	cluster.ID_ON_OFF:                   "define_on_off_attr_list",
 	cluster.ID_TEMP_MEASUREMENT:         "define_temperature_attr_list",
 	cluster.ID_REL_HUMIDITY_MEASUREMENT: "define_humidity_attr_list",

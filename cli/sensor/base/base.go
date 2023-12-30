@@ -31,7 +31,7 @@ func (b *Base) SetLabel(label string) {
 	b.label = label
 }
 
-func (*Base) TemplatePrefix() string {
+func (*Base) Template() string {
 	return ""
 }
 

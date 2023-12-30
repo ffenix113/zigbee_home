@@ -2,6 +2,10 @@
 
 // Types for some clusters
 typedef struct {
+	zb_int16_t current_temperature;
+} zb_zcl_device_temperature_config_attrs_t;
+
+typedef struct {
 	zb_int16_t measure_value;
 	zb_int16_t min_measure_value;
 	zb_int16_t max_measure_value;

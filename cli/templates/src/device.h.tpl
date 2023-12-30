@@ -64,31 +64,33 @@ ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 {{end}}
 
 /* Clusters setup */
-ZB_HA_DECLARE_DEVICE_CLUSTER_LIST(
-	device_cluster_list,
-	basic_attr_list,
-	{{- $sensorsLen := len .Device.Sensors}}
-	{{- range $sensorIdx, $sensor := .Device.Sensors}}
+{{- $sensorsLen := len .Device.Sensors}}
+{{- range $sensorIdx, $sensor := .Device.Sensors}}
+ZB_HA_DECLARE_DEVICE_CLUSTER_LIST_EP_{{sum $sensorIdx 1}}(
+	device_cluster_list_{{$sensorIdx}},
+	{{if eq $sensorIdx 0}}basic_attr_list,{{end}}
 	{{- $clustersLen := len $sensor.Clusters}}
 	{{- range $i, $cluster := $sensor.Clusters}}
-	{{$cluster.CVarName}}_{{$sensorIdx}}_attr_list{{if not (and (isLast $i $clustersLen) (isLast $sensorIdx $sensorsLen))}},{{end}}
+	{{$cluster.CVarName}}_{{$sensorIdx}}_attr_list{{if not (isLast $i $clustersLen)}},{{end}}
 	{{- end}}
-	{{- end}}
-	// identify_client_attr_list,
-	// identify_server_attr_list,
-	// on_off_attr_list
 	);
+{{- end}}
 
 /* Endpoint setup (single) */
+{{- range $i, $sensor := .Device.Sensors}}
 ZB_HA_DECLARE_DEVICE_EP(
-	device_ep,
-	DEVICE_ENDPOINT_NB,
-	device_cluster_list);
+	device_ep_{{$i}},
+	{{sum $i 1}},
+	{{$sensor.Clusters.ReportAttrCount}},
+	device_cluster_list_{{$i}});
+{{- end}}
 
 /* Device context */
-ZBOSS_DECLARE_DEVICE_CTX_1_EP(
+ZBOSS_DECLARE_DEVICE_CTX_{{len .Device.Sensors}}_EP(
 	device_ctx,
-	device_ep);
+	{{- range $i, $_ := .Device.Sensors}}
+	device_ep_{{$i}}{{if isLast $i $sensorsLen}});{{else}},{{end}}
+	{{- end}}
 
 /* Manufacturer name (32 bytes). */
 #define DEVICE_INIT_BASIC_MANUF_NAME      "FFenix113"

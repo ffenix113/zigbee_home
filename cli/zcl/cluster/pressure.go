@@ -2,6 +2,7 @@ package cluster
 
 var _ Cluster = Pressure{}
 
+// ZCL 4.5.2
 type Pressure struct {
 	MinMeasuredValue int16
 	MaxMeasuredValue int16
@@ -19,6 +20,10 @@ func (Pressure) CVarName() string {
 	return "pressure_measurement"
 }
 
-func (Pressure) Reports() bool {
-	return true
+func (Pressure) ReportAttrCount() int {
+	return 1
+}
+
+func (Pressure) Side() Side {
+	return Server
 }

@@ -60,3 +60,4 @@ This project uses information from ZBOSS SDK, license for which can be found in 
 * * [Documentation](http://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest)
 * [Zephyr project](https://www.zephyrproject.org/)
 * [ESPHome](https://esphome.io/)
+* [Zigbee Cluster Library](https://csa-iot.org/wp-content/uploads/2022/01/07-5123-08-Zigbee-Cluster-Library-1.pdf)

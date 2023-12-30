@@ -2,6 +2,7 @@ package cluster
 
 var _ Cluster = RelativeHumidity{}
 
+// ZCL 4.7.2
 type RelativeHumidity struct {
 	MinMeasuredValue int16
 	MaxMeasuredValue int16
@@ -20,6 +21,10 @@ func (RelativeHumidity) CVarName() string {
 	return "humidity_measurement"
 }
 
-func (RelativeHumidity) Reports() bool {
-	return true
+func (RelativeHumidity) ReportAttrCount() int {
+	return 1
+}
+
+func (RelativeHumidity) Side() Side {
+	return Server
 }

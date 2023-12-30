@@ -2,6 +2,7 @@ package cluster
 
 var _ Cluster = Temperature{}
 
+// ZCL 4.4.2
 type Temperature struct {
 	MinMeasuredValue int16
 	MaxMeasuredValue int16
@@ -19,6 +20,10 @@ func (Temperature) CVarName() string {
 	return "temp_measurement"
 }
 
-func (Temperature) Reports() bool {
-	return true
+func (Temperature) ReportAttrCount() int {
+	return 1
+}
+
+func (Temperature) Side() Side {
+	return Server
 }
