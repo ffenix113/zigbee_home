@@ -49,6 +49,8 @@ func (id ID) String() string {
 	switch id {
 	case 0:
 		return "ZB_ZCL_CLUSTER_ID_BASIC"
+	case 2:
+		return "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
 	case 3:
 		return "ZB_ZCL_CLUSTER_ID_IDENTIFY"
 	case 6:
@@ -64,9 +66,10 @@ func (id ID) String() string {
 	return "<unknown>"
 }
 
-const ID_BASIC ID = 0    // Basic cluster identifier.
-const ID_IDENTIFY ID = 3 // Identify cluster identifier.
-const ID_ON_OFF ID = 6   // On/Off cluster identifier.
+const ID_BASIC ID = 0              // Basic cluster identifier.
+const ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
+const ID_IDENTIFY ID = 3           // Identify cluster identifier.
+const ID_ON_OFF ID = 6             // On/Off cluster identifier.
 
 /* Measurement and Sensing */
 const ID_TEMP_MEASUREMENT ID = 1026         // Temperature measurement
