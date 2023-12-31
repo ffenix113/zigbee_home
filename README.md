@@ -8,9 +8,21 @@ It cannot be used to determine quality of resulting project.
 
 ## Status
 
-Extremely early development, no working parts yet.
+Currently work is being carried to develop CLI application and adding sensors.
 
-Currently work is being carried to develop CLI application.
+### Source Generation
+CLI can generate source, which can then be built and flashed.
+
+"Source" includes C source code, app config(`proj.conf`) and overlay (`app.overlay`).
+
+### Building
+CLI can't build the application yet, as building it requires environment to be properly set up (nrf- and zephyr-specific).
+
+### Flashing
+CLI can flash already built application with a couple of methods:
+- nrfutil
+- mcuboot
+- west
 
 ### Supported devices
 
