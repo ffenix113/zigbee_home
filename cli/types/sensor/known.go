@@ -6,6 +6,6 @@ import (
 )
 
 var knownSensors = map[string]Sensor{
-	"bme280":               &bosch.BME280{},
-	"internal_temperature": &sensor.InternalTemperature{},
+	"bme280":             &bosch.BME280{},
+	"device_temperature": &sensor.DeviceTemperature{},
 }

@@ -21,12 +21,12 @@ import (
 //go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl src/*/*/*/*.tpl
 var TemplateFS embed.FS
 
-var knownClusterAttrTemplates = map[cluster.ID]string{
-	cluster.ID_DEVICE_TEMP_CONFIG:       "define_device_temp_config_attr_list",
-	cluster.ID_ON_OFF:                   "define_on_off_attr_list",
-	cluster.ID_TEMP_MEASUREMENT:         "define_temperature_attr_list",
-	cluster.ID_REL_HUMIDITY_MEASUREMENT: "define_humidity_attr_list",
-	cluster.ID_PRESSURE_MEASUREMENT:     "define_pressure_attr_list",
+var knownClusterTemplates = map[cluster.ID]string{
+	cluster.ID_DEVICE_TEMP_CONFIG:       "device_temp_config",
+	cluster.ID_ON_OFF:                   "on_off",
+	cluster.ID_TEMP_MEASUREMENT:         "temperature",
+	cluster.ID_REL_HUMIDITY_MEASUREMENT: "humidity",
+	cluster.ID_PRESSURE_MEASUREMENT:     "pressure",
 }
 
 type Templates struct {
@@ -72,14 +72,14 @@ func NewTemplates(templateFS fs.FS) *Templates {
 
 	t.templates = template.Must(template.New("").Parse(""))
 	t.templates.Funcs(template.FuncMap{
-		"clusterToAttrTemplate": t.clusterToAttrTemplate,
-		"render":                t.render,
-		"maybeRender":           t.maybeRender,
-		"maybeRenderExtender":   t.maybeRenderExtender,
-		"sensorCtx":             sensorCtx,
-		"clusterCtx":            clusterCtx,
-		"isLast":                isLast,
-		"sum":                   sum,
+		"clusterTpl":          t.clusterTpl,
+		"render":              t.render,
+		"maybeRender":         t.maybeRender,
+		"maybeRenderExtender": t.maybeRenderExtender,
+		"sensorCtx":           sensorCtx,
+		"clusterCtx":          clusterCtx,
+		"isLast":              isLast,
+		"sum":                 sum,
 		"joinPath": func(strs ...string) string {
 			return strings.Join(strs, "/")
 		},
@@ -215,6 +215,7 @@ var knownExtenders = [...]string{
 	"include",
 	"top_level",
 	"main",
+	"attr_init",
 	"loop",
 }
 
@@ -272,13 +273,13 @@ func (t *Templates) findExtendedTemplate(templateName string) *template.Template
 	return tree.tpl
 }
 
-func (t *Templates) clusterToAttrTemplate(cluster cluster.Cluster) (string, error) {
-	tplName, ok := knownClusterAttrTemplates[cluster.ID()]
+func (t *Templates) clusterTpl(clusterID cluster.ID, tplSuffix string) (string, error) {
+	tplName, ok := knownClusterTemplates[clusterID]
 	if !ok {
-		return "", fmt.Errorf("unknown cluster ID: %q", cluster.ID().String())
+		return "", fmt.Errorf("unknown cluster ID: %q", clusterID.String())
 	}
 
-	return tplName, nil
+	return tplName + "_" + tplSuffix, nil
 }
 
 func (t *Templates) render(tplName string, ctx any) (string, error) {

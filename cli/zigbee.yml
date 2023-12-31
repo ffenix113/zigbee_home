@@ -36,4 +36,4 @@ sensors:
       # so don't wont to expose it to sensor struct directly
       # type: i2c1 # Commented out as this could be default value.
       address: '0x76'
-  - type: internal_temperature
+  - type: device_temperature

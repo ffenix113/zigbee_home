@@ -1,6 +1,8 @@
-{{ define "define_device_temp_config_attr_list" }}
+{{ define "device_temp_config_attr_list" }}
 // ZCL spec 3.4.1.1
 #define ZB_ZCL_DEVICE_TEMP_CONFIG_CLUSTER_REVISION_DEFAULT ((zb_uint16_t)0x0001u)
+
+#define ZB_ZCL_ATTR_DEVICE_TEMP_CONFIG_VALUE_UNKNOWN ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN
 
 /*! @brief CurrentTemperature, ZCL spec 3.4.2.2.1 */
 #define ZB_ZCL_ATTR_DEVICE_TEMP_CONFIG_CURRENT_TEMPERATURE_ID (0x0000)
@@ -39,3 +41,8 @@ ZB_ZCL_DECLARE_DEVICE_TEMP_CONFIG_ATTRIB_LIST(
 	&dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.current_temperature
 	);
 {{ end }}
+
+{{ define "device_temp_config_attr_init"}}
+	/* Device temperature */
+	dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.current_temperature = ZB_ZCL_ATTR_DEVICE_TEMP_CONFIG_VALUE_UNKNOWN;
+{{end}}

@@ -8,33 +8,33 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
-var _ appconfig.Provider = &InternalTemperature{}
+var _ appconfig.Provider = &DeviceTemperature{}
 
-type InternalTemperature struct {
+type DeviceTemperature struct {
 	*base.Base `yaml:",inline"`
 }
 
-func (*InternalTemperature) String() string {
-	return "internal temperature"
+func (*DeviceTemperature) String() string {
+	return "device temperature"
 }
 
-func (*InternalTemperature) AppConfig() []appconfig.ConfigValue {
+func (*DeviceTemperature) AppConfig() []appconfig.ConfigValue {
 	return []appconfig.ConfigValue{
 		appconfig.NewValue("CONFIG_NRFX_TEMP").Required(appconfig.Yes),
 	}
 }
 
-func (*InternalTemperature) Clusters() cluster.Clusters {
+func (*DeviceTemperature) Clusters() cluster.Clusters {
 	return []cluster.Cluster{
 		cluster.DeviceTemperature{},
 	}
 }
 
-func (*InternalTemperature) Template() string {
-	return "sensors/internal_temperature"
+func (*DeviceTemperature) Template() string {
+	return "sensors/device_temperature"
 }
 
-func (*InternalTemperature) Extenders() []generator.Extender {
+func (*DeviceTemperature) Extenders() []generator.Extender {
 	return []generator.Extender{
 		extenders.NewNrfxTemp(),
 	}

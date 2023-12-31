@@ -59,7 +59,7 @@ ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 
 {{ range $i, $sensor := .Device.Sensors }}
 	{{range $_, $cluster := $sensor.Clusters}}
-		{{with $template := clusterToAttrTemplate .}}{{render $template (clusterCtx $i $cluster)}}{{end}}
+		{{ render (clusterTpl $cluster.ID "attr_list") (clusterCtx $i $cluster)}}
 	{{end}}
 {{end}}
 
@@ -162,25 +162,7 @@ static void measurements_clusters_attr_init(void)
 {
 	{{- range $i, $sensor := .Device.Sensors}}
 	{{- range $sensor.Clusters}}
-	{{ if eq .ID 1026 }}
-	/* Temperature */
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.tolerance = ({{.Tolerance}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	{{ else if eq .ID 1027}}
-	/* Pressure */
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.tolerance = ({{.Tolerance}} * ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	{{ else if eq .ID 1029}}
-	/* Humidity */
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.measure_value = ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_UNKNOWN;
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.min_measure_value = ({{.MinMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);
-	dev_ctx.{{.CVarName}}_{{$i}}_attrs.max_measure_value = ({{.MaxMeasuredValue}} * ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER);	
-	/* Humidity measurements tolerance is not supported at the moment */
-	{{- end}}
+	{{- maybeRender (clusterTpl .ID "attr_init") (clusterCtx $i .)}}
 	{{- end}}
 	{{- end}}
 }
