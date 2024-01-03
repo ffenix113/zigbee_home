@@ -44,6 +44,7 @@ func (BME280) AppConfig() []appconfig.ConfigValue {
 	return []appconfig.ConfigValue{
 		appconfig.CONFIG_I2C.Required(appconfig.Yes),
 		appconfig.CONFIG_BME280.Required(appconfig.Yes),
+		appconfig.NewValue("CONFIG_BME280_MODE_FORCED").Required(appconfig.Yes),
 	}
 }
 
