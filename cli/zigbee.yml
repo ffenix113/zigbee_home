@@ -37,3 +37,12 @@ sensors:
       # type: i2c1 # Commented out as this could be default value.
       address: '0x76'
   - type: device_temperature
+  # on_off is a sensor that will respond to on/off state of the pin.
+  # For now verifyied to be controlled by the client only,
+  # so not by actually changing the state of the pin manually.
+  - type: on_off
+    pin:
+      # This is Green LED(LD1) on nrf52840 Dongle
+      port: 0
+      pin: 6
+      inverted: true

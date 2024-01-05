@@ -10,15 +10,25 @@ import (
 )
 
 type Pin struct {
-	Port int
-	Pin  int
+	Port     int
+	Pin      int
+	Inverted bool
+}
+
+func (p *Pin) Label() string {
+	return fmt.Sprintf("pin%d%d", p.Port, p.Pin)
 }
 
 var pinRegex = regexp.MustCompile(`^[01]\.[0-9][0-9]$`)
 
 func (p *Pin) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind != yaml.ScalarNode {
-		return fmt.Errorf("pin type should be scalar, but is %q", value.LongTag())
+		type pin Pin
+		if err := value.Decode((*pin)(p)); err != nil {
+			return fmt.Errorf("unmarshal pin: %w", err)
+		}
+
+		return nil
 	}
 
 	if !pinRegex.MatchString(value.Value) {

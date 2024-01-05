@@ -1,6 +1,8 @@
 package devicetree
 
 import (
+	"fmt"
+
 	"github.com/ffenix113/zigbee_home/cli/types"
 )
 
@@ -54,6 +56,42 @@ func (u UART) AttachSelf(dt *DeviceTree) error {
 					NewProperty("low-power-enable", nil),
 				},
 			},
+		},
+	})
+
+	return nil
+}
+
+type Pin struct {
+	types.Pin
+}
+
+func (p Pin) AttachSelf(dt *DeviceTree) error {
+	const pinsNodeName = "pins"
+	pinsNode := dt.FindSpecificNode(SearchByName(NodeNameRoot), SearchByName(pinsNodeName))
+	if pinsNode == nil {
+		pinsNode = &Node{
+			Name:  pinsNodeName,
+			Label: pinsNodeName,
+			Properties: []Property{
+				NewProperty(PropertyNameCompatible, FromValue("gpio-leds")),
+			},
+		}
+
+		dt.FindSpecificNode(SearchByName(NodeNameRoot)).AddNodes(pinsNode)
+	}
+
+	pinName := p.Label()
+	activeState := "GPIO_ACTIVE_HIGH"
+	if p.Pin.Inverted {
+		activeState = "GPIO_ACTIVE_LOW"
+	}
+
+	pinsNode.AddNodes(&Node{
+		Name:  pinName,
+		Label: pinName,
+		Properties: []Property{
+			NewProperty("gpios", Angled(fmt.Sprintf("&gpio%d %d %s", p.Port, p.Pin.Pin, activeState))),
 		},
 	})
 

@@ -111,8 +111,6 @@ static void wait_for_console(void)
  */
 static void zcl_device_cb(zb_bufid_t bufid)
 {
-	zb_uint8_t cluster_id;
-	zb_uint8_t attr_id;
 	zb_zcl_device_callback_param_t  *device_cb_param =
 		ZB_BUF_GET_PARAM(bufid, zb_zcl_device_callback_param_t);
 
@@ -121,6 +119,10 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	/* Set default response value. */
 	device_cb_param->status = RET_OK;
 
+	zb_uint8_t cluster_id;
+	zb_uint8_t attr_id;
+	zb_uint8_t endpoint_id = device_cb_param->endpoint;
+
 	switch (device_cb_param->device_cb_id) {
 	case ZB_ZCL_SET_ATTR_VALUE_CB_ID:
 		cluster_id = device_cb_param->cb_param.
@@ -128,21 +130,43 @@ static void zcl_device_cb(zb_bufid_t bufid)
 		attr_id = device_cb_param->cb_param.
 			  set_attr_value_param.attr_id;
 
-		if (cluster_id == ZB_ZCL_CLUSTER_ID_ON_OFF) {
+		ZB_ZCL_SET_ATTRIBUTE(
+			endpoint_id,
+			cluster_id,
+			ZB_ZCL_CLUSTER_SERVER_ROLE,
+			attr_id,
+			// This will not work for all types, but good enough for now, until it will not be.
+			(zb_uint8_t *)&device_cb_param->cb_param.set_attr_value_param.values.data8,
+			ZB_FALSE);
+
+		switch (cluster_id) {
+		case ZB_ZCL_CLUSTER_ID_ON_OFF:
 			uint8_t value =
 				device_cb_param->cb_param.set_attr_value_param
 				.values.data8;
 
-			LOG_INF("on/off attribute setting to %hd", value);
 			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
 				// on_off_set_value((zb_bool_t)value);
+				int state = (zb_bool_t)value ? 1 : 0;
+				{{- range $sensorIdx, $sensor := .Device.Sensors}}
+				{{- range $sensor.Clusters}}
+				{{- if eq .ID 6}}
+				if (endpoint_id == {{sum $sensorIdx 1}}) {
+					gpio_pin_set_dt(&{{.PinLabel}}, state);
+				}
+				{{- end}}
+				{{- end}}
+				{{- end}}
 			}
-		} else {
+			break;
+		default:
 			/* Other clusters can be processed here */
 			LOG_INF("Unhandled cluster attribute id: %d",
 				cluster_id);
 			device_cb_param->status = RET_NOT_IMPLEMENTED;
+			break;
 		}
+
 		break;
 
 	default:
@@ -221,14 +245,22 @@ void zboss_signal_handler(zb_bufid_t bufid)
 int init_templates() {
 	// --- Extenders start
 	{{- range .Extenders}}
-	{{- maybeRenderExtender .Template "main" (sensorCtx 0 $.Device nil .)}}
+	{{- with (maybeRenderExtender .Template "main" (sensorCtx 0 $.Device nil .))}}
+	{
+		{{.}}
+	}
+	{{- end}}
 	// ---
 	{{- end}}
 	// --- Extenders end
 
 	// --- Sensors start
 	{{- range $i, $sensor := .Device.Sensors}}
-	{{- maybeRenderExtender $sensor.Template "main" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	{{- with (maybeRenderExtender $sensor.Template "main" (sensorCtx (sum $i 1) $.Device $sensor nil))}}
+	{
+		{{.}}
+	}
+	{{- end}}
 	// ---
 	{{- end}}
 	// --- Sensors end

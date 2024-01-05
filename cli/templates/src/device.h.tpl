@@ -101,7 +101,7 @@ ZBOSS_DECLARE_DEVICE_CTX_{{len .Device.Sensors}}_EP(
 /* First 8 bytes specify the date of manufacturer of the device
  * in ISO 8601 format (YYYYMMDD). The rest (8 bytes) are manufacturer specific.
  */
-#define DEVICE_INIT_BASIC_DATE_CODE       "20200329"
+#define DEVICE_INIT_BASIC_DATE_CODE       "{{ .GeneratedOn.Format "20060102" }}"
 
 /* Describes the physical location of the device (16 bytes).
  * May be modified during commissioning process.
