@@ -65,9 +65,7 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	}
 
 	if device.Board.I2C != nil {
-		providedExtenders = append(providedExtenders,
-			extenders.NewI2C(device.Board.I2C.Port, device.Board.I2C.SDA, device.Board.I2C.SCL),
-		)
+		providedExtenders = append(providedExtenders, extenders.NewI2C(device.Board.I2C...))
 	}
 
 	if device.Board.DebugLog {

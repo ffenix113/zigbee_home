@@ -7,9 +7,9 @@ import (
 
 const NodeNameRoot = "/"
 const NodeNameChosen = "chosen"
+const NodeNameAliases = "aliases"
 
 const NodeLabelPinctrl = "pinctrl"
-const NodeLabelI2c1 = "i2c1"
 
 type ErrNodeNotFound string
 
@@ -40,22 +40,20 @@ type Node struct {
 func NewDeviceTree() *DeviceTree {
 	return (&DeviceTree{}).
 		AddNodes((&Node{Name: NodeNameRoot}).
-			AddNodes(&Node{
-				Name: NodeNameChosen,
-				Properties: []Property{
-					NewProperty("ncs,zigbee-timer", Label("timer2")),
-					NewProperty("zephyr,entropy", Label("rng")),
+			AddNodes(
+				&Node{
+					Name: NodeNameChosen,
+					Properties: []Property{
+						NewProperty("ncs,zigbee-timer", Label("timer2")),
+						NewProperty("zephyr,entropy", Label("rng")),
+					},
 				},
-			})).
+				&Node{
+					Name: NodeNameAliases,
+				},
+			)).
 		AddNodes(&Node{Label: NodeLabelPinctrl, Upsert: true}).
 		AddNodes(
-			&Node{
-				Label:  NodeLabelI2c1,
-				Upsert: true,
-				Properties: []Property{
-					PropertyStatusEnable,
-				},
-			},
 			&Node{
 				Label:  "timer2",
 				Upsert: true,
@@ -200,12 +198,20 @@ func (n *Node) writeTo(identation string, w io.StringWriter) error {
 }
 
 func SearchByLabel(label string) NodeSearchFn {
+	if label == "" {
+		panic("label value is missing while searching by label")
+	}
+
 	return func(n *Node) bool {
 		return n.Label == label
 	}
 }
 
 func SearchByName(name string) NodeSearchFn {
+	if name == "" {
+		panic("node name is missing while searching by node name")
+	}
+
 	return func(n *Node) bool {
 		return n.Name == name
 	}

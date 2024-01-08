@@ -28,7 +28,7 @@ type General struct {
 
 type Board struct {
 	DebugLog bool
-	I2C      *extenders.I2C
+	I2C      []extenders.I2CInstance
 }
 
 type Uart struct {

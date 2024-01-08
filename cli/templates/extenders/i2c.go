@@ -1,6 +1,9 @@
 package extenders
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/types/generator"
 )
@@ -8,22 +11,64 @@ import (
 var _ generator.Extender = I2C{}
 var _ devicetree.Applier = I2C{}
 
-type I2C struct {
-	generator.SimpleExtender `yaml:"-"`
-
+type I2CInstance struct {
+	// ID is a actual label of pre-defined I2C peripheral.
+	// For example most SoCs would have IDs something like i2c0, i2c1, ...
+	ID       string
 	Port     int
 	SDA, SCL int
 }
 
-func NewI2C(port, sda, scl int) I2C {
+type I2C struct {
+	generator.SimpleExtender
+
+	Instances []I2CInstance
+}
+
+func NewI2C(instances ...I2CInstance) I2C {
+	for i, instance := range instances {
+		if len(instance.ID) != 4 || !strings.HasPrefix(instance.ID, "i2c") || (instance.ID[3] < '0' || instance.ID[3] > '9') {
+			panic(fmt.Sprintf("i2c instance %d must have `id` format of 'i2c[0-9]'", i))
+		}
+	}
+
 	return I2C{
-		Port: port,
-		SDA:  sda,
-		SCL:  scl,
+		Instances: instances,
 	}
 }
 
 func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
+	pinctrl := dt.FindSpecificNode(devicetree.SearchByLabel(devicetree.NodeLabelPinctrl))
+
+	for idx := range i.Instances {
+		instance := i.Instances[idx]
+		pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
+
+		dt.AddNodes(&devicetree.Node{
+			Label:  instance.ID,
+			Upsert: true,
+		})
+	}
+
+	return nil
+}
+
+func buildI2C(id string, i I2CInstance) []*devicetree.Node {
+	return []*devicetree.Node{
+		&devicetree.Node{
+			Name:     id + "_default",
+			Label:    id + "_default",
+			SubNodes: []*devicetree.Node{buildI2CNode(i, false)},
+		},
+		&devicetree.Node{
+			Name:     id + "_sleep",
+			Label:    id + "_sleep",
+			SubNodes: []*devicetree.Node{buildI2CNode(i, true)},
+		},
+	}
+}
+
+func buildI2CNode(i I2CInstance, lowPowerEnable bool) *devicetree.Node {
 	group1 := &devicetree.Node{
 		Name: "group1",
 		Properties: []devicetree.Property{
@@ -35,32 +80,10 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 			),
 		},
 	}
-	group1Sleep := &devicetree.Node{
-		Name: "group1",
-		Properties: []devicetree.Property{
-			devicetree.NewProperty("psels",
-				devicetree.Array(
-					devicetree.NrfPSel("TWIM_SDA", i.Port, i.SDA),
-					devicetree.NrfPSel("TWIM_SCL", i.Port, i.SCL),
-				),
-			),
-			devicetree.NewProperty("low-power-enable", nil),
-		},
+
+	if lowPowerEnable {
+		group1.Properties = append(group1.Properties, devicetree.NewProperty("low-power-enable", nil))
 	}
 
-	pinctrl := dt.FindSpecificNode(devicetree.SearchByLabel("pinctrl"))
-	pinctrl.AddNodes(
-		&devicetree.Node{
-			Name:     "i2c1_default",
-			Label:    "i2c1_default",
-			SubNodes: []*devicetree.Node{group1},
-		},
-		&devicetree.Node{
-			Name:     "i2c1_sleep",
-			Label:    "i2c1_sleep",
-			SubNodes: []*devicetree.Node{group1Sleep},
-		},
-	)
-
-	return nil
+	return group1
 }

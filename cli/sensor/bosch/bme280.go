@@ -11,6 +11,7 @@ import (
 
 type BME280 struct {
 	*base.Base `yaml:",inline"`
+	I2C        base.I2CConnection
 }
 
 func (BME280) String() string {
@@ -49,18 +50,18 @@ func (BME280) AppConfig() []appconfig.ConfigValue {
 }
 
 func (b BME280) ApplyOverlay(tree *dt.DeviceTree) error {
-	i2c1Node := tree.FindSpecificNode(dt.SearchByLabel(dt.NodeLabelI2c1))
-	if i2c1Node == nil {
-		return dt.ErrNodeNotFound(dt.NodeLabelI2c1)
+	i2cNode := tree.FindSpecificNode(dt.SearchByLabel(b.I2C.ID))
+	if i2cNode == nil {
+		return dt.ErrNodeNotFound(b.I2C.ID)
 	}
 
-	i2c1Node.AddNodes(&dt.Node{
+	i2cNode.AddNodes(&dt.Node{
 		Name:        "bme280",
 		Label:       b.Label(),
-		UnitAddress: "76",
+		UnitAddress: b.I2C.UnitAddress(),
 		Properties: []dt.Property{
 			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("bosch,bme280")),
-			dt.NewProperty("reg", dt.Angled("0x76")),
+			dt.NewProperty("reg", dt.Angled(b.I2C.Reg())),
 			dt.PropertyStatusEnable,
 		},
 	})

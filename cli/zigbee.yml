@@ -23,19 +23,22 @@ board:
   # This option will add USB UART loging functionality.
   # Quite limited for now, but can be easily extended
   debuglog: false
-  # I2C is optional, only to provide different pins for i2c instance(only one instance currently)
+  # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
-    port: 0
-    sda: 29
-    scl: 31
+      # ID of instance is the same as defined in the SoC definition.
+      # Generally they are in form of `i2c[0-9]`.
+      # Number of i2c instances is also limited, and this allows only to
+      # re-define pins for specified i2c instance.
+    - id: i2c0
+      port: 0
+      sda: 29
+      scl: 31
 
 sensors:
   - type: bme280
-    connection:
-      # Address is communication implementation detail, 
-      # so don't wont to expose it to sensor struct directly
-      # type: i2c1 # Commented out as this could be default value.
-      address: '0x76'
+    i2c:
+      id: i2c0
+      addr: '0x76'
   - type: device_temperature
   # on_off is a sensor that will respond to on/off state of the pin.
   # For now verifyied to be controlled by the client only,
