@@ -4,6 +4,12 @@
 # SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
 #
 
+list(APPEND ZEPHYR_EXTRA_MODULES
+  {{ range .Extenders }}{{ with .ZephyrModules }}{{range . -}}
+  ${CMAKE_CURRENT_SOURCE_DIR}/modules/{{.}}
+  {{- end }}{{ end }}{{ end }}
+  )
+
 cmake_minimum_required(VERSION 3.20.0)
 
 ################################################################################

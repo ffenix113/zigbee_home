@@ -18,8 +18,8 @@ type WriteFile struct {
 	TemplateName string
 }
 
-// Extender provides a way to extend source code by writing new files
-// and add code to main.c
+// Extender provides a way to extend source code by writing new
+// files, add code to main.c and extend CMakeLists.txt
 //
 // Each unique extender will be executed only once.
 // Uniqueness of extender is determined either by package & type name,
@@ -37,6 +37,14 @@ type Extender interface {
 	// If any headers are created - they will not be included in main.c
 	// If this is needed - add file path to `Includes()` return value.
 	WriteFiles() []WriteFile
+	// ZephyrModules adds a list of modules that extender provides.
+	// Module can be anything(I guess).
+	//
+	// Module name will also write all files in templates
+	// from the `modules/<zephyrModule>` path for each provided module.
+	//
+	// https://docs.zephyrproject.org/latest/develop/modules.html
+	ZephyrModules() []string
 }
 
 var _ Extender = SimpleExtender{}
@@ -44,10 +52,11 @@ var _ Extender = SimpleExtender{}
 type SimpleExtender struct {
 	// Name is unique identifier of extender.
 	// Used only for deduplication purpuses.
-	Name           string
-	IncludeHeaders []string
-	TemplateName   string
-	FilesToWrite   []WriteFile
+	Name              string
+	IncludeHeaders    []string
+	TemplateName      string
+	FilesToWrite      []WriteFile
+	ZephyrModuleNames []string
 }
 
 func ExtenderName(e Extender) string {
@@ -75,4 +84,8 @@ func (e SimpleExtender) Template() string {
 // WriteFiles implements Extender.
 func (e SimpleExtender) WriteFiles() []WriteFile {
 	return e.FilesToWrite
+}
+
+func (e SimpleExtender) ZephyrModules() []string {
+	return e.ZephyrModuleNames
 }

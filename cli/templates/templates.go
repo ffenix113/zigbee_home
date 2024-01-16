@@ -19,6 +19,7 @@ import (
 )
 
 //go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl src/*/*/*/*.tpl
+//go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var TemplateFS embed.FS
 
 var knownClusterTemplates = map[cluster.ID]string{
@@ -32,11 +33,6 @@ var knownClusterTemplates = map[cluster.ID]string{
 type Templates struct {
 	templates    *template.Template
 	templateTree templateTree
-}
-
-type templateTree struct {
-	tree map[string]*templateTree
-	tpl  *template.Template
 }
 
 type SensorCtx struct {
@@ -88,6 +84,9 @@ func NewTemplates(templateFS fs.FS) *Templates {
 	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*.tpl"), nil))
 	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*.tpl"), nil))
 	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*", "*.tpl"), nil))
+	// Modules
+	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "dts", "bindings", "sensor", "*"), nil))
+	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "zephyr", "*"), nil))
 
 	t.templates = template.Must(t.templates.ParseFS(templateFS, path.Join("src", "*.tpl"), path.Join("src", "zigbee", "*.tpl")))
 
@@ -107,7 +106,7 @@ func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *
 		}
 		defer openTpl.Close()
 
-		newTpl := templateFromPath(&t.templateTree, t.templates, tplFile)
+		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src/"))
 
 		tplText, err := io.ReadAll(openTpl)
 		if err != nil {
@@ -150,7 +149,6 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 	}
 
 	templateName := pathParts[len(pathParts)-1]
-
 	pathPart, _ := strings.CutSuffix(templateName, templateExtention)
 
 	subTree, ok := tree.tree[pathPart]
@@ -163,7 +161,9 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 	tree = subTree
 
 	tree.tpl, _ = baseTpl.Clone()
-	tree.tpl = tree.tpl.New(pathPart)
+
+	tplName, _ := strings.CutSuffix(tplPath, templateExtention)
+	tree.tpl = tree.tpl.New(tplName)
 
 	return tree.tpl
 }
@@ -193,10 +193,22 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 			return fmt.Errorf("extender %q is invalid: %w", generator.ExtenderName(extender), err)
 		}
 
+		// Files required by extender. Could be some implementation or helper functions.
 		for _, fileToWrite := range extender.WriteFiles() {
 			template := t.findExtendedTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(template, path.Join(srcDir, fileToWrite.FileName), ctx); err != nil {
 				return fmt.Errorf("write extender file %q: %w", fileToWrite.FileName, err)
+			}
+		}
+
+		// Module files. For example drivers for sensors.
+		for _, module := range extender.ZephyrModules() {
+			moduleTemplates := (&t.templateTree).FindByPath("modules/" + module)
+			for _, moduleTemplate := range moduleTemplates {
+				// Modules are not in 'src' dir, but in the root instead.
+				if err := writeTemplate(moduleTemplate, path.Join(srcDir+"/../"+moduleTemplate.Name()), ctx); err != nil {
+					return fmt.Errorf("write extender module %q file %q: %w", module, moduleTemplate.Name(), err)
+				}
 			}
 		}
 	}
@@ -245,6 +257,11 @@ func (t *Templates) verifyExtender(extender generator.Extender) error {
 }
 
 func writeTemplate(template *template.Template, filePath string, ctx any) error {
+	dirName := path.Dir(filePath)
+	if err := os.MkdirAll(dirName, 0o755); err != nil {
+		return fmt.Errorf("create directory %q: %w", dirName, err)
+	}
+
 	file, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("create %q: %w", filePath, err)
@@ -260,7 +277,7 @@ func writeTemplate(template *template.Template, filePath string, ctx any) error 
 }
 
 func (t *Templates) findExtendedTemplate(templateName string) *template.Template {
-	nameParts := strings.Split("src/extenders/"+templateName, "/")
+	nameParts := strings.Split("extenders/"+templateName, "/")
 
 	tree := &t.templateTree
 	for _, namePart := range nameParts {
