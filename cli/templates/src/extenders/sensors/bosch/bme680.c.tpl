@@ -15,35 +15,35 @@ LOG_MODULE_DECLARE(app, LOG_LEVEL_INF);
  * Sensor value is represented as having an integer and a fractional part,
  * and can be obtained using the formula val1 + val2 * 10^(-6).
  */
-#define BOSCH_BME680_DIVISOR 1000000
+// #define BOSCH_BME680_DIVISOR 1000000
 
-/*
- * Sensor value is represented as having an integer and a fractional part,
- * and can be obtained using the formula val1 + val2 * 10^(-6). Negative
- * values also adhere to the above formula, but may need special attention.
- * Here are some examples of the value representation:
- *
- *      0.5: val1 =  0, val2 =  500000
- *     -0.5: val1 =  0, val2 = -500000
- *     -1.0: val1 = -1, val2 =  0
- *     -1.5: val1 = -1, val2 = -500000
- */
-static float convert_bosch_bme680_value(struct sensor_value value)
-{
-	float result = 0.0f;
+// /*
+//  * Sensor value is represented as having an integer and a fractional part,
+//  * and can be obtained using the formula val1 + val2 * 10^(-6). Negative
+//  * values also adhere to the above formula, but may need special attention.
+//  * Here are some examples of the value representation:
+//  *
+//  *      0.5: val1 =  0, val2 =  500000
+//  *     -0.5: val1 =  0, val2 = -500000
+//  *     -1.0: val1 = -1, val2 =  0
+//  *     -1.5: val1 = -1, val2 = -500000
+//  */
+// static float convert_bosch_bme680_value(struct sensor_value value)
+// {
+// 	float result = 0.0f;
 
-	/* Determine sign */
-	result = (value.val1 < 0 || value.val2 < 0) ? -1.0f : 1.0f;
+// 	/* Determine sign */
+// 	result = (value.val1 < 0 || value.val2 < 0) ? -1.0f : 1.0f;
 
-	/* Use absolute values */
-	value.val1 = value.val1 < 0 ? -value.val1 : value.val1;
-	value.val2 = value.val2 < 0 ? -value.val2 : value.val2;
+// 	/* Use absolute values */
+// 	value.val1 = value.val1 < 0 ? -value.val1 : value.val1;
+// 	value.val2 = value.val2 < 0 ? -value.val2 : value.val2;
 
-	/* Calculate value */
-	result *= (value.val1 + value.val2 / (float)BOSCH_BME680_DIVISOR);
+// 	/* Calculate value */
+// 	result *= (value.val1 + value.val2 / (float)BOSCH_BME680_DIVISOR);
 
-	return result;
-}
+// 	return result;
+// }
 
 int bosch_bme680_update_measurements(const struct device *sensor)
 {
@@ -67,7 +67,7 @@ int bosch_bme680_get_temperature(const struct device *sensor, float *temperature
 	} else {
 		LOG_INF("Sensor    T:%3d.%06d [*C]",
 			sensor_temperature.val1, sensor_temperature.val2);
-		*temperature = convert_bosch_bme680_value(sensor_temperature);
+		*temperature = sensor_value_to_float(&sensor_temperature);
 	}
 
 	return err;
@@ -87,7 +87,7 @@ int bosch_bme680_get_pressure(const struct device *sensor, float *pressure)
 	} else {
 		LOG_INF("Sensor    P:%3d.%06d [kPa]",
 			sensor_pressure.val1, sensor_pressure.val2);
-		*pressure = convert_bosch_bme680_value(sensor_pressure);
+		*pressure = sensor_value_to_float(&sensor_pressure);
 	}
 
 	return err;
@@ -107,7 +107,7 @@ int bosch_bme680_get_humidity(const struct device *sensor, float *humidity)
 	} else {
 		LOG_INF("Sensor    H:%3d.%06d [%%]",
 			sensor_humidity.val1, sensor_humidity.val2);
-		*humidity = convert_bosch_bme680_value(sensor_humidity);
+		*humidity = sensor_value_to_float(&sensor_humidity);
 	}
 
 	return err;

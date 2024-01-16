@@ -11,6 +11,13 @@ var knownSensors = map[string]Sensor{
 	"on_off": &base.OnOff{},
 
 	// Specific devices
-	"bme280":             &bosch.BME280{},
+
 	"device_temperature": &sensor.DeviceTemperature{},
+
+	// Bosch
+	"bme280": &bosch.BME280{},
+	// This is a clone of bme280, with different overlay name
+	// FIXME: It does not yet support IAQ measurements,
+	// and does not expose resistance to Zigbee.
+	"bme680": bosch.NewBME680(),
 }

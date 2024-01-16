@@ -12,6 +12,7 @@ import (
 type BME280 struct {
 	*base.Base `yaml:",inline"`
 	I2C        base.I2CConnection
+	variant    string
 }
 
 func (BME280) String() string {
@@ -19,7 +20,7 @@ func (BME280) String() string {
 }
 
 func (BME280) Template() string {
-	return "sensors/bosch/bme280_extender"
+	return "sensors/bosch/bme280"
 }
 
 func (BME280) Clusters() cluster.Clusters {
@@ -55,12 +56,17 @@ func (b BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 		return dt.ErrNodeNotFound(b.I2C.ID)
 	}
 
+	variant := "bme280"
+	if b.variant != "" {
+		variant = b.variant
+	}
+
 	i2cNode.AddNodes(&dt.Node{
-		Name:        "bme280",
+		Name:        variant,
 		Label:       b.Label(),
 		UnitAddress: b.I2C.UnitAddress(),
 		Properties: []dt.Property{
-			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("bosch,bme280")),
+			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("bosch,"+variant)),
 			dt.NewProperty("reg", dt.Angled(b.I2C.Reg())),
 			dt.PropertyStatusEnable,
 		},

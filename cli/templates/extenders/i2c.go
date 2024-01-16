@@ -45,8 +45,9 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 		pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
 
 		dt.AddNodes(&devicetree.Node{
-			Label:  instance.ID,
-			Upsert: true,
+			Label:      instance.ID,
+			Upsert:     true,
+			Properties: []devicetree.Property{devicetree.PropertyStatusEnable},
 		})
 	}
 
