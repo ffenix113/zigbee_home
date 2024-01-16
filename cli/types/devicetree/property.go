@@ -90,8 +90,8 @@ func FromValue(val any) PropertyValue {
 	switch typed := val.(type) {
 	case string:
 		return String(typed)
-	case int:
-		return Angled(strconv.Itoa(typed))
+	case int, int8:
+		return Angled(fmt.Sprintf("%d", val))
 	}
 
 	panic(fmt.Sprintf("unknown type to convert to property value: %T", val))

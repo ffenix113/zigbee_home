@@ -39,7 +39,10 @@ sensors:
     i2c:
       id: i2c0
       addr: '0x76'
-  - type: device_temperature
+  - type: scd4x
+    i2c:
+      id: i2c0
+  # - type: device_temperature
   # on_off is a sensor that will respond to on/off state of the pin.
   # For now verifyied to be controlled by the client only,
   # so not by actually changing the state of the pin manually.

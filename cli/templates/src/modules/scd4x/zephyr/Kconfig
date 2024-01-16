@@ -1,0 +1,12 @@
+# SCD4x co2, temperature, and humidity sensor configuration options
+
+# Copyright (c) 2022 Stephen Oliver
+# SPDX-License-Identifier: Apache-2.0
+
+config SCD4X
+	bool "SCD4x CO2/Temperature/Humidity Sensor"
+	depends on I2C
+	depends on DT_HAS_SENSIRION_SCD4X_ENABLED
+	help
+	  Enable driver for SCD4x co2, temperature, and humidity sensors.
+	  

@@ -35,3 +35,7 @@ func (Sensor) Template() string {
 func (Sensor) WriteFiles() []generator.WriteFile {
 	return nil
 }
+
+func (Sensor) ZephyrModules() []string {
+	return nil
+}
