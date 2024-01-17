@@ -28,6 +28,7 @@ var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_TEMP_MEASUREMENT:         "temperature",
 	cluster.ID_REL_HUMIDITY_MEASUREMENT: "humidity",
 	cluster.ID_PRESSURE_MEASUREMENT:     "pressure",
+	cluster.ID_CARBON_DIOXIDE:           "carbon_dioxide",
 }
 
 type Templates struct {

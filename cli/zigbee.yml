@@ -2,7 +2,7 @@
 
 general:
   # Defines how much time a loop will sleep after each iteration.
-  runevery: 2m
+  runevery: 30s
   board: nrf52840dongle_nrf52840
   # Flasher tells which flashing method to use.
   # Currently `nrfutil`, `mcuboot` and `west`
@@ -22,7 +22,7 @@ general:
 board:
   # This option will add USB UART loging functionality.
   # Quite limited for now, but can be easily extended
-  debuglog: false
+  debuglog: true
   # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
       # ID of instance is the same as defined in the SoC definition.

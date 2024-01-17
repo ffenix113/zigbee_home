@@ -13,6 +13,13 @@ typedef struct {
 } zb_zcl_pressure_measurement_attrs_t;
 
 typedef struct {
+	zb_uint32_t measure_value;
+	zb_uint32_t min_measure_value;
+	zb_uint32_t max_measure_value;
+	zb_uint32_t tolerance;
+} zb_zcl_measurement_type_single_attrs_t;
+
+typedef struct {
 	zb_int16_t measure_value;
 	zb_int16_t min_measure_value;
 	zb_int16_t max_measure_value;

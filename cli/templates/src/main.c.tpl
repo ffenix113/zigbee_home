@@ -191,7 +191,11 @@ static void loop(zb_bufid_t bufid)
 
 	{{- range $i, $sensor := .Device.Sensors}}
 	// -- {{$sensor}}, for endpoint {{$i}}
-	{{- maybeRenderExtender $sensor.Template "loop" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	{{- with maybeRenderExtender $sensor.Template "loop" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	{
+		{{.}}
+	}
+	{{- end}}
 	// -- {{$sensor}}, for endpoint {{$i}} end
 	{{- end}}
 

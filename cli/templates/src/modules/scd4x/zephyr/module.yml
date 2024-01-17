@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (c) 2019 Nordic Semiconductor
 
-name: sensirion,scd3_scd4
+name: sensirion,scd4
 
 build:
   cmake: zephyr
   kconfig: zephyr/Kconfig
+  settings:
+    dts_root: .

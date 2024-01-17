@@ -56,12 +56,12 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 
 func buildI2C(id string, i I2CInstance) []*devicetree.Node {
 	return []*devicetree.Node{
-		&devicetree.Node{
+		{
 			Name:     id + "_default",
 			Label:    id + "_default",
 			SubNodes: []*devicetree.Node{buildI2CNode(i, false)},
 		},
-		&devicetree.Node{
+		{
 			Name:     id + "_sleep",
 			Label:    id + "_sleep",
 			SubNodes: []*devicetree.Node{buildI2CNode(i, true)},

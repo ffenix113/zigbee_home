@@ -65,12 +65,12 @@ func unmarshalSensor(node *yaml.Node) (Sensor, error) {
 		return nil, fmt.Errorf("get sensor type: %w", err)
 	}
 
-	sensorConfig, ok := knownSensors[sensorType.Type]
+	sensorConfigConstructor, ok := knownSensors[sensorType.Type]
 	if !ok {
 		return nil, fmt.Errorf("unsupported sensor type: %q", sensorType.Type)
 	}
 
-	rVal := reflect.New(reflect.TypeOf(sensorConfig).Elem())
+	rVal := reflect.ValueOf(sensorConfigConstructor())
 	if err := node.Decode(rVal.Interface()); err != nil {
 		return nil, fmt.Errorf("decode sensor type %q: %w", sensorType.Type, err)
 	}

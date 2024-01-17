@@ -1,10 +1,18 @@
 package cluster
 
+import (
+	"fmt"
+
+	"gopkg.in/yaml.v3"
+)
+
 const (
 	Server          Side = 1 << iota
 	Client          Side = 1 << iota
-	ClientAndServer      = Server | Client
+	ClientAndServer Side = Server | Client
 )
+
+var _ yaml.Unmarshaler = (*Side)(nil)
 
 type Side uint8
 
@@ -23,6 +31,21 @@ type Cluster interface {
 }
 
 type Clusters []Cluster
+
+func (s *Side) UnmarshalYAML(node *yaml.Node) error {
+	switch node.Value {
+	case "server":
+		*s = Server
+	case "client":
+		*s = Client
+	case "client_and_server":
+		*s = ClientAndServer
+	default:
+		return fmt.Errorf("unknown side value: %q", node.Value)
+	}
+
+	return nil
+}
 
 func (c Clusters) ReportAttrCount() (count int) {
 	for _, cluster := range c {

@@ -21,20 +21,25 @@ func (SCD4X) String() string {
 }
 
 func (SCD4X) Template() string {
-	return ""
-	// return "sensors/sensirion/scd4x"
+	return "sensors/sensirion/scd4x"
 }
 
 func (SCD4X) Clusters() cluster.Clusters {
+	// https://sensirion.com/media/documents/E0F04247/631EF271/CD_DS_SCD40_SCD41_Datasheet_D1.pdf
 	return []cluster.Cluster{
 		cluster.Temperature{
-			MinMeasuredValue: -40,
-			MaxMeasuredValue: 85,
+			MinMeasuredValue: -10,
+			MaxMeasuredValue: 60,
 			Tolerance:        1,
 		},
 		cluster.RelativeHumidity{
-			MinMeasuredValue: 10,
-			MaxMeasuredValue: 90,
+			MinMeasuredValue: 0,
+			MaxMeasuredValue: 100,
+		},
+		cluster.CarbonDioxide{
+			MinMeasuredValue: 400,
+			MaxMeasuredValue: 5000,
+			Tolerance:        40,
 		},
 	}
 }
@@ -42,6 +47,7 @@ func (SCD4X) Clusters() cluster.Clusters {
 func (SCD4X) AppConfig() []appconfig.ConfigValue {
 	return []appconfig.ConfigValue{
 		appconfig.CONFIG_I2C.Required(appconfig.Yes),
+		appconfig.NewValue("CONFIG_CRC").Required(appconfig.Yes),
 		appconfig.NewValue("CONFIG_SCD4X").Required(appconfig.Yes),
 	}
 }

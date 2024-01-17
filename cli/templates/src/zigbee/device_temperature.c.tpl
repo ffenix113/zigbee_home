@@ -6,7 +6,7 @@
 
 /*! @brief CurrentTemperature, ZCL spec 3.4.2.2.1 */
 #define ZB_ZCL_ATTR_DEVICE_TEMP_CONFIG_CURRENT_TEMPERATURE_ID (0x0000)
-
+// ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_CARBON_DIOXIDE_MIN_VALUE_ID
 void zb_zcl_device_temp_config_init_server()
 {
   zb_zcl_add_cluster_handlers(ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG,

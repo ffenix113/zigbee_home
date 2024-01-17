@@ -47,20 +47,22 @@ type ID int
 
 func (id ID) String() string {
 	switch id {
-	case 0:
+	case ID_BASIC:
 		return "ZB_ZCL_CLUSTER_ID_BASIC"
-	case 2:
+	case ID_DEVICE_TEMP_CONFIG:
 		return "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
-	case 3:
+	case ID_IDENTIFY:
 		return "ZB_ZCL_CLUSTER_ID_IDENTIFY"
-	case 6:
+	case ID_ON_OFF:
 		return "ZB_ZCL_CLUSTER_ID_ON_OFF"
-	case 1026:
+	case ID_TEMP_MEASUREMENT:
 		return "ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT"
-	case 1027:
+	case ID_PRESSURE_MEASUREMENT:
 		return "ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT"
-	case 1029:
+	case ID_REL_HUMIDITY_MEASUREMENT:
 		return "ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT"
+	case ID_CARBON_DIOXIDE:
+		return "ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE"
 	}
 
 	return "<unknown>"
@@ -75,3 +77,4 @@ const ID_ON_OFF ID = 6             // On/Off cluster identifier.
 const ID_TEMP_MEASUREMENT ID = 1026         // Temperature measurement
 const ID_PRESSURE_MEASUREMENT ID = 1027     // Pressure measurement
 const ID_REL_HUMIDITY_MEASUREMENT ID = 1029 // Relative humidity measurement
+const ID_CARBON_DIOXIDE ID = 0x040d
