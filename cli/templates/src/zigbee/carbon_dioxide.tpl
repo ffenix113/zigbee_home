@@ -33,7 +33,7 @@ typedef void * zb_voidp_t;
   { \
     ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
-    ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
+    ZB_ZCL_ATTR_ACCESS_READ_ONLY | ZB_ZCL_ATTR_ACCESS_REPORTING, \
     (zb_voidp_t) data_ptr \
   }
 

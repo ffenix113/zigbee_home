@@ -32,8 +32,8 @@ if (!{{.Sensor.Label}}_{{.Endpoint}}) {
 		LOG_INF("Sensor    CO2:%4d [ppm]", co2.val1);
 
 		/* Convert measured value to attribute value, as specified in ZCL */
-		int32_t co2_attribute = (int32_t)(co2_v * ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER);
-		LOG_INF("Attribute CO2:%d", co2_attribute);
+		float co2_attribute = co2_v * ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER;
+		LOG_INF("Attribute CO2:%f", co2_attribute);
 
 		/* Set ZCL attribute */
 		zb_zcl_status_t status = zb_zcl_set_attr_val(
