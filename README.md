@@ -35,7 +35,8 @@ Initial goal of the project is to support nRF52840 based devices, with expansion
 
 Firmware provided by this project is already working on the Dongle and reporting defined values when connected through ZHA.
 
-[Zigbee2MQTT](https://www.zigbee2mqtt.io/) requires to define device configuration before it can be useful, so for quick set-up it is not as useful.
+[Zigbee2MQTT](https://www.zigbee2mqtt.io/) [recently](https://github.com/Koenkk/zigbee2mqtt/releases/tag/1.35.0) added ability to generate definitions for unknown devices, as ZHA does.
+While it may not support all clusters and functionalities yet, there is active work going on to make support better.
 
 ## CLI
 
