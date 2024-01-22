@@ -34,9 +34,9 @@ type Generator struct {
 	Source     *source.Source
 }
 
-func NewGenerator(device config.Device) *Generator {
+func NewGenerator(device *config.Device) *Generator {
 	return &Generator{
-		AppConfig:  appconfig.NewDefaultAppConfig(),
+		AppConfig:  appconfig.NewDefaultAppConfig(device.Board.IsRouter),
 		DeviceTree: devicetree.NewDeviceTree(),
 		Source:     source.NewSource(),
 	}

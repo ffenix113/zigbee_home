@@ -30,6 +30,7 @@ var (
 	CONFIG_ZIGBEE_APP_UTILS       = NewValue("CONFIG_ZIGBEE_APP_UTILS").Default(Yes)
 	CONFIG_ZIGBEE_CHANNEL         = NewValue("CONFIG_ZIGBEE_CHANNEL").Default(`11`)
 	CONFIG_ZIGBEE_ROLE_END_DEVICE = NewValue("CONFIG_ZIGBEE_ROLE_END_DEVICE").Default(Yes)
+	CONFIG_ZIGBEE_ROLE_ROUTER     = NewValue("CONFIG_ZIGBEE_ROLE_ROUTER").Default(Yes)
 
 	// Cryptography
 	CONFIG_CRYPTO               = NewValue("CONFIG_CRYPTO").Default(Yes)

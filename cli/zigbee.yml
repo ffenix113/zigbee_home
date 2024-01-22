@@ -23,6 +23,11 @@ board:
   # This option will add USB UART loging functionality.
   # Quite limited for now, but can be easily extended
   debuglog: false
+  # Change device type from sleepy end device to router.
+  # This allows for device to always be available from coordinator
+  # and other devices.
+  # By default device will be configured as sleepy end device.
+  is_router: true
   # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
       # ID of instance is the same as defined in the SoC definition.

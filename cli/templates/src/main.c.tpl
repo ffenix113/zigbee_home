@@ -302,8 +302,11 @@ int main(void)
 	/* Register callback to identify notifications */
 	// ZB_AF_SET_IDENTIFY_NOTIFICATION_HANDLER(DEVICE_ENDPOINT_NB, identify_callback);
 
+	#if CONFIG_ZIGBEE_ROLE_END_DEVICE
 	/* Enable Sleepy End Device behavior */
 	zb_set_rx_on_when_idle(ZB_FALSE);
+	#endif
+
 	if (IS_ENABLED(CONFIG_RAM_POWER_DOWN_LIBRARY)) {
 		power_down_unused_ram();
 	}

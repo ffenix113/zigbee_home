@@ -66,14 +66,14 @@ func (v ConfigValue) Copy() ConfigValue {
 	}
 }
 
-// TODO: add ConfigValue.Depends(...ConfigValue)
-
-func NewDefaultAppConfig() *AppConfig {
-	cfg := &AppConfig{
+func NewEmptyAppConfig() *AppConfig {
+	return &AppConfig{
 		values: make(map[string]ConfigValue),
 	}
+}
 
-	return cfg.AddValue(
+func NewDefaultAppConfig(isRouter bool) *AppConfig {
+	appConfig := NewEmptyAppConfig().AddValue(
 		CONFIG_LOG,
 		CONFIG_SERIAL,
 		CONFIG_CONSOLE,
@@ -85,7 +85,6 @@ func NewDefaultAppConfig() *AppConfig {
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,
 		CONFIG_ZIGBEE_CHANNEL,
-		CONFIG_ZIGBEE_ROLE_END_DEVICE,
 		CONFIG_CRYPTO,
 		CONFIG_CRYPTO_NRF_ECB,
 		CONFIG_CRYPTO_INIT_PRIORITY,
@@ -99,6 +98,13 @@ func NewDefaultAppConfig() *AppConfig {
 		CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE,
 		CONFIG_HEAP_MEM_POOL_SIZE,
 	)
+
+	deviceRole := CONFIG_ZIGBEE_ROLE_END_DEVICE
+	if isRouter {
+		deviceRole = CONFIG_ZIGBEE_ROLE_ROUTER
+	}
+
+	return appConfig.AddValue(deviceRole)
 }
 
 func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
