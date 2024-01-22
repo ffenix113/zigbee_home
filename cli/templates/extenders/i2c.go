@@ -40,9 +40,12 @@ func NewI2C(instances ...I2CInstance) I2C {
 func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 	pinctrl := dt.FindSpecificNode(devicetree.SearchByLabel(devicetree.NodeLabelPinctrl))
 
-	for idx := range i.Instances {
-		instance := i.Instances[idx]
-		pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
+	for _, instance := range i.Instances {
+		// Add pin definitions only if we have some.
+		// Otherwise just enable the I2C instance.
+		if instance.SDA != 0 && instance.SCL != 0 {
+			pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
+		}
 
 		dt.AddNodes(&devicetree.Node{
 			Label:      instance.ID,
