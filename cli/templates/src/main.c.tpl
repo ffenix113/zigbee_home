@@ -43,6 +43,7 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 // Header only, why not?
 #include "clusters.h"
 #include "device.h"
+#include "zbhome_sensor.h"
 
 #define DEVICE_INITIAL_DELAY_MSEC 10000
 
@@ -192,10 +193,19 @@ static void loop(zb_bufid_t bufid)
 	// -- Extenders end
 
 	{{- range $i, $sensor := .Device.Sensors}}
+	{{ $endpointID := (sum $i 1)}}
 	// -- {{$sensor}}, for endpoint {{$i}}
-	{{- with maybeRenderExtender $sensor.Template "loop" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+	{{- with maybeRenderExtender $sensor.Template "loop" (sensorCtx $endpointID $.Device $sensor nil)}}
 	{
 		{{.}}
+	}
+	{{- else }}
+	{
+		sensor_sample_fetch({{$sensor.Label}}_{{$endpointID}});
+
+		{{- range $sensor.Clusters }}
+		zbhome_sensor_fetch_and_update_{{.CVarName}}({{$sensor.Label}}_{{$endpointID}}, {{$endpointID}});
+		{{- end}}
 	}
 	{{- end}}
 	// -- {{$sensor}}, for endpoint {{$i}} end

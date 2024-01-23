@@ -17,7 +17,7 @@ func (Temperature) CAttrType() string {
 	return "zb_zcl_temp_measurement_attrs_t"
 }
 func (Temperature) CVarName() string {
-	return "temp_measurement"
+	return "temperature"
 }
 
 func (Temperature) ReportAttrCount() int {

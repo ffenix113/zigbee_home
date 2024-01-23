@@ -13,7 +13,7 @@ func (DeviceTemperature) CAttrType() string {
 	return "zb_zcl_device_temperature_config_attrs_t"
 }
 func (DeviceTemperature) CVarName() string {
-	return "device_temp_config"
+	return "device_temperature"
 }
 
 func (DeviceTemperature) ReportAttrCount() int {
