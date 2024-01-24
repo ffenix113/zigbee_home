@@ -1,0 +1,1 @@
+TBD. Please see [Using the CLI](index.md#generate-source-code) and [full example](index.md#full-example) for generation instructions.

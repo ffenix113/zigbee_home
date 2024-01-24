@@ -1,11 +1,16 @@
 site_name: Zigbee_home
 theme:
   name: material
+  language: en
+  features:
+    - navigation.indexes
 
 repo_url: https://github.com/ffenix113/zigbee_home
 repo_name: ffenix113/zigbee_home
 
 markdown_extensions:
+  # Definition lists (https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown/#definition-lists)
+  - def_list
   # Admonitions (https://squidfunk.github.io/mkdocs-material/reference/admonitions/)
   - admonition
   - pymdownx.details
@@ -15,3 +20,6 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  # Permalinks for page headings
+  - toc:
+      permalink: true

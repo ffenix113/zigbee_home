@@ -1,0 +1,1 @@
+TBD. Please see [Using the CLI](index.md#flashing-the-firmware) and [full example](index.md#full-example) for flashing instructions.

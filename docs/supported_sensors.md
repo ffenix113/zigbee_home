@@ -6,5 +6,8 @@ Currently there is a work to change how sensors are polled to make all sensors t
 When this change will be done - all sensors officially supported by Zephyr, will be supported. Note that the sensor will be supported only in the context of [Zigbee Cluster Library](https://zigbeealliance.org/wp-content/uploads/2021/10/07-5123-08-Zigbee-Cluster-Library.pdf), meaning that if sensor supports some measurements that Zigbee Cluster Library does not support - it will not be available in Zigbee.
 
 ## Supported sensors
-* Bosch BME280 / BME680
-* Sensirion SCD41 ([driver](https://github.com/nobodyguy/sensirion_zephyr_drivers) by [nobodyguy](https://github.com/nobodyguy))
+!!! note
+    Full per-sensor options will be defined later. For now please refer to [configuration file](using_the_cli/configuration_file.md) documentation or [latest configuration](https://github.com/ffenix113/zigbee_home/blob/develop/cli/zigbee.yml) in repository for sensor configuration options.
+
+* `bme280` & `bme680` - Bosch BME280 / BME680
+* `scd4x` - Sensirion SCD41 ([driver](https://github.com/nobodyguy/sensirion_zephyr_drivers) by [nobodyguy](https://github.com/nobodyguy))
