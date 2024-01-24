@@ -59,8 +59,10 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
 			} else   {
 				/* Button released before Factory Reset */
 
+				#if CONFIG_ZIGBEE_ROLE_END_DEVICE
 				/* Inform default signal handler about user input at the device */
 				user_input_indicate();
+				#endif
 			}
 		}
 	}
