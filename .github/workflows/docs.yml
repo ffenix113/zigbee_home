@@ -3,19 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - develop
-      - feat/docs # for testing only
+      - develop # develop is current source of truth
     paths:
-    - 'docs/**' # Only run for docs directory
-    - 'mkdocs.yml'  
-  pull_request:
-    branches:
-      - main
-      - develop
-      - feat/docs # for testing only
-    paths:
-    - 'docs/**' # Only run for docs directory
+    - 'docs/**' # Only run for docs directory & config change
     - 'mkdocs.yml'
 jobs:
   docs:
