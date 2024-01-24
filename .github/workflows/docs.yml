@@ -3,22 +3,28 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
-      - develop
-      - feat/docs # for testing only
+      - develop # develop is current source of truth
     paths:
-    - 'docs/**' # Only run for docs directory
-    - 'mkdocs.yml'  
-  pull_request:
-    branches:
-      - main
-      - develop
-      - feat/docs # for testing only
-    paths:
-    - 'docs/**' # Only run for docs directory
+    - 'docs/**' # Only run for docs directory & config change
     - 'mkdocs.yml'
 jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - run: echo dummy
+      - uses: actions/checkout@v4
+      - name: Configure Git Credentials
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - run: echo "cache_id=$(date --utc '+%V')" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+          key: mkdocs-material-${{ env.cache_id }}
+          path: .cache
+          restore-keys: |
+            mkdocs-material-
+      - run: pip install mkdocs-material
+      - run: mkdocs gh-deploy --strict --force
