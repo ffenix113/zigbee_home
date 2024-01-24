@@ -1,0 +1,24 @@
+name: Docs
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - develop
+      - feat/docs # for testing only
+    paths:
+    - 'docs/**' # Only run for docs directory
+    - 'mkdocs.yml'  
+  pull_request:
+    branches:
+      - main
+      - develop
+      - feat/docs # for testing only
+    paths:
+    - 'docs/**' # Only run for docs directory
+    - 'mkdocs.yml'
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo dummy
