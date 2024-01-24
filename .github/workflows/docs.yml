@@ -1,9 +1,6 @@
 name: Docs
 on:
-<<<<<<< HEAD
   workflow_dispatch:
-=======
->>>>>>> 4b6e3d3 (update workflow to add push condition)
   push:
     branches:
       - main
