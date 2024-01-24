@@ -1,6 +1,9 @@
 name: Docs
 on:
+<<<<<<< HEAD
   workflow_dispatch:
+=======
+>>>>>>> 4b6e3d3 (update workflow to add push condition)
   push:
     branches:
       - main
@@ -18,7 +21,7 @@ on:
     - 'docs/**' # Only run for docs directory
     - 'mkdocs.yml'
 jobs:
-  test:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
