@@ -1,0 +1,17 @@
+site_name: Zigbee_home
+theme:
+  name: material
+
+repo_url: https://github.com/ffenix113/zigbee_home
+repo_name: ffenix113/zigbee_home
+
+markdown_extensions:
+  # Admonitions (https://squidfunk.github.io/mkdocs-material/reference/admonitions/)
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  # Emojis
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
