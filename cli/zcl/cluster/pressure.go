@@ -17,7 +17,7 @@ func (Pressure) CAttrType() string {
 	return "zb_zcl_pressure_measurement_attrs_t"
 }
 func (Pressure) CVarName() string {
-	return "pressure_measurement"
+	return "pressure"
 }
 
 func (Pressure) ReportAttrCount() int {

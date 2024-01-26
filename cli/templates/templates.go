@@ -223,6 +223,8 @@ var sourceFiles = [][2]string{
 	{"main.c", "main.c.tpl"},
 	{"device.h", "device.h.tpl"},
 	{"clusters.h", "clusters.h.tpl"},
+	// For now include always, but it also can be optional, if no sensors rely on it.
+	{"zbhome_sensor.h", "zbhome_sensor.h.tpl"},
 }
 
 var knownExtenders = [...]string{

@@ -82,6 +82,5 @@ func (b BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 func (BME280) Extenders() []generator.Extender {
 	return []generator.Extender{
 		extenders.NewSensor(),
-		extenders.NewBoschBME680(),
 	}
 }

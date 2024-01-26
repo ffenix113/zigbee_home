@@ -18,7 +18,7 @@ func (RelativeHumidity) CAttrType() string {
 	return "zb_zcl_humidity_measurement_attrs_t"
 }
 func (RelativeHumidity) CVarName() string {
-	return "humidity_measurement"
+	return "humidity"
 }
 
 func (RelativeHumidity) ReportAttrCount() int {
