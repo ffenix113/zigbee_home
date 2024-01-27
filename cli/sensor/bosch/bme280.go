@@ -27,10 +27,6 @@ func (b BME280) String() string {
 	return "Bosch " + strings.ToUpper(b.Variant)
 }
 
-func (BME280) Template() string {
-	return "sensors/bosch/bme280"
-}
-
 func (BME280) Clusters() cluster.Clusters {
 	return []cluster.Cluster{
 		cluster.Temperature{

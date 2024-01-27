@@ -17,7 +17,7 @@ func (CarbonDioxide) CAttrType() string {
 	return "zb_zcl_measurement_type_single_attrs_t"
 }
 func (CarbonDioxide) CVarName() string {
-	return "co2"
+	return "carbon_dioxide"
 }
 
 func (CarbonDioxide) ReportAttrCount() int {
