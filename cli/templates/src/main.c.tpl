@@ -34,7 +34,15 @@
 
 // Sensor templates top level
 {{- range $i, $sensor := .Device.Sensors}}
-{{- maybeRenderExtender .Template "top_level" (sensorCtx (sum $i 1) $.Device $sensor nil)}}
+{{ $endpoint := (sum $i 1)}}
+// -- {{$sensor}}, for endpoint {{$i}}
+{{- with maybeRenderExtender $sensor.Template "top_level" (sensorCtx $endpoint $.Device $sensor nil)}}
+{{.}}
+{{- else }}
+{{ /* Assume that generating device is all that necessary */ }}
+static const struct device *{{$sensor.Label}}_{{$endpoint}} = DEVICE_DT_GET(DT_NODELABEL({{$sensor.Label}}));
+{{- end}}
+// -- {{$sensor}}, for endpoint {{$i}} end
 {{- end}}
 // Sensor templates top end
 
@@ -266,18 +274,24 @@ int init_templates() {
 		{{.}}
 	}
 	{{- end}}
-	// ---
 	{{- end}}
 	// --- Extenders end
 
 	// --- Sensors start
 	{{- range $i, $sensor := .Device.Sensors}}
-	{{- with (maybeRenderExtender $sensor.Template "main" (sensorCtx (sum $i 1) $.Device $sensor nil))}}
+	{{ $endpoint := (sum $i 1)}}
+	{{- with (maybeRenderExtender $sensor.Template "main" (sensorCtx $endpoint $.Device $sensor nil))}}
 	{
 		{{.}}
 	}
+	{{- else }}
+	{
+		if (!{{$sensor.Label}}_{{$endpoint}}) {
+			LOG_ERR("Failed to get {{$sensor.Label}}");
+			return ENODEV;
+		}
+	}
 	{{- end}}
-	// ---
 	{{- end}}
 	// --- Sensors end
 

@@ -27,7 +27,8 @@ board:
   # This allows for device to always be available from coordinator
   # and other devices.
   # By default device will be configured as sleepy end device.
-  is_router: true
+  # Note: Enabling router will increase the size of the firmware.
+  is_router: false
   # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
       # ID of instance is the same as defined in the SoC definition.

@@ -20,10 +20,6 @@ func (SCD4X) String() string {
 	return "Sensirion SCD4X (SCD41)"
 }
 
-func (SCD4X) Template() string {
-	return "sensors/sensirion/scd4x"
-}
-
 func (SCD4X) Clusters() cluster.Clusters {
 	// https://sensirion.com/media/documents/E0F04247/631EF271/CD_DS_SCD40_SCD41_Datasheet_D1.pdf
 	return []cluster.Cluster{

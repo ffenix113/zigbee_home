@@ -18,7 +18,10 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
 )
 
-//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl src/*/*/*/*.tpl
+// This is for sensor templates, but is not used for now: src/*/*/*/*.tpl
+// For example src/extenders/sensors/bosch/bme280.tpl
+//
+//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var TemplateFS embed.FS
 
