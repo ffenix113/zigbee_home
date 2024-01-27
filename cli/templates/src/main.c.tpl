@@ -39,7 +39,7 @@
 {{- with maybeRenderExtender $sensor.Template "top_level" (sensorCtx $endpoint $.Device $sensor nil)}}
 {{.}}
 {{- else }}
-{{ /* Assume that generating device is all that necessary */ }}
+{{- /* Assume that generating device is all that necessary */}}
 static const struct device *{{$sensor.Label}}_{{$endpoint}} = DEVICE_DT_GET(DT_NODELABEL({{$sensor.Label}}));
 {{- end}}
 // -- {{$sensor}}, for endpoint {{$i}} end
