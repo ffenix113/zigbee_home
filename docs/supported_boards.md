@@ -20,4 +20,4 @@ If MCUboot would not be enough to make boards work correctly and support necessa
 * nRF52840 Dongle (`nrf52840dongle_nrf52840`)
 
 ### Experimental
-* Arduino Nano 33 BLE (Sense) (`arduino_nano_33_ble`) - With this configuration other boards with nrf52840 and Bossac bootloader might be supported.
+* Arduino Nano 33 BLE (Sense) (`arduino_nano_33_ble`) - With this configuration other boards with nrf52840 and Bossac bootloader might be supported. Give it a try!
