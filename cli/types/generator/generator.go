@@ -14,8 +14,9 @@ type Adder interface {
 }
 
 type WriteFile struct {
-	FileName     string
-	TemplateName string
+	FileName          string
+	TemplateName      string
+	AdditionalContext any
 }
 
 // Extender provides a way to extend source code by writing new

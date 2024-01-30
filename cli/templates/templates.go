@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -63,6 +64,11 @@ type Context struct {
 	Extenders []generator.Extender
 }
 
+type ContextWithAdditional struct {
+	Context
+	AdditionalContext any
+}
+
 func NewTemplates(templateFS fs.FS) *Templates {
 	t := &Templates{
 		templateTree: templateTree{
@@ -80,6 +86,7 @@ func NewTemplates(templateFS fs.FS) *Templates {
 		"clusterCtx":          clusterCtx,
 		"isLast":              isLast,
 		"sum":                 sum,
+		"formatHex":           formatHex,
 		"joinPath": func(strs ...string) string {
 			return strings.Join(strs, "/")
 		},
@@ -200,7 +207,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		// Files required by extender. Could be some implementation or helper functions.
 		for _, fileToWrite := range extender.WriteFiles() {
 			template := t.findExtendedTemplate(fileToWrite.TemplateName)
-			if err := writeTemplate(template, path.Join(srcDir, fileToWrite.FileName), ctx); err != nil {
+			if err := writeTemplate(
+				template,
+				path.Join(srcDir, fileToWrite.FileName),
+				ContextWithAdditional{Context: ctx, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
 				return fmt.Errorf("write extender file %q: %w", fileToWrite.FileName, err)
 			}
 		}
@@ -222,7 +232,6 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 var sourceFiles = [][2]string{
 	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
-	{"../pm_static.yml", "pm_static.yml.tpl"},
 	{"main.c", "main.c.tpl"},
 	{"device.h", "device.h.tpl"},
 	{"clusters.h", "clusters.h.tpl"},
@@ -380,6 +389,10 @@ func isLast(i, arrLen int) bool {
 
 func sum(a, b int) int {
 	return a + b
+}
+
+func formatHex(i int) string {
+	return "0x" + strconv.FormatInt(int64(i), 16)
 }
 
 func must(err error) {

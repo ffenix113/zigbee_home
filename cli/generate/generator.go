@@ -7,6 +7,7 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/config"
 	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
 	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
+	"github.com/ffenix113/zigbee_home/cli/types/board"
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/types/generator"
 	"github.com/ffenix113/zigbee_home/cli/types/sensor"
@@ -45,6 +46,10 @@ func NewGenerator(device *config.Device) *Generator {
 func (g *Generator) Generate(workDir string, device *config.Device) error {
 	var providedExtenders []generator.Extender
 	uniqueExtenders := map[string]struct{}{}
+
+	if pmConfig := board.BoardPMConfig(device.General.Board); pmConfig != nil {
+		providedExtenders = append(providedExtenders, extenders.NewStaicPM(*pmConfig))
+	}
 
 	for _, deviceSensor := range device.Sensors {
 		if withExtender, ok := deviceSensor.(sensor.WithExtenders); ok {

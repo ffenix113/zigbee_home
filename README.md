@@ -30,6 +30,9 @@ This project is being developed based on [nRF52840 Dongle](https://www.nordicsem
 
 Initial goal of the project is to support nRF52840 based devices, with expansion to nRF53 series.
 
+* nRF52840 Dongle
+* Arduino Nano 33 BLE (Sense) - experimental. Probably also other Bossac bootloader devices on nrf52840 as well.
+
 ## Using in Home Assistant
 [ZHA](https://www.home-assistant.io/integrations/zha/) integration can figure out device capabilities without pre-defined configuration.
 
