@@ -18,6 +18,9 @@
 #include <zigbee/zigbee_app_utils.h>
 #include <zigbee/zigbee_error_handler.h>
 
+// Header only, why not?
+#include "device.h"
+
 // Extender includes
 {{- range .Extenders}}
 {{- range .Includes}}
@@ -47,11 +50,6 @@ static const struct device *{{$sensor.Label}}_{{$endpoint}} = DEVICE_DT_GET(DT_N
 // Sensor templates top end
 
 LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
-
-// Header only, why not?
-#include "clusters.h"
-#include "device.h"
-#include "zbhome_sensor.h"
 
 #define DEVICE_INITIAL_DELAY_MSEC 10000
 

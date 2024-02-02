@@ -1,8 +1,10 @@
 package config
 
 import (
+	"slices"
 	"time"
 
+	"github.com/ffenix113/zigbee_home/cli/sensor/base"
 	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
 	"github.com/ffenix113/zigbee_home/cli/types"
 	"github.com/ffenix113/zigbee_home/cli/types/sensor"
@@ -34,4 +36,19 @@ type Board struct {
 
 type Uart struct {
 	Rx, Tx types.Pin
+}
+
+// PrependCommonClusters adds common device clusters as first endpoint.
+//
+// This allows to have dynamic set of common device clusters,
+// such as Identify(server), basic, poll controll, etc.
+//
+// FIXME: It is mostly a "workaround" to simplify device endpoint generation.
+// While the solution is sound to me, the implementation of this function is questionable.
+// Should it be here? Should it look like this? Should this common clusters be a sensor,
+// rather then converting templates to handle endpoints rather than sensors directly?
+func (d *Device) PrependCommonClusters() {
+	// Sensors are de-facto our endpoints for now,
+	// so prepend common clusters as a sensor.
+	d.Sensors = slices.Insert(d.Sensors, 0, sensor.Sensor(base.NewCommonDeviceClusters()))
 }

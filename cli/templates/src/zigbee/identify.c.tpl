@@ -1,4 +1,4 @@
-{{ define "define_identify_attr_list" }}
+{{ define "identify_attr_list" }}
 ZB_ZCL_DECLARE_IDENTIFY_CLIENT_ATTRIB_LIST(
 	{{.Cluster.CVarName}}_client_attr_list);
 

@@ -1,13 +1,10 @@
+#pragma once
+
+#include "clusters.h"
+
 /* Delay for console initialization */
 #define WAIT_FOR_CONSOLE_MSEC 100
 #define WAIT_FOR_CONSOLE_DEADLINE_MSEC 500
-
-/* Zigbee Cluster Library 4.4.2.2.1.1: MeasuredValue = 100x temperature in degrees Celsius */
-#define ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
-/* Zigbee Cluster Library 4.5.2.2.1.1: MeasuredValue = 10x pressure in kPa */
-#define ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 10
-/* Zigbee Cluster Library 4.7.2.1.1: MeasuredValue = 100x water content in % */
-#define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
 
 /* Weather check period */
 #define WEATHER_CHECK_PERIOD_MSEC {{.Device.General.RunEvery.Milliseconds}}
@@ -43,20 +40,6 @@
 static zb_device_ctx dev_ctx;
 
 /* Attributes setup */
-ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
-	basic_attr_list,
-	&dev_ctx.basic_attr.zcl_version,
-	&dev_ctx.basic_attr.app_version,
-	&dev_ctx.basic_attr.stack_version,
-	&dev_ctx.basic_attr.hw_version,
-	dev_ctx.basic_attr.mf_name,
-	dev_ctx.basic_attr.model_id,
-	dev_ctx.basic_attr.date_code,
-	&dev_ctx.basic_attr.power_source,
-	dev_ctx.basic_attr.location_id,
-	&dev_ctx.basic_attr.ph_env,
-	dev_ctx.basic_attr.sw_ver);
-
 {{ range $i, $sensor := .Device.Sensors }}
 	{{range $_, $cluster := $sensor.Clusters}}
 		{{ render (clusterTpl $cluster.ID "attr_list") (clusterCtx $i $cluster)}}
@@ -68,7 +51,6 @@ ZB_ZCL_DECLARE_BASIC_ATTRIB_LIST_EXT(
 {{- range $sensorIdx, $sensor := .Device.Sensors}}
 ZB_HA_DECLARE_DEVICE_CLUSTER_LIST_EP_{{sum $sensorIdx 1}}(
 	device_cluster_list_{{$sensorIdx}},
-	{{if eq $sensorIdx 0}}basic_attr_list,{{end}}
 	{{- $clustersLen := len $sensor.Clusters}}
 	{{- range $i, $cluster := $sensor.Clusters}}
 	{{$cluster.CVarName}}_{{$sensorIdx}}_attr_list{{if not (isLast $i $clustersLen)}},{{end}}
@@ -89,8 +71,9 @@ ZB_HA_DECLARE_DEVICE_EP(
 ZBOSS_DECLARE_DEVICE_CTX_{{len .Device.Sensors}}_EP(
 	device_ctx,
 	{{- range $i, $_ := .Device.Sensors}}
-	device_ep_{{$i}}{{if isLast $i $sensorsLen}});{{else}},{{end}}
+	device_ep_{{$i}}{{if not (isLast $i $sensorsLen)}},{{end}}
 	{{- end}}
+);
 
 /* Manufacturer name (32 bytes). */
 #define DEVICE_INIT_BASIC_MANUF_NAME      "FFenix113"

@@ -1,12 +1,22 @@
-#include <zboss_api.h>
+#pragma once
 
-/* Number chosen for the single endpoint provided by device */
-// #define DEVICE_ENDPOINT_NB 1
+#include <zboss_api.h>
 
 #define MANUFACTURER_CODE ZB_ZCL_MANUF_CODE_INVALID
 
 /* Temperature sensor device version */
 #define ZB_HA_DEVICE_VER_TEMPERATURE_SENSOR     0
+
+/* Zigbee Cluster Library 4.4.2.2.1.1: MeasuredValue = 100x temperature in degrees Celsius */
+#define ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
+/* Zigbee Cluster Library 4.5.2.2.1.1: MeasuredValue = 10x pressure in kPa */
+#define ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 10
+/* Zigbee Cluster Library 4.7.2.1.1: MeasuredValue = 100x water content in % */
+#define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
+
+{{ range $i, $cluster := .Device.Sensors.UniqueClusters }}
+{{ maybeRender (clusterTpl $cluster.ID "defines") (clusterCtx $i $cluster)}}
+{{end}}
 
 {{- range $i, $sensor := .Device.Sensors }}
 {{ $endpointID := (sum $i 1)}}
@@ -14,7 +24,7 @@
 {{if eq $i 0 }}{{ $inClustersNum = sum $inClustersNum 1 }}{{end}}
 // Define a cluster array for a single endpoint
 #define ZB_HA_DECLARE_DEVICE_CLUSTER_LIST_EP_{{$endpointID}}(						\
-		cluster_list_name, {{ if eq $i 0}}basic_attr_list,{{- end}}								\
+		cluster_list_name,								\
 		{{- $clustersLen := len $sensor.Clusters}}
         {{- range $i, $cluster := $sensor.Clusters }}
         {{ $cluster.CVarName }}_attr_list{{if not (isLast $i $clustersLen)}},{{end}} \
@@ -22,15 +32,6 @@
 		)										\
 	zb_zcl_cluster_desc_t cluster_list_name[] =						\
 	{											\
-		{{if eq $i 0 -}}ZB_ZCL_CLUSTER_DESC(								\
-			ZB_ZCL_CLUSTER_ID_BASIC,						\
-			ZB_ZCL_ARRAY_SIZE(basic_attr_list, zb_zcl_attr_t),			\
-			(basic_attr_list),							\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,						\
-			MANUFACTURER_CODE						\
-			),									\
-		{{- else }} \
-		{{- end}}
 		{{- range $sensor.Clusters}}
 		ZB_ZCL_CLUSTER_DESC(								\
 			{{.ID}},						\
@@ -42,9 +43,6 @@
 		{{- end}}
 	}
 {{- end }}
-
-/* Temperature, pressure, humidity, on/off */
-// TODO: Remove this
 
 {{- range $i, $sensor := .Device.Sensors}}
 {{ $endpointID := (sum $i 1)}}

@@ -27,6 +27,7 @@ import (
 var TemplateFS embed.FS
 
 var knownClusterTemplates = map[cluster.ID]string{
+	cluster.ID_BASIC:                    "basic",
 	cluster.ID_DEVICE_TEMP_CONFIG:       "device_temp_config",
 	cluster.ID_ON_OFF:                   "on_off",
 	cluster.ID_TEMP_MEASUREMENT:         "temperature",
@@ -235,8 +236,6 @@ var sourceFiles = [][2]string{
 	{"main.c", "main.c.tpl"},
 	{"device.h", "device.h.tpl"},
 	{"clusters.h", "clusters.h.tpl"},
-	// For now include always, but it also can be optional, if no sensors rely on it.
-	{"zbhome_sensor.h", "zbhome_sensor.h.tpl"},
 }
 
 var knownExtenders = [...]string{
@@ -273,6 +272,10 @@ func (t *Templates) verifyExtender(extender generator.Extender) error {
 }
 
 func writeTemplate(template *template.Template, filePath string, ctx any) error {
+	if template == nil {
+		return fmt.Errorf("template is nil for path %q", filePath)
+	}
+
 	dirName := path.Dir(filePath)
 	if err := os.MkdirAll(dirName, 0o755); err != nil {
 		return fmt.Errorf("create directory %q: %w", dirName, err)

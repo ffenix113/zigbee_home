@@ -68,6 +68,8 @@ func parseConfig(ctx *cli.Context) (config.Device, error) {
 		return config.Device{}, fmt.Errorf("parse config file: %w", err)
 	}
 
+	conf.PrependCommonClusters()
+
 	return conf, nil
 }
 

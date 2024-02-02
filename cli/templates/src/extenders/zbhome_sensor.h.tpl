@@ -1,3 +1,6 @@
+#ifndef ZBHOME_SENSOR_H
+#define ZBHOME_SENSOR_H
+
 #define GENERATE_ATTR_VAL_SETTER(cluster_name, cluster) \
     zb_zcl_status_t zbhome_set_attr_val_for_##cluster_name(int endpoint, zb_uint8_t * data_ptr) { \
         return zb_zcl_set_attr_val( \
@@ -9,12 +12,6 @@
             ZB_FALSE); \
     }
 
-
-GENERATE_ATTR_VAL_SETTER(temperature, TEMP_MEASUREMENT)
-GENERATE_ATTR_VAL_SETTER(humidity, REL_HUMIDITY_MEASUREMENT)
-GENERATE_ATTR_VAL_SETTER(pressure, PRESSURE_MEASUREMENT)
-GENERATE_ATTR_VAL_SETTER(carbon_dioxide, CARBON_DIOXIDE)
-
 #define GENERATE_ATTR_SENSOR_VALUE_SETTER(cluster_name, measured_type, attribute_type, multiplier) \
     zb_zcl_status_t zbhome_set_attr_sensor_value_for_##cluster_name(int endpoint, struct sensor_value * value) { \
         measured_type measured_value = sensor_value_to_##measured_type(value); \
@@ -22,14 +19,7 @@ GENERATE_ATTR_VAL_SETTER(carbon_dioxide, CARBON_DIOXIDE)
         return zbhome_set_attr_val_for_##cluster_name(endpoint, (zb_uint8_t*)&attr_value); \
     }
 
-
-
-GENERATE_ATTR_SENSOR_VALUE_SETTER(temperature, float, int16_t, ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(humidity, float, int16_t, ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(pressure, float, int16_t, ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(carbon_dioxide, float, float, ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER)
-
-
+#define NAME_GENERATE_SENSOR_FULL_FOR_ATTR(cluster_name) int zbhome_sensor_fetch_and_update_##cluster_name(const struct device * sensor, int endpoint)
 #define GENERATE_SENSOR_FULL_FOR_ATTR(cluster_name, sensor_channel) \
     int zbhome_sensor_fetch_and_update_##cluster_name(const struct device * sensor, int endpoint) { \
 		struct sensor_value value; \
@@ -46,7 +36,20 @@ GENERATE_ATTR_SENSOR_VALUE_SETTER(carbon_dioxide, float, float, ZCL_CARBON_DIOXI
         return err; \
     }
 
-GENERATE_SENSOR_FULL_FOR_ATTR(temperature, SENSOR_CHAN_AMBIENT_TEMP)
-GENERATE_SENSOR_FULL_FOR_ATTR(humidity, SENSOR_CHAN_HUMIDITY)
-GENERATE_SENSOR_FULL_FOR_ATTR(pressure, SENSOR_CHAN_PRESS)
-GENERATE_SENSOR_FULL_FOR_ATTR(carbon_dioxide, SENSOR_CHAN_CO2)
+#ifdef ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT
+NAME_GENERATE_SENSOR_FULL_FOR_ATTR(temperature);
+#endif
+
+#ifdef ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT
+NAME_GENERATE_SENSOR_FULL_FOR_ATTR(humidity);
+#endif
+
+#ifdef ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT
+NAME_GENERATE_SENSOR_FULL_FOR_ATTR(pressure);
+#endif
+
+#ifdef ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
+NAME_GENERATE_SENSOR_FULL_FOR_ATTR(carbon_dioxide);
+#endif
+
+#endif

@@ -1,4 +1,4 @@
-{{ define "carbon_dioxide_attr_list" }}
+{{ define "carbon_dioxide_defines"}}
 // ZCL spec 4.13.1.3
 #define ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE (0x040d)
 
@@ -14,7 +14,9 @@
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_MIN_VALUE_ID (0x0001)
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_MAX_VALUE_ID (0x0002)
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID (0x0003)
+{{end}}
 
+{{ define "carbon_dioxide_attr_list" }}
 void zb_zcl_carbon_dioxide_init_server()
 {
   zb_zcl_add_cluster_handlers(ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE,

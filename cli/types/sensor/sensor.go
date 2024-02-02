@@ -42,6 +42,29 @@ type WithExtenders interface {
 	Extenders() []generator.Extender
 }
 
+// UniqueClusters will return all unique clusters across all the sensors.
+// Clusters might be configured for a specific sensor,
+// so this method is mostly useful to *know* which clusters are available.
+func (s *Sensors) UniqueClusters() cluster.Clusters {
+	clusterMap := map[cluster.ID]struct{}{}
+
+	var clusters cluster.Clusters
+
+	for _, sensor := range *s {
+		for _, cluster := range sensor.Clusters() {
+			_, ok := clusterMap[cluster.ID()]
+			if ok {
+				continue
+			}
+
+			clusterMap[cluster.ID()] = struct{}{}
+			clusters = append(clusters, cluster)
+		}
+	}
+
+	return clusters
+}
+
 func (s *Sensors) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind != yaml.SequenceNode {
 		return fmt.Errorf("must have sequence, but have %q", value.Kind)
