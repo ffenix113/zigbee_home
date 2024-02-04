@@ -5,14 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
 	"github.com/ffenix113/zigbee_home/cli/generate"
 	"github.com/ffenix113/zigbee_home/cli/runner"
 	"github.com/urfave/cli/v2"
-
-	"gopkg.in/yaml.v3"
 )
 
 func buildCmd() *cli.Command {
@@ -44,9 +41,9 @@ func buildFirmware(ctx *cli.Context) error {
 		workDir = "."
 	}
 
-	generator := generate.NewGenerator(&cfg)
+	generator := generate.NewGenerator(cfg)
 
-	if err := generator.Generate(workDir, &cfg); err != nil {
+	if err := generator.Generate(workDir, cfg); err != nil {
 		return fmt.Errorf("generate base: %w", err)
 	}
 
@@ -57,47 +54,21 @@ func buildFirmware(ctx *cli.Context) error {
 	return nil
 }
 
-func parseConfig(ctx *cli.Context) (config.Device, error) {
+func parseConfig(ctx *cli.Context) (*config.Device, error) {
 	configPath := ctx.String("config")
 	if configPath == "" {
-		return config.Device{}, errors.New("config path cannot be empty (it is set by default)")
+		return nil, errors.New("config path cannot be empty (it is set by default)")
 	}
 
-	conf, err := parseConfigFile(configPath)
+	conf, err := config.ParseFromFile(configPath)
 	if err != nil {
-		return config.Device{}, fmt.Errorf("parse config file: %w", err)
+		return nil, fmt.Errorf("parse config file: %w", err)
 	}
-
-	conf.PrependCommonClusters()
 
 	return conf, nil
 }
 
-func parseConfigFile(configPath string) (config.Device, error) {
-	cfg := config.Device{
-		General: config.General{
-			RunEvery: time.Minute,
-		},
-	}
-
-	file, err := os.Open(configPath)
-	if err != nil {
-		return cfg, fmt.Errorf("read config file: %w", err)
-	}
-
-	defer file.Close()
-
-	dec := yaml.NewDecoder(file)
-	dec.KnownFields(true)
-
-	if err := dec.Decode(&cfg); err != nil {
-		return cfg, fmt.Errorf("unmarshal config: %w", err)
-	}
-
-	return cfg, nil
-}
-
-func runBuild(ctx context.Context, device config.Device, workDir string) error {
+func runBuild(ctx context.Context, device *config.Device, workDir string) error {
 	build := runner.NewCmd(
 		"west",
 		"build",
@@ -112,9 +83,25 @@ func runBuild(ctx context.Context, device config.Device, workDir string) error {
 		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
 	)
 
-	if err := build.Run(ctx, workDir); err != nil {
+	if err := build.Run(ctx, runner.WithToolchainPath(getToochainsPath(device))); err != nil {
 		return fmt.Errorf("build firmware: %w", err)
 	}
 
 	return nil
+}
+
+func getToochainsPath(cfg *config.Device) (string, string) {
+	// If env variables are defined - they have higher priority.
+	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
+	zephyrPath := os.Getenv("ZEPHYR_BASE")
+
+	if ncsToolchainPath == "" {
+		ncsToolchainPath = cfg.General.NCSToolChainBase
+	}
+
+	if zephyrPath == "" {
+		zephyrPath = cfg.General.ZephyrBase
+	}
+
+	return ncsToolchainPath, zephyrPath
 }

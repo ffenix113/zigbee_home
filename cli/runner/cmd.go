@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -13,6 +14,8 @@ type Cmd struct {
 	command string
 	args    []string
 }
+
+type CmdOpt func(c *exec.Cmd)
 
 func NewCmd(command string, args ...string) *Cmd {
 	return &Cmd{
@@ -29,39 +32,34 @@ func (c *Cmd) AddArg(arg string, value ...string) *Cmd {
 	case 1:
 		c.args = append(c.args, value[0])
 	default:
-		panic("please call AddArg again instead (for now)")
+		panic("please call AddArg again instead to add multiple arguments (for now)")
 	}
 
 	return c
 }
 
-func (c *Cmd) Run(ctx context.Context, workDir string) error {
-	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
-	zephyrPath := os.Getenv("ZEPHYR_BASE")
-
-	var extendedEnv []string
-	if ncsToolchainPath != "" && zephyrPath != "" {
-		extendedEnv = c.extendEnv(ncsToolchainPath, zephyrPath)
-
-		newPath := extendedEnv[0]
-		pathParts := strings.SplitN(newPath, "=", 2)
-		os.Setenv("PATH", pathParts[1])
-
-		commandPath, err := exec.LookPath(c.command)
-		if err != nil {
-			return err
-		}
-
-		c.command = commandPath
-	}
-
+func (c *Cmd) Run(ctx context.Context, opts ...CmdOpt) error {
 	cmd := exec.CommandContext(ctx, c.command, c.args...)
 
-	cmd.Dir = workDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	cmd.Env = append(extendedEnv, append(cmd.Env, os.Environ()...)...)
+	cmd.Env = append(cmd.Env, os.Environ()...)
+
+	for _, opt := range opts {
+		opt(cmd)
+	}
+
+	updateCurrentPath(cmd.Env)
+
+	// Always look for executable, if we have custom PATH present.
+	commandPath, err := exec.LookPath(c.command)
+	if err != nil {
+		return fmt.Errorf("lookup command %q path: %w", c.command, err)
+	}
+
+	cmd.Path = commandPath
+	cmd.Err = nil // Reset, as we tried to update the path of the command
 
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("run command %q: %w", c.command, err)
@@ -70,7 +68,32 @@ func (c *Cmd) Run(ctx context.Context, workDir string) error {
 	return nil
 }
 
-func (c *Cmd) extendEnv(ncsToolchainPath string, zephyrPath string) []string {
+func WithWorkDir(workDir string) CmdOpt {
+	return func(c *exec.Cmd) {
+		c.Dir = workDir
+	}
+}
+
+// WithToolchainPath updates environment of command
+// to inlcude necessary variables for building firmware.
+func WithToolchainPath(ncsToolchainBase, zephyrBase string) CmdOpt {
+	if ncsToolchainBase == "" || zephyrBase == "" {
+		return func(c *exec.Cmd) {}
+	}
+
+	return WithEnvironment(extendEnv(ncsToolchainBase, zephyrBase)...)
+}
+
+func WithEnvironment(envVals ...string) CmdOpt {
+	return func(c *exec.Cmd) {
+		// Prepend env to try and take higher priority.
+		c.Env = append(c.Env, envVals...)
+	}
+}
+
+func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
+	// All of this paths are based on NRF Connect SDK v2.5.1 and might change in the future.
+
 	ncsCombinedPath := generateEnvArray(ncsToolchainPath, []string{
 		"/usr/bin",
 		"/usr/local/bin",
@@ -114,5 +137,26 @@ func generateEnvArray(prefix string, vals []string) string {
 		vals[i] = path.Join(prefix, vals[i])
 	}
 
-	return strings.Join(vals, ":")
+	return strings.Join(vals, string(filepath.ListSeparator))
+}
+
+func updateCurrentPath(envs []string) {
+	var envPath string
+	for _, env := range envs {
+		if !strings.HasPrefix(env, "PATH=") {
+			continue
+		}
+
+		parts := strings.SplitN(env, "=", 2)
+
+		if envPath == "" {
+			envPath = parts[1]
+		} else {
+			envPath += string(filepath.ListSeparator) + parts[1]
+		}
+	}
+
+	if envPath != "" {
+		os.Setenv("PATH", envPath)
+	}
 }

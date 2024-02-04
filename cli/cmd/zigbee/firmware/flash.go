@@ -28,9 +28,9 @@ func flashCmd() *cli.Command {
 			// 	return fmt.Errorf("generate base: %w", err)
 			// }
 
-			flasher := NewFlasher(cfg.General)
+			flasher := NewFlasher(cfg)
 
-			return flasher.Flash(ctx.Context, cfg.General, workDir)
+			return flasher.Flash(ctx.Context, cfg, workDir)
 		},
 	}
 }

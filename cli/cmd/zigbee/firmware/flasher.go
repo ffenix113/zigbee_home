@@ -17,13 +17,13 @@ var knownFlashers = map[string]any{
 }
 
 type Flasher interface {
-	Flash(ctx context.Context, deviceGeneral config.General, workDir string) error
+	Flash(ctx context.Context, device *config.Device, workDir string) error
 }
 
-func NewFlasher(general config.General) Flasher {
+func NewFlasher(device *config.Device) Flasher {
 	flasherName := "nrfutil"
-	if general.Flasher != "" {
-		flasherName = general.Flasher
+	if device.General.Flasher != "" {
+		flasherName = device.General.Flasher
 	}
 
 	flasher, ok := knownFlashers[flasherName]
@@ -31,8 +31,8 @@ func NewFlasher(general config.General) Flasher {
 		panic(fmt.Sprintf("flasher %q is not defined", flasherName))
 	}
 
-	if len(general.FlasherOptions) != 0 {
-		if err := readFlasherConfig(general.FlasherOptions, flasher); err != nil {
+	if len(device.General.FlasherOptions) != 0 {
+		if err := readFlasherConfig(device.General.FlasherOptions, flasher); err != nil {
 			panic(fmt.Sprintf("read flasher config: %s", err.Error()))
 		}
 	}
@@ -52,7 +52,7 @@ func NewNRFUtil() *NRFUtil {
 	}
 }
 
-func (n NRFUtil) Flash(ctx context.Context, deviceGeneral config.General, workDir string) error {
+func (n NRFUtil) Flash(ctx context.Context, device *config.Device, workDir string) error {
 	// 1. Package the app
 	packager := runner.NewCmd(
 		"nrfutil",
@@ -68,7 +68,7 @@ func (n NRFUtil) Flash(ctx context.Context, deviceGeneral config.General, workDi
 		"1",
 		"dfu.zip",
 	)
-	if err := packager.Run(ctx, workDir); err != nil {
+	if err := packager.Run(ctx, runner.WithWorkDir(workDir)); err != nil {
 		return fmt.Errorf("create dfu package: %w", err)
 	}
 
@@ -82,7 +82,7 @@ func (n NRFUtil) Flash(ctx context.Context, deviceGeneral config.General, workDi
 		"-p",
 		n.Port,
 	)
-	if err := flasher.Run(ctx, workDir); err != nil {
+	if err := flasher.Run(ctx, runner.WithWorkDir(workDir)); err != nil {
 		return fmt.Errorf("flash the board: %w", err)
 	}
 
@@ -93,7 +93,12 @@ func (n NRFUtil) Flash(ctx context.Context, deviceGeneral config.General, workDi
 // https://docs.zephyrproject.org/latest/boards/arm/nrf52840dongle_nrf52840/doc/index.html#option-2-using-mcuboot-in-serial-recovery-mode
 type MCUBoot struct{}
 
-func (MCUBoot) Flash(ctx context.Context, deviceGeneral config.General, workDir string) error {
+func (MCUBoot) Flash(ctx context.Context, device *config.Device, workDir string) error {
+	opts := []runner.CmdOpt{
+		runner.WithWorkDir(workDir),
+		runner.WithToolchainPath(getToochainsPath(device)),
+	}
+
 	// 1. Sign the firmware
 	sign := runner.NewCmd(
 		"west",
@@ -110,7 +115,7 @@ func (MCUBoot) Flash(ctx context.Context, deviceGeneral config.General, workDir 
 		"--key",
 		"some_key.pem",
 	)
-	if err := sign.Run(ctx, workDir); err != nil {
+	if err := sign.Run(ctx, opts...); err != nil {
 		return fmt.Errorf("sign app: %w", err)
 	}
 
@@ -126,7 +131,7 @@ func (MCUBoot) Flash(ctx context.Context, deviceGeneral config.General, workDir 
 		"-e",
 		"zephyr.signed.bin",
 	)
-	if err := flash.Run(ctx, workDir); err != nil {
+	if err := flash.Run(ctx, opts...); err != nil {
 		return fmt.Errorf("flash the board: %w", err)
 	}
 
@@ -139,7 +144,7 @@ func (MCUBoot) Flash(ctx context.Context, deviceGeneral config.General, workDir 
 		"dev=/dev/ttyACM0,baud=115200",
 		"reset",
 	)
-	if err := reset.Run(ctx, workDir); err != nil {
+	if err := reset.Run(ctx, opts...); err != nil {
 		return fmt.Errorf("reset the board: %w", err)
 	}
 
@@ -148,8 +153,12 @@ func (MCUBoot) Flash(ctx context.Context, deviceGeneral config.General, workDir 
 
 type West struct{}
 
-func (West) Flash(ctx context.Context, deviceGeneral config.General, workDir string) error {
-	return runner.NewCmd("west", "flash").Run(ctx, workDir)
+func (West) Flash(ctx context.Context, device *config.Device, workDir string) error {
+	return runner.NewCmd("west", "flash").Run(
+		ctx,
+		runner.WithWorkDir(workDir),
+		runner.WithToolchainPath(getToochainsPath(device)),
+	)
 }
 
 func readFlasherConfig(opts map[string]any, flasher any) error {

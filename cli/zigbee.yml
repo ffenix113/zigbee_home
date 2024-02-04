@@ -4,6 +4,18 @@ general:
   # Defines how much time a loop will sleep after each iteration.
   runevery: 1m
   board: nrf52840dongle_nrf52840
+  # This paths are necessary to build the generated firmware.
+  # If nRF Connect setup was done with VS Code extension -
+  # most probably this can be left empty, but if version changes -
+  # new path would need to be set here.
+  # Paths specified here can start with `~/`, and contain
+  # environmental variables, which will be resolved.
+  # This values have sane defaults and point to ~/ncs/...
+  # Env variables NCS_TOOLCHAIN_BASE & ZEPHYR_BASE have
+  # priority over this fields.
+  #ncs_toolchain_base: ~/toolchains/7795df4459/
+  #zephyr_base: ~/ncs/zephyr
+
   # Flasher tells which flashing method to use.
   # Currently `nrfutil`, `mcuboot` and `west`
   # are defined(but not equally tested). Nrfutil works though.
