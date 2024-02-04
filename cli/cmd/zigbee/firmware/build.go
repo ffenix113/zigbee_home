@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
 	"github.com/ffenix113/zigbee_home/cli/generate"
@@ -83,25 +82,9 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
 	)
 
-	if err := build.Run(ctx, runner.WithToolchainPath(getToochainsPath(device))); err != nil {
+	if err := build.Run(ctx, runner.WithToolchainPath(device.General.GetToochainsPath())); err != nil {
 		return fmt.Errorf("build firmware: %w", err)
 	}
 
 	return nil
-}
-
-func getToochainsPath(cfg *config.Device) (string, string) {
-	// If env variables are defined - they have higher priority.
-	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
-	zephyrPath := os.Getenv("ZEPHYR_BASE")
-
-	if ncsToolchainPath == "" {
-		ncsToolchainPath = cfg.General.NCSToolChainBase
-	}
-
-	if zephyrPath == "" {
-		zephyrPath = cfg.General.ZephyrBase
-	}
-
-	return ncsToolchainPath, zephyrPath
 }

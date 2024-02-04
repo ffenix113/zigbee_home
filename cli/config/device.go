@@ -96,6 +96,22 @@ func (d *Device) PrependCommonClusters() {
 	d.Sensors = slices.Insert(d.Sensors, 0, sensor.Sensor(base.NewCommonDeviceClusters()))
 }
 
+func (g General) GetToochainsPath() (string, string) {
+	// If env variables are defined - they have higher priority.
+	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
+	zephyrPath := os.Getenv("ZEPHYR_BASE")
+
+	if ncsToolchainPath == "" {
+		ncsToolchainPath = g.NCSToolChainBase
+	}
+
+	if zephyrPath == "" {
+		zephyrPath = g.ZephyrBase
+	}
+
+	return ncsToolchainPath, zephyrPath
+}
+
 func resolveStringEnv(input string) string {
 	if strings.HasPrefix(input, "~/") {
 		userHome, err := os.UserHomeDir()

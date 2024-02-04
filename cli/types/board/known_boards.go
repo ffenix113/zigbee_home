@@ -7,7 +7,7 @@ import (
 )
 
 type Bootloader struct {
-	PM     PMConfig
+	PM     *PMConfig
 	Config []appconfig.ConfigValue
 }
 
@@ -63,7 +63,7 @@ var bootloaderBoards = func() map[string][]string {
 
 var knownBootloaders = map[string]*Bootloader{
 	"nrf52_legacy": { // Legacy NRF52 bootloader, provided with nRF5 SDK. Also used in nRF52840 Dongle till now for some reason.
-		PM: PMConfig{
+		PM: &PMConfig{
 			Flash: Section{
 				Address: 0xe0000,
 				Size:    0x20000,
@@ -75,7 +75,7 @@ var knownBootloaders = map[string]*Bootloader{
 		},
 	},
 	"arduino": { // Bossac bootloader
-		PM: PMConfig{
+		PM: &PMConfig{
 			Flash: Section{
 				Address: 0x0,
 				Size:    0x10000,
@@ -86,7 +86,7 @@ var knownBootloaders = map[string]*Bootloader{
 		},
 	},
 	"adafruit_nrf52_sd132": {
-		PM: PMConfig{
+		PM: &PMConfig{
 			// https://infocenter.nordicsemi.com/topic/sdk_nrf5_v17.1.0/lib_bootloader.html, "Memory layout" section
 			Flash: Section{
 				Address: 0x0,
@@ -95,10 +95,28 @@ var knownBootloaders = map[string]*Bootloader{
 		},
 		Config: []appconfig.ConfigValue{
 			appconfig.NewValue("CONFIG_BUILD_OUTPUT_UF2").Required(appconfig.Yes),
+			appconfig.NewValue("CONFIG_BOOTLOADER_BOSSA").Required(appconfig.No),
+			appconfig.NewValue("CONFIG_FLASH_LOAD_OFFSET").Required("0x26000"),
 		},
 	},
-	"adafruit_nrf52_sd140": {
-		PM: PMConfig{
+	"adafruit_nrf52_sd140_v6": {
+		PM: &PMConfig{
+			// https://infocenter.nordicsemi.com/topic/sdk_nrf5_v17.1.0/lib_bootloader.html, "Memory layout" section
+			Flash: Section{
+				Address: 0x0,
+				Size:    0x26000,
+			},
+		},
+		Config: []appconfig.ConfigValue{
+			appconfig.NewValue("CONFIG_BUILD_OUTPUT_UF2").Required(appconfig.Yes),
+			// This option is to prevent use of default flash load offset.
+			// May be specific to some boards, but we need it just to be safe.
+			appconfig.NewValue("CONFIG_BOOTLOADER_BOSSA").Required(appconfig.No),
+			appconfig.NewValue("CONFIG_FLASH_LOAD_OFFSET").Required("0x26000"),
+		},
+	},
+	"adafruit_nrf52_sd140_v7": {
+		PM: &PMConfig{
 			// https://infocenter.nordicsemi.com/topic/sdk_nrf5_v17.1.0/lib_bootloader.html, "Memory layout" section
 			Flash: Section{
 				Address: 0x0,
@@ -107,6 +125,8 @@ var knownBootloaders = map[string]*Bootloader{
 		},
 		Config: []appconfig.ConfigValue{
 			appconfig.NewValue("CONFIG_BUILD_OUTPUT_UF2").Required(appconfig.Yes),
+			appconfig.NewValue("CONFIG_BOOTLOADER_BOSSA").Required(appconfig.No),
+			appconfig.NewValue("CONFIG_FLASH_LOAD_OFFSET").Required("0x27000"),
 		},
 	},
 }
