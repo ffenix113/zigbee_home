@@ -48,6 +48,7 @@ type Extender interface {
 	ZephyrModules() []string
 }
 
+var _ Adder = SimpleExtender{}
 var _ Extender = SimpleExtender{}
 
 type SimpleExtender struct {
@@ -58,6 +59,8 @@ type SimpleExtender struct {
 	TemplateName      string
 	FilesToWrite      []WriteFile
 	ZephyrModuleNames []string
+	Config            []appconfig.ConfigValue
+	OverlayFn         func(overlay *devicetree.DeviceTree) error
 }
 
 func ExtenderName(e Extender) string {
@@ -89,4 +92,16 @@ func (e SimpleExtender) WriteFiles() []WriteFile {
 
 func (e SimpleExtender) ZephyrModules() []string {
 	return e.ZephyrModuleNames
+}
+
+func (e SimpleExtender) AppConfig() []appconfig.ConfigValue {
+	return e.Config
+}
+
+func (e SimpleExtender) ApplyOverlay(overlay *devicetree.DeviceTree) error {
+	if e.OverlayFn == nil {
+		return nil
+	}
+
+	return e.OverlayFn(overlay)
 }

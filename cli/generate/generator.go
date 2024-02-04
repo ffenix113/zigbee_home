@@ -47,8 +47,8 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	var providedExtenders []generator.Extender
 	uniqueExtenders := map[string]struct{}{}
 
-	if pmConfig := board.BoardPMConfig(device.General.Board); pmConfig != nil {
-		providedExtenders = append(providedExtenders, extenders.NewStaicPM(*pmConfig))
+	if bootloaderConfig := getBootloaderConfig(device.General.Board, device.Board.Bootloader); bootloaderConfig != nil {
+		providedExtenders = append(providedExtenders, extenders.NewBootloaderConfig(bootloaderConfig))
 	}
 
 	for _, deviceSensor := range device.Sensors {
@@ -154,4 +154,14 @@ func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig, exte
 	}
 
 	return nil
+}
+
+func getBootloaderConfig(boardName, bootloader string) *board.Bootloader {
+	if bootloader != "" {
+		// Force using specific bootloader, even if it is unknown.
+		// Unknown bootloaders will result in no additional configuration.
+		return board.BootloaderConfig(bootloader)
+	}
+
+	return board.BoardBootloaderConfig(boardName)
 }

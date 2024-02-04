@@ -4,6 +4,7 @@ general:
   # Defines how much time a loop will sleep after each iteration.
   runevery: 1m
   board: nrf52840dongle_nrf52840
+  
   # This paths are necessary to build the generated firmware.
   # If nRF Connect setup was done with VS Code extension -
   # most probably this can be left empty, but if version changes -
@@ -32,6 +33,15 @@ general:
 # For example nRF52840 Dongle would have board devicetree at
 # https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
 board:
+  # Specifically define bootloader for the board.
+  # This field is optional, and in most cases this might not be needed,
+  # but it is possible that board can be flashed
+  # with some non-default bootloader, or that the generated firmware is not
+  # placed correctly in memory. This setting can help in above situations.
+  # Also this option can be used to try and support boards that
+  # are not labeled as officialy supported.
+  #bootloader: adafruit_nrf52_sd132
+
   # This option will add USB UART loging functionality.
   # Quite limited for now, but can be easily extended
   debuglog: false

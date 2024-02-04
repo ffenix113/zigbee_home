@@ -36,9 +36,10 @@ type General struct {
 }
 
 type Board struct {
-	DebugLog bool
-	IsRouter bool `yaml:"is_router"`
-	I2C      []extenders.I2CInstance
+	Bootloader string
+	DebugLog   bool
+	IsRouter   bool `yaml:"is_router"`
+	I2C        []extenders.I2CInstance
 }
 
 type Uart struct {
