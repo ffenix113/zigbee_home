@@ -11,9 +11,10 @@ import (
 )
 
 var knownFlashers = map[string]any{
-	"west":    &flasher.West{},
-	"nrfutil": flasher.NewNRFUtil(),
-	"mcuboot": &flasher.MCUBoot{},
+	"adafruit": flasher.NewAdafruitNRFUtil(),
+	"west":     &flasher.West{},
+	"nrfutil":  flasher.NewNRFUtil(),
+	"mcuboot":  &flasher.MCUBoot{},
 }
 
 type Flasher interface {
