@@ -52,6 +52,10 @@ func PropertyValueFn(fn func() string) PropertyValue {
 }
 
 func String(value string) PropertyValue {
+	return rawValue(value)
+}
+
+func Quoted(value string) PropertyValue {
 	return rawValue(`"` + value + `"`)
 }
 
@@ -65,11 +69,11 @@ func NrfPSel(fun string, port, pin int) PropertyValue {
 	portStr := strconv.Itoa(port)
 	pinStr := strconv.Itoa(pin)
 
-	return Angled("NRF_PSEL(" + fun + ", " + portStr + ", " + pinStr + ")")
+	return Angled(rawValue("NRF_PSEL(" + fun + ", " + portStr + ", " + pinStr + ")"))
 }
 
-func Angled(value string) PropertyValue {
-	return rawValue("<" + value + ">")
+func Angled(value PropertyValue) PropertyValue {
+	return rawValue("<" + value.Value() + ">")
 }
 
 func Array(values ...PropertyValue) PropertyValue {
@@ -89,9 +93,9 @@ func Array(values ...PropertyValue) PropertyValue {
 func FromValue(val any) PropertyValue {
 	switch typed := val.(type) {
 	case string:
-		return String(typed)
+		return Quoted(typed)
 	case int, int8:
-		return Angled(fmt.Sprintf("%d", val))
+		return Angled(rawValue(fmt.Sprintf("%d", val)))
 	}
 
 	panic(fmt.Sprintf("unknown type to convert to property value: %T", val))

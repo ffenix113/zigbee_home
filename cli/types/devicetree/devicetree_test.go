@@ -30,7 +30,7 @@ func TestWriteOverlay(t *testing.T) {
 					Name:  "cdc_acm_uart0",
 					Label: "cdc_acm_uart0",
 					Properties: []devicetree.Property{
-						devicetree.NewProperty(devicetree.PropertyNameCompatible, devicetree.String("zephyr,cdc-acm-uart")),
+						devicetree.NewProperty(devicetree.PropertyNameCompatible, devicetree.Quoted("zephyr,cdc-acm-uart")),
 					},
 				},
 			},

@@ -63,7 +63,7 @@ func (s SCD4X) ApplyOverlay(tree *dt.DeviceTree) error {
 		Properties: []dt.Property{
 			dt.PropertyStatusEnable,
 			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("sensirion,scd4x")),
-			dt.NewProperty("reg", dt.Angled(s.I2C.Reg())),
+			dt.NewProperty("reg", dt.Angled(dt.String(s.I2C.Reg()))),
 			// Only single-shot for now.
 			// Would need some changes in templates for changing
 			dt.NewProperty("measure-mode", dt.FromValue("single-shot")),

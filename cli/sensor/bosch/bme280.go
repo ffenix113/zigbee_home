@@ -67,7 +67,7 @@ func (b BME280) ApplyOverlay(tree *dt.DeviceTree) error {
 		UnitAddress: b.I2C.UnitAddress(),
 		Properties: []dt.Property{
 			dt.NewProperty(dt.PropertyNameCompatible, dt.FromValue("bosch,"+b.Variant)),
-			dt.NewProperty("reg", dt.Angled(b.I2C.Reg())),
+			dt.NewProperty("reg", dt.Angled(dt.String(b.I2C.Reg()))),
 			dt.PropertyStatusEnable,
 		},
 	})
