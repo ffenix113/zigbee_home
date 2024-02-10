@@ -48,7 +48,6 @@
 {{ $endpointID := (sum $i 1)}}
 {{ $inClusterNum := $sensor.Clusters.Servers}}
 {{ $outClusterNum := $sensor.Clusters.Clients}}
-{{ if eq $endpointID 1}} {{ $inClusterNum = sum $inClusterNum 1 }}{{end}}
 // Define an endpoint information(num of input&output, cluster IDs)
 #define ZB_ZCL_DECLARE_DEVICE_DESC_EP_{{$endpointID}}(ep_name)								\
 	ZB_DECLARE_SIMPLE_DESC_VA({{$inClusterNum}}, {{$outClusterNum}}, EP_{{$endpointID}});				\
@@ -62,7 +61,6 @@
 		{{$inClusterNum}},								\
 		{{$outClusterNum}},								\
 		{									\
-			{{ if eq $endpointID 1 -}}ZB_ZCL_CLUSTER_ID_BASIC,					\{{else}}\{{end}}
 			{{- range $sensor.Clusters}}
 			{{.ID}}, \
 			{{- end}}
