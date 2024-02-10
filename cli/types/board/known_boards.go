@@ -53,8 +53,9 @@ var bootloaderBoards = func() map[string][]string {
 		"nrf52_legacy": {
 			"nrf52840dongle_nrf52840",
 		},
-		"adafruit_nrf52_sd132": {},
-		"adafruit_nrf52_sd140": {},
+		"adafruit_nrf52_sd132":    {},
+		"adafruit_nrf52_sd140_v6": {},
+		"adafruit_nrf52_sd140_v7": {},
 	}
 
 	for _, boards := range bootloadersMap {
