@@ -62,12 +62,6 @@ func NewDeviceTree() *DeviceTree {
 				},
 			},
 			// Disable unused peripherals to reduce power consumption
-			// &pwm0 {
-			// 	status = "disabled";
-			// };
-			// &pwm1 {
-			// 	status = "disabled";
-			// };
 			&Node{
 				Label:      "pwm0",
 				Upsert:     true,
