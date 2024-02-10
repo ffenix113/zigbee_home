@@ -9,7 +9,7 @@ import (
 
 	"github.com/ffenix113/zigbee_home/cli/sensor/base"
 	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
-	"github.com/ffenix113/zigbee_home/cli/types"
+	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 	"gopkg.in/yaml.v3"
 )
@@ -37,13 +37,11 @@ type General struct {
 
 type Board struct {
 	Bootloader string
-	DebugLog   bool
+	Debug      *extenders.DebugConfig
 	IsRouter   bool `yaml:"is_router"`
+	LEDs       []devicetree.LED
 	I2C        []extenders.I2CInstance
-}
-
-type Uart struct {
-	Rx, Tx types.Pin
+	UART       []extenders.UARTInstance
 }
 
 func ParseFromFile(configPath string) (*Device, error) {

@@ -232,9 +232,9 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	zb_ret_t err = RET_OK;
 
 	/* Update network status LED but only for debug configuration */
-	#ifdef CONFIG_LOG
+	#ifdef CONFIG_ZBHOME_DEBUG_LEDS
 	zigbee_led_status_update(bufid, ZIGBEE_NETWORK_STATE_LED);
-	#endif /* CONFIG_LOG */
+	#endif /* CONFIG_ZBHOME_DEBUG_LEDS */
 
 	/* Detect ZBOSS startup */
 	switch (signal) {
@@ -338,9 +338,9 @@ int main(void)
 	/* Start Zigbee stack */
 	zigbee_enable();
 
-	#if CONFIG_LOG
-	dk_set_led_on(LED_POWER);
-	#endif
+	#if CONFIG_ZBHOME_DEBUG_LEDS
+	gpio_pin_set_dt({{ if .Device.Board.Debug.Enabled}}&{{.Device.Board.Debug.LEDs.Power}}{{else}}none{{end}}, 1);
+	#endif /* CONFIG_ZBHOME_DEBUG_LEDS */
 
 	return 0;
 }

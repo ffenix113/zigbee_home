@@ -233,6 +233,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 var sourceFiles = [][2]string{
 	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
+	{"../Kconfig", "Kconfig.tpl"},
 	{"main.c", "main.c.tpl"},
 	{"device.h", "device.h.tpl"},
 	{"clusters.h", "clusters.h.tpl"},

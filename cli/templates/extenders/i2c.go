@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ffenix113/zigbee_home/cli/types"
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/types/generator"
 )
@@ -15,8 +16,7 @@ type I2CInstance struct {
 	// ID is a actual label of pre-defined I2C peripheral.
 	// For example most SoCs would have IDs something like i2c0, i2c1, ...
 	ID       string
-	Port     int
-	SDA, SCL int
+	SDA, SCL types.Pin
 }
 
 type I2C struct {
@@ -43,7 +43,7 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 	for _, instance := range i.Instances {
 		// Add pin definitions only if we have some.
 		// Otherwise just enable the I2C instance.
-		if instance.SDA != 0 && instance.SCL != 0 {
+		if instance.SDA.Pin != 0 && instance.SCL.Pin != 0 {
 			pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
 		}
 
@@ -78,8 +78,8 @@ func buildI2CNode(i I2CInstance, lowPowerEnable bool) *devicetree.Node {
 		Properties: []devicetree.Property{
 			devicetree.NewProperty("psels",
 				devicetree.Array(
-					devicetree.NrfPSel("TWIM_SDA", i.Port, i.SDA),
-					devicetree.NrfPSel("TWIM_SCL", i.Port, i.SCL),
+					devicetree.NrfPSel("TWIM_SDA", i.SDA.Port, i.SDA.Pin),
+					devicetree.NrfPSel("TWIM_SCL", i.SCL.Port, i.SCL.Pin),
 				),
 			),
 		},

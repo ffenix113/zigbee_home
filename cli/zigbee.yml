@@ -34,17 +34,26 @@ general:
 # https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
 board:
   # Specifically define bootloader for the board.
-  # This field is optional, and in most cases this might not be needed,
-  # but it is possible that board can be flashed
+  # This field is optional, and in most cases this might not be needed.
+  # But it is possible that board can be flashed
   # with some non-default bootloader, or that the generated firmware is not
   # placed correctly in memory. This setting can help in above situations.
   # Also this option can be used to try and support boards that
   # are not labeled as officialy supported.
-  #bootloader: adafruit_nrf52_sd132
+  #bootloader: nrf52_legacy
 
-  # This option will add USB UART loging functionality.
+  # This option will add UART loging functionality.
+  # User can choose which console to use(usb or uart).
+  # UART has to be defined either in default device tree,
+  # or in `board.uart` section.
   # Quite limited for now, but can be easily extended
-  debuglog: false
+  debug: 
+    enabled: false
+    console: uart0
+    leds:
+      enabled: true
+      # Define led which will be used to show that the board is powered.
+      power: led_green
   # Change device type from sleepy end device to router.
   # This allows for device to always be available from coordinator
   # and other devices.
@@ -58,18 +67,29 @@ board:
       # Number of i2c instances is also limited, and this allows only to
       # re-define pins for specified i2c instance.
     - id: i2c0
-      port: 0
-      sda: 29
-      scl: 31
+      sda: 0.29
+      scl:
+        port: 0
+        pin: 31
+  uart:
+    - id: uart0
+      tx: 1.03
+      rx: 1.10
+  leds:
+    - id: led_green
+      pin: 
+        port: 0
+        pin: 6
+        inverted: true
 
 sensors:
-  - type: bme680
-    i2c:
-      id: i2c0
-      addr: '0x76'
-  - type: scd4x
-    i2c:
-      id: i2c0
+  # - type: bme680
+  #   i2c:
+  #     id: i2c0
+  #     addr: '0x76'
+  # - type: scd4x
+  #   i2c:
+  #     id: i2c0
   # - type: device_temperature
   # on_off is a sensor that will respond to on/off state of the pin.
   # For now verifyied to be controlled by the client only,

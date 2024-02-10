@@ -25,7 +25,7 @@ func (s Section) EndAddress() int {
 	return s.Address + s.Size
 }
 
-func BoardBootloaderConfig(board string) *Bootloader {
+func BoardBootloaderConfig(board string) (*Bootloader, string) {
 	var boardBootloader string
 	for bootloader, boards := range bootloaderBoards {
 		if _, found := slices.BinarySearch(boards, board); found {
@@ -34,7 +34,7 @@ func BoardBootloaderConfig(board string) *Bootloader {
 		}
 	}
 
-	return BootloaderConfig(boardBootloader)
+	return BootloaderConfig(boardBootloader), boardBootloader
 }
 
 func BootloaderConfig(bootloader string) *Bootloader {
@@ -47,6 +47,9 @@ var bootloaderBoards = func() map[string][]string {
 	// Values in this map can be added in any order,
 	// as they will be ordered on the next step.
 	bootloadersMap := map[string][]string{
+		"arduino": {
+			"arduino_nano_33_ble",
+		},
 		"nrf52_legacy": {
 			"nrf52840dongle_nrf52840",
 		},

@@ -14,6 +14,7 @@ type ConfigValue struct {
 	Name          string
 	DefaultValue  string
 	RequiredValue string
+	QuotedValue   bool
 
 	Dependencies []ConfigValue
 }
@@ -36,12 +37,23 @@ func (v ConfigValue) Required(val string) ConfigValue {
 	return v
 }
 
+func (v ConfigValue) Quoted() ConfigValue {
+	v.QuotedValue = true
+	return v
+}
+
 func (v ConfigValue) Value() string {
+	returnValue := v.DefaultValue
+
 	if v.RequiredValue != "" {
-		return v.RequiredValue
+		returnValue = v.RequiredValue
 	}
 
-	return v.DefaultValue
+	if v.QuotedValue {
+		returnValue = `"` + returnValue + `"`
+	}
+
+	return returnValue
 }
 
 func (v ConfigValue) Depends(cfgs ...ConfigValue) ConfigValue {
@@ -74,13 +86,7 @@ func NewEmptyAppConfig() *AppConfig {
 
 func NewDefaultAppConfig(isRouter bool) *AppConfig {
 	appConfig := NewEmptyAppConfig().AddValue(
-		CONFIG_LOG,
-		CONFIG_SERIAL,
-		CONFIG_CONSOLE,
-		CONFIG_UART_CONSOLE,
-		CONFIG_UART_LINE_CTRL,
 		CONFIG_USB_DEVICE_STACK,
-		CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,
@@ -94,7 +100,6 @@ func NewDefaultAppConfig(isRouter bool) *AppConfig {
 		CONFIG_NET_UDP,
 		CONFIG_ZBOSS_HALT_ON_ASSERT,
 		CONFIG_RESET_ON_FATAL_ERROR,
-		CONFIG_LOG_BACKEND_UART,
 		CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE,
 		CONFIG_HEAP_MEM_POOL_SIZE,
 	)

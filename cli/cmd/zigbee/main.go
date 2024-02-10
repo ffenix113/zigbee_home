@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/ffenix113/zigbee_home/cli/cmd/zigbee/firmware"
@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	log.SetFlags(log.Lmsgprefix | log.LstdFlags | log.Lshortfile)
+
 	app := &cli.App{
 		Name:  "zigbee",
 		Usage: "Zigbee Home CLI application",
@@ -25,7 +27,7 @@ func main() {
 	}
 
 	if err := app.RunContext(context.Background(), os.Args); err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 		os.Exit(1)
 	}
 }

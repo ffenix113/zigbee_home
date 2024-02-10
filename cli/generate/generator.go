@@ -2,6 +2,7 @@ package generate
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
@@ -47,7 +48,18 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	var providedExtenders []generator.Extender
 	uniqueExtenders := map[string]struct{}{}
 
-	if bootloaderConfig := getBootloaderConfig(device.General.Board, device.Board.Bootloader); bootloaderConfig != nil {
+	forcedBootloader := device.Board.Bootloader != ""
+	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, device.Board.Bootloader)
+	log.Printf("Device: %q, selected bootloader: %q, forced bootloader: %t\n",
+		device.General.Board,
+		bootloaderName,
+		forcedBootloader)
+
+	if forcedBootloader && bootloaderConfig == nil {
+		return fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", device.Board.Bootloader)
+	}
+
+	if bootloaderConfig != nil {
 		providedExtenders = append(providedExtenders, extenders.NewBootloaderConfig(bootloaderConfig))
 	}
 
@@ -73,10 +85,16 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 		providedExtenders = append(providedExtenders, extenders.NewI2C(device.Board.I2C...))
 	}
 
-	if device.Board.DebugLog {
-		providedExtenders = append(providedExtenders,
-			extenders.NewUSBUARTLog(),
-		)
+	if device.Board.Debug != nil && device.Board.Debug.Enabled {
+		providedExtenders = append(providedExtenders, extenders.NewDebugUARTLog(*device.Board.Debug))
+	}
+
+	if len(device.Board.UART) != 0 {
+		providedExtenders = append(providedExtenders, extenders.NewUART(device.Board.UART...))
+	}
+
+	if len(device.Board.LEDs) != 0 {
+		providedExtenders = append(providedExtenders, extenders.NewLEDs(device.Board.LEDs...))
 	}
 
 	// Write devicetree overlay (app.overlay)
@@ -156,11 +174,11 @@ func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig, exte
 	return nil
 }
 
-func getBootloaderConfig(boardName, bootloader string) *board.Bootloader {
+func getBootloaderConfig(boardName, bootloader string) (*board.Bootloader, string) {
 	if bootloader != "" {
 		// Force using specific bootloader, even if it is unknown.
 		// Unknown bootloaders will result in no additional configuration.
-		return board.BootloaderConfig(bootloader)
+		return board.BootloaderConfig(bootloader), bootloader
 	}
 
 	return board.BoardBootloaderConfig(boardName)
