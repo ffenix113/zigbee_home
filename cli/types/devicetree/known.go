@@ -2,6 +2,7 @@ package devicetree
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ffenix113/zigbee_home/cli/types"
 )
@@ -62,11 +63,26 @@ func (u UART) AttachSelf(dt *DeviceTree) error {
 	return nil
 }
 
-type Pin struct {
-	types.Pin
+type LED struct {
+	ID  string
+	Pin types.Pin
 }
 
-func (p Pin) AttachSelf(dt *DeviceTree) error {
+func (p LED) AttachSelf(dt *DeviceTree) error {
+	pinName := p.ID
+	if pinName == "" {
+		pinName = p.Pin.Label()
+	}
+
+	aliases := dt.FindSpecificNode(SearchByName(NodeNameRoot), SearchByName(NodeNameAliases))
+	aliases.Properties = append(aliases.Properties,
+		NewProperty(strings.ReplaceAll(pinName, "_", "-"), Label(pinName)))
+
+	// If pin is not re-defined - do not add its configuration.
+	if p.Pin.Pin == 0 {
+		return nil
+	}
+
 	const pinsNodeName = "pins"
 	pinsNode := dt.FindSpecificNode(SearchByName(NodeNameRoot), SearchByName(pinsNodeName))
 	if pinsNode == nil {
@@ -81,7 +97,6 @@ func (p Pin) AttachSelf(dt *DeviceTree) error {
 		dt.FindSpecificNode(SearchByName(NodeNameRoot)).AddNodes(pinsNode)
 	}
 
-	pinName := p.Label()
 	activeState := "GPIO_ACTIVE_HIGH"
 	if p.Pin.Inverted {
 		activeState = "GPIO_ACTIVE_LOW"
@@ -91,7 +106,7 @@ func (p Pin) AttachSelf(dt *DeviceTree) error {
 		Name:  pinName,
 		Label: pinName,
 		Properties: []Property{
-			NewProperty("gpios", Angled(fmt.Sprintf("&gpio%d %d %s", p.Port, p.Pin.Pin, activeState))),
+			NewProperty("gpios", Angled(Label(fmt.Sprintf("gpio%d %d %s", p.Pin.Port, p.Pin.Pin, activeState)))),
 		},
 	})
 
