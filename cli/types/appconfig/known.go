@@ -26,11 +26,12 @@ var (
 	CONFIG_DK_LIBRARY = NewValue("CONFIG_DK_LIBRARY").Default(Yes)
 
 	// Zigbee
-	CONFIG_ZIGBEE                 = NewValue("CONFIG_ZIGBEE").Default(Yes)
-	CONFIG_ZIGBEE_APP_UTILS       = NewValue("CONFIG_ZIGBEE_APP_UTILS").Default(Yes)
-	CONFIG_ZIGBEE_CHANNEL         = NewValue("CONFIG_ZIGBEE_CHANNEL").Default(`11`)
-	CONFIG_ZIGBEE_ROLE_END_DEVICE = NewValue("CONFIG_ZIGBEE_ROLE_END_DEVICE").Default(Yes)
-	CONFIG_ZIGBEE_ROLE_ROUTER     = NewValue("CONFIG_ZIGBEE_ROLE_ROUTER").Default(Yes)
+	CONFIG_ZIGBEE                              = NewValue("CONFIG_ZIGBEE").Default(Yes)
+	CONFIG_ZIGBEE_APP_UTILS                    = NewValue("CONFIG_ZIGBEE_APP_UTILS").Default(Yes)
+	CONFIG_ZIGBEE_CHANNEL_MASK                 = NewValue("CONFIG_ZIGBEE_CHANNEL_MASK").Default("0x7FFF800")
+	CONFIG_ZIGBEE_ROLE_END_DEVICE              = NewValue("CONFIG_ZIGBEE_ROLE_END_DEVICE").Default(Yes)
+	CONFIG_ZIGBEE_ROLE_ROUTER                  = NewValue("CONFIG_ZIGBEE_ROLE_ROUTER").Default(Yes)
+	CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI = NewValue("CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI").Default(Yes)
 
 	// Cryptography
 	CONFIG_CRYPTO               = NewValue("CONFIG_CRYPTO").Default(Yes)

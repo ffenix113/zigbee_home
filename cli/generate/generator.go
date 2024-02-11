@@ -15,86 +15,34 @@ import (
 	"github.com/ffenix113/zigbee_home/cli/types/source"
 )
 
-// TODO: Define some "modifier"/"injector" interface
-// 	that will allow to update generator state.
-// 	It is important that this interface be able to add
-// 	new files to generated source output!
-//
-// 	This is useful for common functionality for
-// 	sensors and peripherals.
-// 	I.e. to enable some sensors it is neeeded:
-// 	 - update proj.conf to add CONFIG_SENSOR=y
-// 	 - - maybe also add CONFIG_I2C=y
-// 	 - add include <zephyr/drivers/sensor.h>
-//
-// 	Sensors should also be able to tell that
-// 	they want to use such "modifier"/"injector"
-
 type Generator struct {
 	AppConfig  *appconfig.AppConfig
 	DeviceTree *devicetree.DeviceTree
 	Source     *source.Source
 }
 
-func NewGenerator(device *config.Device) *Generator {
+func NewGenerator(device *config.Device) (*Generator, error) {
+	appConfig, err := appconfig.NewDefaultAppConfig(
+		appconfig.DefaultAppConfigOptions{
+			IsRouter:       device.Board.IsRouter,
+			ZigbeeChannels: device.General.ZigbeeChannels,
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("default app config: %w", err)
+	}
+
 	return &Generator{
-		AppConfig:  appconfig.NewDefaultAppConfig(device.Board.IsRouter),
+		AppConfig:  appConfig,
 		DeviceTree: devicetree.NewDeviceTree(),
 		Source:     source.NewSource(),
-	}
+	}, nil
 }
 
 func (g *Generator) Generate(workDir string, device *config.Device) error {
-	var providedExtenders []generator.Extender
-	uniqueExtenders := map[string]struct{}{}
-
-	forcedBootloader := device.Board.Bootloader != ""
-	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, device.Board.Bootloader)
-	log.Printf("Device: %q, selected bootloader: %q, forced bootloader: %t\n",
-		device.General.Board,
-		bootloaderName,
-		forcedBootloader)
-
-	if forcedBootloader && bootloaderConfig == nil {
-		return fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", device.Board.Bootloader)
-	}
-
-	if bootloaderConfig != nil {
-		providedExtenders = append(providedExtenders, extenders.NewBootloaderConfig(bootloaderConfig))
-	}
-
-	for _, deviceSensor := range device.Sensors {
-		if withExtender, ok := deviceSensor.(sensor.WithExtenders); ok {
-			sensorExtenders := withExtender.Extenders()
-			cleanedExtenders := sensorExtenders[:0]
-
-			for _, extender := range sensorExtenders {
-				extenderName := generator.ExtenderName(extender)
-
-				if _, ok := uniqueExtenders[extenderName]; !ok {
-					cleanedExtenders = append(cleanedExtenders, extender)
-					uniqueExtenders[extenderName] = struct{}{}
-				}
-			}
-
-			providedExtenders = append(providedExtenders, cleanedExtenders...)
-		}
-	}
-
-	if device.Board.I2C != nil {
-		providedExtenders = append(providedExtenders, extenders.NewI2C(device.Board.I2C...))
-	}
-
-	if device.Board.Debug != nil && device.Board.Debug.Enabled {
-		providedExtenders = append(providedExtenders, extenders.NewDebugUARTLog(*device.Board.Debug))
-	}
-
-	if len(device.Board.UART) != 0 {
-		providedExtenders = append(providedExtenders, extenders.NewUART(device.Board.UART...))
-	}
-
-	if len(device.Board.LEDs) != 0 {
-		providedExtenders = append(providedExtenders, extenders.NewLEDs(device.Board.LEDs...))
+	providedExtenders, err := getExtenders(device)
+	if err != nil {
+		return fmt.Errorf("get extenders: %w", err)
 	}
 
 	// Write devicetree overlay (app.overlay)
@@ -140,6 +88,62 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	}
 
 	return nil
+}
+
+func getExtenders(device *config.Device) ([]generator.Extender, error) {
+	var providedExtenders []generator.Extender
+	uniqueExtenders := map[string]struct{}{}
+
+	forcedBootloader := device.Board.Bootloader != ""
+	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, device.Board.Bootloader)
+	log.Printf("Device: %q, selected bootloader: %q, forced bootloader: %t\n",
+		device.General.Board,
+		bootloaderName,
+		forcedBootloader)
+
+	if forcedBootloader && bootloaderConfig == nil {
+		return nil, fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", device.Board.Bootloader)
+	}
+
+	if bootloaderConfig != nil {
+		providedExtenders = append(providedExtenders, extenders.NewBootloaderConfig(bootloaderConfig))
+	}
+
+	for _, deviceSensor := range device.Sensors {
+		if withExtender, ok := deviceSensor.(sensor.WithExtenders); ok {
+			sensorExtenders := withExtender.Extenders()
+			cleanedExtenders := sensorExtenders[:0]
+
+			for _, extender := range sensorExtenders {
+				extenderName := generator.ExtenderName(extender)
+
+				if _, ok := uniqueExtenders[extenderName]; !ok {
+					cleanedExtenders = append(cleanedExtenders, extender)
+					uniqueExtenders[extenderName] = struct{}{}
+				}
+			}
+
+			providedExtenders = append(providedExtenders, cleanedExtenders...)
+		}
+	}
+
+	if device.Board.I2C != nil {
+		providedExtenders = append(providedExtenders, extenders.NewI2C(device.Board.I2C...))
+	}
+
+	if device.Board.Debug != nil && device.Board.Debug.Enabled {
+		providedExtenders = append(providedExtenders, extenders.NewDebugUARTLog(*device.Board.Debug))
+	}
+
+	if len(device.Board.UART) != 0 {
+		providedExtenders = append(providedExtenders, extenders.NewUART(device.Board.UART...))
+	}
+
+	if len(device.Board.LEDs) != 0 {
+		providedExtenders = append(providedExtenders, extenders.NewLEDs(device.Board.LEDs...))
+	}
+
+	return providedExtenders, nil
 }
 
 func updateDeviceTree(device *config.Device, deviceTree *devicetree.DeviceTree, extenders []generator.Extender) error {

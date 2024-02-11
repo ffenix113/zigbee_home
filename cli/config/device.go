@@ -30,6 +30,9 @@ type General struct {
 	// Zephyr name for the board
 	Board    string
 	RunEvery time.Duration
+	// ZigbeeChannels will define which endpoints device should try to use.
+	// By default device will try all available channels.
+	ZigbeeChannels []int `yaml:"zigbee_channels"`
 	// Flasher defines the way the board should be flashed.
 	Flasher        string
 	FlasherOptions map[string]any
