@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 )
 
 type Provider interface {
@@ -84,13 +85,19 @@ func NewEmptyAppConfig() *AppConfig {
 	}
 }
 
-func NewDefaultAppConfig(isRouter bool) *AppConfig {
+type DefaultAppConfigOptions struct {
+	IsRouter       bool
+	ZigbeeChannels []int
+}
+
+func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
 		CONFIG_USB_DEVICE_STACK,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,
-		CONFIG_ZIGBEE_CHANNEL,
+		CONFIG_ZIGBEE_CHANNEL_MASK,
+		CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI,
 		CONFIG_CRYPTO,
 		CONFIG_CRYPTO_NRF_ECB,
 		CONFIG_CRYPTO_INIT_PRIORITY,
@@ -105,11 +112,26 @@ func NewDefaultAppConfig(isRouter bool) *AppConfig {
 	)
 
 	deviceRole := CONFIG_ZIGBEE_ROLE_END_DEVICE
-	if isRouter {
+	if opts.IsRouter {
 		deviceRole = CONFIG_ZIGBEE_ROLE_ROUTER
 	}
 
-	return appConfig.AddValue(deviceRole)
+	appConfig = appConfig.AddValue(deviceRole)
+
+	if len(opts.ZigbeeChannels) != 0 {
+		channel := int32(0)
+		for _, chann := range opts.ZigbeeChannels {
+			if chann < 11 || chann > 26 {
+				return nil, fmt.Errorf("zigbee channels must be in range [11, 26], but have %d", chann)
+			}
+
+			channel |= 1 << chann
+		}
+
+		appConfig = appConfig.AddValue(CONFIG_ZIGBEE_CHANNEL_MASK.Required("0x" + strconv.FormatInt(int64(channel), 16)))
+	}
+
+	return appConfig, nil
 }
 
 func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
@@ -130,6 +152,14 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 
 				c.values[dep.Name] = dep
 				continue
+			}
+		}
+
+		if val, ok := c.values[configValue.Name]; ok {
+			if val.RequiredValue != "" &&
+				configValue.RequiredValue != "" &&
+				configValue.RequiredValue != val.RequiredValue {
+				panic(fmt.Sprintf("config value %q already has required value %q, but new added value requires it to be %q", val.Name, val.RequiredValue, configValue.Name, configValue.RequiredValue))
 			}
 		}
 

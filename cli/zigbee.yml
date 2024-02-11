@@ -17,6 +17,11 @@ general:
   #ncs_toolchain_base: ~/toolchains/7795df4459/
   #zephyr_base: ~/ncs/zephyr
 
+  # zigbee_channels will provide optional list of channels to use.
+  # Note: if not defined device will use all available channels,
+  # so it is not needed to define this if not specifically necessary.
+  zigbee_channels: [11,13,15,16,17]
+
   # Flasher tells which flashing method to use.
   # Currently `nrfutil`, `mcuboot` and `west`
   # are defined(but not equally tested). Nrfutil works though.
