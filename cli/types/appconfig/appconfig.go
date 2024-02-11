@@ -159,7 +159,7 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 			if val.RequiredValue != "" &&
 				configValue.RequiredValue != "" &&
 				configValue.RequiredValue != val.RequiredValue {
-				panic(fmt.Sprintf("config value %q already has required value %q, but new added value requires it to be %q", val.Name, val.RequiredValue, configValue.Name, configValue.RequiredValue))
+				panic(fmt.Sprintf("config value %q already has required value %q, but new added value requires it to be %q", val.Name, val.RequiredValue, configValue.RequiredValue))
 			}
 		}
 
