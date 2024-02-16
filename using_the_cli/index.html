@@ -1,0 +1,793 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../sensors/supporting_new_sensors/">
+      
+      
+        <link rel="next" href="building_the_firmware/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.9">
+    
+    
+      
+        <title>Using the CLI - Zigbee_home</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.f2e4d321.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#cli-commands" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Zigbee_home" class="md-header__button md-logo" aria-label="Zigbee_home" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Zigbee_home
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Using the CLI
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ffenix113/zigbee_home" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ffenix113/zigbee_home
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Zigbee_home" class="md-nav__button md-logo" aria-label="Zigbee_home" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Zigbee_home
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ffenix113/zigbee_home" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ffenix113/zigbee_home
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Welcome to Zigbee_home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../install_zigbee_home_cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install zigbee_home CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../supported_boards/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supported boards
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Sensors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Sensors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sensors/supported_sensors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supported sensors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sensors/supporting_new_sensors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supporting new sensors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
+  
+  <span class="md-ellipsis">
+    Using the cli
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Using the cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="building_the_firmware/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the firmware
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="configuration_file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration file
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="flash_firmware/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flash firmware
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="generating_source_code/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generating source code
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cli-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI commands
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI commands">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Global flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      firmware
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="firmware">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flags
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generate-source-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generate source code
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-the-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      Build the firmware
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flashing-the-firmware" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flashing the firmware
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Full example
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Using the CLI</h1>
+
+<p>Zigbee_home CLI provides a way to do necessary actions to produce a device that is flashed with firmware generated &amp; built with this project.</p>
+<p>There are 3 things that CLI is responsible for:
+* Generating the source code
+* Building the firmware
+* Flashing built firmware</p>
+<p>Other functionalities might be available in the future.</p>
+<h2 id="cli-commands">CLI commands<a class="headerlink" href="#cli-commands" title="Permanent link">&para;</a></h2>
+<h4 id="global-flags">Global flags<a class="headerlink" href="#global-flags" title="Permanent link">&para;</a></h4>
+<p>At top level there is only option to provide path for configuration file, if it is not located in working directory.
+<div class="highlight"><pre><span></span><code>--config &lt;path_to_file&gt;
+</code></pre></div></p>
+<p>For example</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/zigbee/...<span class="w"> </span>--config<span class="w"> </span>../zigbee.yml
+$<span class="w"> </span><span class="c1"># Or if used with installed CLI</span>
+$<span class="w"> </span>zigbee<span class="w"> </span>--config<span class="w"> </span>../zigbee.yml
+</code></pre></div>
+<h3 id="firmware"><code>firmware</code><a class="headerlink" href="#firmware" title="Permanent link">&para;</a></h3>
+<p>This is a base command for sub-commands, and so it is not useful on it's own.
+<div class="highlight"><pre><span></span><code>zigbee<span class="w"> </span>firmware
+</code></pre></div></p>
+<h4 id="flags">Flags<a class="headerlink" href="#flags" title="Permanent link">&para;</a></h4>
+<dl>
+<dt><code>--workdir</code></dt>
+<dd>
+<p>Provide an optional working directory. This is where source code will be generated and used from.</p>
+<p>Defaults to current working directory.</p>
+</dd>
+</dl>
+<h4 id="generate-source-code">Generate source code<a class="headerlink" href="#generate-source-code" title="Permanent link">&para;</a></h4>
+<p>Currently, generation of source code is not a separate action, as it is a part of building the firmware. A project goal is to do single call to do all the necessary actions, where user provides a configuration file and after running the CLI - a device will be flashed with generated firmware.</p>
+<p>To generate source code from configuration file user must call 
+<div class="highlight"><pre><span></span><code>firmware build --only-generate
+</code></pre></div></p>
+<p>For example
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>zigbee<span class="w"> </span>--config<span class="w"> </span>../zigbee.yml<span class="w"> </span>firmware<span class="w"> </span>build<span class="w"> </span>--only-generate
+</code></pre></div></p>
+<h4 id="build-the-firmware">Build the firmware<a class="headerlink" href="#build-the-firmware" title="Permanent link">&para;</a></h4>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Currently each time the build is requested - CLI will re-generate the source code. This means that any manual changes to the generated source code would be removed.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As building firmware requires having environment set correctly it is not possible to simply run this command from normal shell environment.
+If necessary this command can be executed from terminal that nRF Connect VS Code extension can create by going to <code>nRF Connect</code> extension -&gt; in <code>Applications</code> right click necessary build configuration and select <code>Start new terminal here</code>.
+This will open a new terminal window with correct environment, in which this command can be executed.</p>
+</div>
+<p>To generate and build the firmware use
+<div class="highlight"><pre><span></span><code>firmware build
+</code></pre></div></p>
+<p>This command does not need to be executed inside the generate source directory. Instead <code>--workdir</code> flag can be provided to point to necessary directory with source code.</p>
+<p>For example
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>./cmd/zigbee/...<span class="w"> </span>firmware<span class="w"> </span>--workdir<span class="w"> </span>~/firmware/soil_moisture_sensor<span class="w"> </span>build
+</code></pre></div></p>
+<h3 id="flashing-the-firmware">Flashing the firmware<a class="headerlink" href="#flashing-the-firmware" title="Permanent link">&para;</a></h3>
+<p>To flash the firmware user needs to set board to bootloader mode and then run
+<div class="highlight"><pre><span></span><code>firmware flash
+</code></pre></div>
+For example
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>zigbee<span class="w"> </span>firmware<span class="w"> </span>--workdir<span class="w"> </span>~/firmware/soil_moisture_sensor<span class="w"> </span>flash
+</code></pre></div></p>
+<h2 id="full-example">Full example<a class="headerlink" href="#full-example" title="Permanent link">&para;</a></h2>
+<p>This is a full example of what a typical flow for creating a configuration, generating &amp; building source code and then flashing the device.</p>
+<p>Example makes some assumptions:</p>
+<ul>
+<li>Board is nRF52840 Dongle with stock bootloader</li>
+<li>Generated source code will be located in <code>./firmware</code></li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>cat<span class="w"> </span>zigbee.yml
+<span class="go">general:</span>
+<span class="go">  runevery: 2m</span>
+<span class="go">  board: nrf52840dongle_nrf52840</span>
+<span class="go">  flasher: nrfutil</span>
+<span class="go">  flasheroptions:</span>
+<span class="go">    port: /dev/ttyACM1</span>
+<span class="go">board:</span>
+<span class="go">  i2c:</span>
+<span class="go">    - id: i2c0</span>
+<span class="go">      port: 0</span>
+<span class="go">      sda: 29</span>
+<span class="go">      scl: 31</span>
+<span class="go">sensors:</span>
+<span class="go">  - type: scd4x</span>
+<span class="go">    i2c:</span>
+<span class="go">      id: i2c0</span>
+<span class="gp">$ </span>ls
+<span class="go">zigbee.yml</span>
+<span class="gp">$ </span>zigbee<span class="w"> </span>firmware<span class="w"> </span>--workdir<span class="w"> </span>./firmware<span class="w"> </span>build<span class="w"> </span>--only-generate
+<span class="gp">$ </span><span class="c1"># Now user goes to VS Code, opens the ./firmware directory and compiles the source code</span>
+<span class="gp">$ </span><span class="c1"># See &#39;Building the firmware&#39; page for instructions on how to do it.</span>
+<span class="gp">$ </span><span class="c1"># As a verification that the firmware was built correctly execute following command:</span>
+<span class="gp">$ </span>ls<span class="w"> </span>./firmware/build/zephyr/zephyr.hex
+<span class="go">zephyr.hex</span>
+<span class="gp">$ </span><span class="c1"># User starts bootloader mode on the board by clicking reset button twice</span>
+<span class="gp">$ </span>zigbee<span class="w"> </span>firmware<span class="w"> </span>--workdir<span class="w"> </span>./firmware<span class="w"> </span>flash
+</code></pre></div>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.indexes"], "search": "../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.8fd75fb4.min.js"></script>
+      
+    
+  </body>
+</html>

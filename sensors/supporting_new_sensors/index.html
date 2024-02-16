@@ -1,0 +1,780 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../supported_sensors/">
+      
+      
+        <link rel="next" href="../../using_the_cli/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.9">
+    
+    
+      
+        <title>Supporting new sensors - Zigbee_home</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.f2e4d321.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sensor-base" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Zigbee_home" class="md-header__button md-logo" aria-label="Zigbee_home" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Zigbee_home
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Supporting new sensors
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ffenix113/zigbee_home" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ffenix113/zigbee_home
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Zigbee_home" class="md-nav__button md-logo" aria-label="Zigbee_home" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Zigbee_home
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ffenix113/zigbee_home" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ffenix113/zigbee_home
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Welcome to Zigbee_home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../install_zigbee_home_cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Install zigbee_home CLI
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../supported_boards/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supported boards
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Sensors
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Sensors
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../supported_sensors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Supported sensors
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Supporting new sensors
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../using_the_cli/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Using the cli
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Using the cli
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../using_the_cli/building_the_firmware/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building the firmware
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../using_the_cli/configuration_file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration file
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../using_the_cli/flash_firmware/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flash firmware
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../using_the_cli/generating_source_code/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generating source code
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<p>Supporting new sensors can be really easy, or somewhat hard, depending on if the sensor has drivers in Zephyr and if all necessary Zigbee clusters are defined.</p>
+<h1 id="sensor-base">Sensor base<a class="headerlink" href="#sensor-base" title="Permanent link">&para;</a></h1>
+<p>All sensors must implement an interface <code>sensor.Sensor</code> defined in <code>types/sensor</code> package:
+<div class="highlight"><pre><span></span><code><span class="kd">type</span><span class="w"> </span><span class="nx">Sensor</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Stringer is for human-readable name</span>
+<span class="w">    </span><span class="nx">fmt</span><span class="p">.</span><span class="nx">Stringer</span>
+<span class="w">    </span><span class="c1">// Label returns unique label value for the sensor.</span>
+<span class="w">    </span><span class="c1">// Generally this method should not be defined by user,</span>
+<span class="w">    </span><span class="c1">// intstead it will be defined in embedded `*base.Base`</span>
+<span class="w">    </span><span class="nx">Label</span><span class="p">()</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">    </span><span class="nx">Template</span><span class="p">()</span><span class="w"> </span><span class="kt">string</span>
+<span class="w">    </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">Provider</span>
+<span class="w">    </span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">Provider</span>
+<span class="w">    </span><span class="nx">devicetree</span><span class="p">.</span><span class="nx">Applier</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>Each sensor must embed <code>*base.Base</code>, which is defined in <code>/sensor/base</code>, which provides all of the methods above as no-ops:
+<div class="highlight"><pre><span></span><code><span class="kd">type</span><span class="w"> </span><span class="nx">SomeSensor</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">*</span><span class="nx">base</span><span class="p">.</span><span class="nx">Base</span><span class="w"> </span><span class="s">`yaml:&quot;,inline&quot;`</span><span class="w"> </span><span class="c1">// The tag is required as well</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>Sensor can define</p>
+<ul>
+<li>Zigbee clusters - necessary for any sensor that should output values to coordinator, be controlled by coordinator, or both.</li>
+<li>Devicetree overlay configuration - should be necessary by all sensors, as devicetree defines how sensor is attached to the board.</li>
+<li>Configuration options - generally also would be required, as Zephyr may choose to include driver for the sensor based on this configuration.</li>
+<li>Template - if sensor is supported by Zephyr and all Zigbee clusters are defined - this should be optional, as known sensors will re-use common functionality.</li>
+<li>Extenders - if sensor requires additional functionality like adding required headers, or adding a driver via Zephyr module - this can be defined here.</li>
+</ul>
+<h1 id="user-configurable-and-internal-sensor-options">User-configurable and internal sensor options<a class="headerlink" href="#user-configurable-and-internal-sensor-options" title="Permanent link">&para;</a></h1>
+<p>Some sensors might need some user configuration to be working properly.</p>
+<p>For example internal device temperature sensor does not need user configuration, as it will be defined the same for any board and peripherals configuration.</p>
+<p>Others might need some input to input address of I2C sensor, set operating mode or disabling part of the sensor.</p>
+<p>In some cases configuration options may also be used for internal purposes, like diferentiating between variants of the sensor. For this user should not be able to provide this configuration manually or change it in any way.</p>
+<p>Yaml tag is used to tell if option is user-configurable or not. <code>yaml:"-"</code> would mean internal option, while omitting the tag, or specifying a field name like <code>yaml:"sample_rate"</code> would make it user-configurable.</p>
+<p>This can be done by adding necessary configuration fields to sensor struct:
+<div class="highlight"><pre><span></span><code><span class="kd">type</span><span class="w"> </span><span class="nx">SomeSensor</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">*</span><span class="nx">base</span><span class="p">.</span><span class="nx">Base</span><span class="w"> </span><span class="s">`yaml:&quot;,inline&quot;`</span>
+<span class="w">    </span><span class="c1">// All of fields below will be a part of sensor configuration.</span>
+
+<span class="w">    </span><span class="c1">// This fields are internal, </span>
+<span class="w">    </span><span class="c1">// meaning that they will not be user-configurable.</span>
+<span class="w">    </span><span class="c1">// Tag `yaml:&quot;-&quot;` means that this options will </span>
+<span class="w">    </span><span class="c1">// not be picked up from configuration file.</span>
+<span class="w">    </span><span class="nx">Variant</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;-&quot;`</span>
+<span class="w">    </span><span class="nx">Frequency</span><span class="w"> </span><span class="kt">uint</span><span class="w"> </span><span class="s">`yaml:&quot;-&quot;`</span>
+
+<span class="w">    </span><span class="c1">// This options are user-configurable.</span>
+<span class="w">    </span><span class="c1">// In configuration file they can be added by</span>
+<span class="w">    </span><span class="c1">// lowercasing field name, or providing a name</span>
+<span class="w">    </span><span class="c1">// as defined in `yaml` tag(if any).</span>
+<span class="w">    </span><span class="c1">// Note that any Yaml unmarshalable type is supported.</span>
+<span class="w">    </span><span class="nx">I2C</span><span class="w"> </span><span class="nx">base</span><span class="p">.</span><span class="nx">I2CConnection</span><span class="w"> </span><span class="c1">// This will be `i2c` in configuration file</span>
+<span class="w">    </span><span class="nx">OperationMode</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="c1">// This will be `operationmode`</span>
+<span class="w">    </span><span class="nx">SampleRate</span><span class="w"> </span><span class="kt">uint</span><span class="w"> </span><span class="s">`yaml:&quot;sample_rate&quot;`</span><span class="w"> </span><span class="c1">// This will be `sample_rate`</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<h1 id="adding-sensor-definition">Adding sensor definition<a class="headerlink" href="#adding-sensor-definition" title="Permanent link">&para;</a></h1>
+<p>All sensors have to be defined and added to a known sensor list.</p>
+<p>Sensor definition provides a necessary information on how to add the sensor to the firmware. For example configuration options that should be added.</p>
+<p>Sensor definition should be added to
+<div class="highlight"><pre><span></span><code>/sensor/&lt;manufacturer&gt;/&lt;sensor_name&gt;.go
+</code></pre></div>
+And a known sensor entry should be added to
+<div class="highlight"><pre><span></span><code>/types/sensor/known.go
+</code></pre></div></p>
+<h1 id="adding-new-zigbee-cluster">Adding new Zigbee cluster<a class="headerlink" href="#adding-new-zigbee-cluster" title="Permanent link">&para;</a></h1>
+<p>TBD</p>
+<h1 id="sensor-supported-by-zephyr">Sensor supported by Zephyr<a class="headerlink" href="#sensor-supported-by-zephyr" title="Permanent link">&para;</a></h1>
+<p>This is the easiest case, as only sensor definition is required, without any template files or custom drivers.</p>
+<h2 id="example-bosch-bme280">Example: Bosch BME280<a class="headerlink" href="#example-bosch-bme280" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="kn">package</span><span class="w"> </span><span class="nx">bosch</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;strings&quot;</span>
+
+<span class="w">    </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/sensor/base&quot;</span>
+<span class="w">    </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/templates/extenders&quot;</span>
+<span class="w">    </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/types/appconfig&quot;</span>
+<span class="w">    </span><span class="nx">dt</span><span class="w"> </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/types/devicetree&quot;</span>
+<span class="w">    </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/types/generator&quot;</span>
+<span class="w">    </span><span class="s">&quot;github.com/ffenix113/zigbee_home/cli/zcl/cluster&quot;</span>
+<span class="p">)</span>
+
+<span class="kd">type</span><span class="w"> </span><span class="nx">BME280</span><span class="w"> </span><span class="kd">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Required embedding of `*base.Base`</span>
+<span class="w">    </span><span class="o">*</span><span class="nx">base</span><span class="p">.</span><span class="nx">Base</span><span class="w"> </span><span class="s">`yaml:&quot;,inline&quot;`</span>
+<span class="w">    </span><span class="c1">// This sensor works through I2C, </span>
+<span class="w">    </span><span class="c1">// so get the configuration for it</span>
+<span class="w">    </span><span class="nx">I2C</span><span class="w">        </span><span class="nx">base</span><span class="p">.</span><span class="nx">I2CConnection</span>
+<span class="w">    </span><span class="c1">// Variant is &quot;internal&quot; option, </span>
+<span class="w">    </span><span class="c1">// that defines if 280 or 680 is actually used</span>
+<span class="w">    </span><span class="nx">Variant</span><span class="w">    </span><span class="kt">string</span><span class="w"> </span><span class="s">`yaml:&quot;-&quot;`</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">NewBME280</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="nx">BME280</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="nx">BME280</span><span class="p">{</span>
+<span class="w">        </span><span class="nx">Variant</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;bme280&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">b</span><span class="w"> </span><span class="nx">BME280</span><span class="p">)</span><span class="w"> </span><span class="nx">String</span><span class="p">()</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;Bosch &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">strings</span><span class="p">.</span><span class="nx">ToUpper</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">Variant</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">BME280</span><span class="p">)</span><span class="w"> </span><span class="nx">Clusters</span><span class="p">()</span><span class="w"> </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">Clusters</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Cluster values below are taken from sensor datasheet.</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[]</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">Cluster</span><span class="p">{</span>
+<span class="w">        </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">Temperature</span><span class="p">{</span>
+<span class="w">            </span><span class="nx">MinMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="o">-</span><span class="mi">40</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">MaxMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="mi">85</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">Tolerance</span><span class="p">:</span><span class="w">        </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">Pressure</span><span class="p">{</span>
+<span class="w">            </span><span class="nx">MinMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">MaxMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="mi">110</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">Tolerance</span><span class="p">:</span><span class="w">        </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">        </span><span class="nx">cluster</span><span class="p">.</span><span class="nx">RelativeHumidity</span><span class="p">{</span>
+<span class="w">            </span><span class="nx">MinMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">            </span><span class="nx">MaxMeasuredValue</span><span class="p">:</span><span class="w"> </span><span class="mi">90</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">b</span><span class="w"> </span><span class="nx">BME280</span><span class="p">)</span><span class="w"> </span><span class="nx">AppConfig</span><span class="p">()</span><span class="w"> </span><span class="p">[]</span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">ConfigValue</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[]</span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">ConfigValue</span><span class="p">{</span>
+<span class="w">        </span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">CONFIG_I2C</span><span class="p">.</span><span class="nx">Required</span><span class="p">(</span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">Yes</span><span class="p">),</span>
+<span class="w">        </span><span class="c1">// Yes, for both 280 &amp; 680 we are setting through BME280</span>
+<span class="w">        </span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">CONFIG_BME280</span><span class="p">.</span><span class="nx">Required</span><span class="p">(</span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">Yes</span><span class="p">),</span>
+<span class="w">        </span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">NewValue</span><span class="p">(</span><span class="s">&quot;CONFIG_BME280_MODE_FORCED&quot;</span><span class="p">).</span><span class="nx">Required</span><span class="p">(</span><span class="nx">appconfig</span><span class="p">.</span><span class="nx">Yes</span><span class="p">),</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">b</span><span class="w"> </span><span class="nx">BME280</span><span class="p">)</span><span class="w"> </span><span class="nx">ApplyOverlay</span><span class="p">(</span><span class="nx">tree</span><span class="w"> </span><span class="o">*</span><span class="nx">dt</span><span class="p">.</span><span class="nx">DeviceTree</span><span class="p">)</span><span class="w"> </span><span class="kt">error</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">i2cNode</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">tree</span><span class="p">.</span><span class="nx">FindSpecificNode</span><span class="p">(</span><span class="nx">dt</span><span class="p">.</span><span class="nx">SearchByLabel</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">I2C</span><span class="p">.</span><span class="nx">ID</span><span class="p">))</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nx">i2cNode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nx">dt</span><span class="p">.</span><span class="nx">ErrNodeNotFound</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">I2C</span><span class="p">.</span><span class="nx">ID</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">i2cNode</span><span class="p">.</span><span class="nx">AddNodes</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">dt</span><span class="p">.</span><span class="nx">Node</span><span class="p">{</span>
+<span class="w">        </span><span class="nx">Name</span><span class="p">:</span><span class="w">        </span><span class="nx">b</span><span class="p">.</span><span class="nx">Variant</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">Label</span><span class="p">:</span><span class="w">       </span><span class="nx">b</span><span class="p">.</span><span class="nx">Label</span><span class="p">(),</span>
+<span class="w">        </span><span class="nx">UnitAddress</span><span class="p">:</span><span class="w"> </span><span class="nx">b</span><span class="p">.</span><span class="nx">I2C</span><span class="p">.</span><span class="nx">UnitAddress</span><span class="p">(),</span>
+<span class="w">        </span><span class="nx">Properties</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="nx">dt</span><span class="p">.</span><span class="nx">Property</span><span class="p">{</span>
+<span class="w">            </span><span class="nx">dt</span><span class="p">.</span><span class="nx">NewProperty</span><span class="p">(</span><span class="nx">dt</span><span class="p">.</span><span class="nx">PropertyNameCompatible</span><span class="p">,</span><span class="w"> </span><span class="nx">dt</span><span class="p">.</span><span class="nx">FromValue</span><span class="p">(</span><span class="s">&quot;bosch,&quot;</span><span class="o">+</span><span class="nx">b</span><span class="p">.</span><span class="nx">Variant</span><span class="p">)),</span>
+<span class="w">            </span><span class="nx">dt</span><span class="p">.</span><span class="nx">NewProperty</span><span class="p">(</span><span class="s">&quot;reg&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">dt</span><span class="p">.</span><span class="nx">Angled</span><span class="p">(</span><span class="nx">b</span><span class="p">.</span><span class="nx">I2C</span><span class="p">.</span><span class="nx">Reg</span><span class="p">())),</span>
+<span class="w">            </span><span class="nx">dt</span><span class="p">.</span><span class="nx">PropertyStatusEnable</span><span class="p">,</span>
+<span class="w">        </span><span class="p">},</span>
+<span class="w">    </span><span class="p">})</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="kc">nil</span>
+<span class="p">}</span>
+
+<span class="c1">// For now this Extenders is required for sensors,</span>
+<span class="c1">// as it includes necessary configuration for Zephyr </span>
+<span class="c1">// to add sensor drivers and functions.</span>
+<span class="kd">func</span><span class="w"> </span><span class="p">(</span><span class="nx">BME280</span><span class="p">)</span><span class="w"> </span><span class="nx">Extenders</span><span class="p">()</span><span class="w"> </span><span class="p">[]</span><span class="nx">generator</span><span class="p">.</span><span class="nx">Extender</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[]</span><span class="nx">generator</span><span class="p">.</span><span class="nx">Extender</span><span class="p">{</span>
+<span class="w">        </span><span class="nx">extenders</span><span class="p">.</span><span class="nx">NewSensor</span><span class="p">(),</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h1 id="sensor-that-are-not-supported-by-zephyr">Sensor that are not supported by Zephyr<a class="headerlink" href="#sensor-that-are-not-supported-by-zephyr" title="Permanent link">&para;</a></h1>
+<h2 id="sensor-without-need-for-driver">Sensor without need for driver<a class="headerlink" href="#sensor-without-need-for-driver" title="Permanent link">&para;</a></h2>
+<p>TBD</p>
+<h2 id="external-driver-as-module">External driver as module<a class="headerlink" href="#external-driver-as-module" title="Permanent link">&para;</a></h2>
+<p>TBD</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.8fd75fb4.min.js"></script>
+      
+    
+  </body>
+</html>
