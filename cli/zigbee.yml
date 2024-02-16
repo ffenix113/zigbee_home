@@ -2,7 +2,13 @@
 
 general:
   # Defines how much time a loop will sleep after each iteration.
+  # Note: This does not necesseraly mean that each 2 minutes
+  # sensor values will be updated. Currently all sensors are polled
+  # synchronously, which means that if there are 3 sensors defined
+  # and each needs 5 seconds to obtain the result then it will take
+  # (3 * 5)s + runevery, which in this case will be 1m15s.
   runevery: 1m
+  # Board name, as defined in Zephyr.
   board: nrf52840dongle_nrf52840
   
   # This paths are necessary to build the generated firmware.
@@ -26,7 +32,7 @@ general:
   # Currently `nrfutil`, `mcuboot` and `west`
   # are defined(but not equally tested). Nrfutil works though.
   flasher: nrfutil
-  # Flasheroptions are flasher-specific options
+  # Flasheroptions are flasher-specific options.
   flasheroptions:
     port: /dev/ttyACM1
 
@@ -45,6 +51,9 @@ board:
   # placed correctly in memory. This setting can help in above situations.
   # Also this option can be used to try and support boards that
   # are not labeled as officialy supported.
+  # 
+  # Note: if this field is present - this will force bootloader
+  # to be selected one, even if the value is empty string.
   #bootloader: nrf52_legacy
 
   # This option will add UART loging functionality.
@@ -52,10 +61,21 @@ board:
   # UART has to be defined either in default device tree,
   # or in `board.uart` section.
   # Quite limited for now, but can be easily extended
-  debug: 
+  debug:
+    # Enable logging and possibly LEDs
+    # for debugging.
     enabled: false
+    # Console is where logs will be spit out.
+    # Choices are:
+    #  * usb - no need to define any other configuration for `usb`.
+    #  * uart1, uart2, ... - this either should be already defined for used board,
+    #                        or be defined in `uart` section.
     console: uart0
+    # LEDs will use LED to show some board state(i.e. power, connection, etc).
+    # Leds used here MUST be always defined in `leds`, even if they already
+    # present in board definition.
     leds:
+      # If false - leds will not be enabled to signal state.
       enabled: true
       # Define led which will be used to show that the board is powered.
       power: led_green
@@ -78,11 +98,13 @@ board:
         pin: 31
   uart:
     - id: uart0
+      # Pins are optional, if this is existing uart interface. 
       tx: 1.03
       rx: 1.10
   leds:
     - id: led_green
-      pin: 
+      # The `pin` section is optional, if led is already present in board definition.
+      pin:
         port: 0
         pin: 6
         inverted: true

@@ -39,7 +39,7 @@ type General struct {
 }
 
 type Board struct {
-	Bootloader string
+	Bootloader *string
 	Debug      *extenders.DebugConfig
 	IsRouter   bool `yaml:"is_router"`
 	LEDs       []devicetree.LED

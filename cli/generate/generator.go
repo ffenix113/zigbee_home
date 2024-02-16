@@ -92,17 +92,24 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 
 func getExtenders(device *config.Device) ([]generator.Extender, error) {
 	var providedExtenders []generator.Extender
+
 	uniqueExtenders := map[string]struct{}{}
 
-	forcedBootloader := device.Board.Bootloader != ""
-	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, device.Board.Bootloader)
+	forcedBootloader := device.Board.Bootloader != nil
+
+	var bootloaderName string
+	if forcedBootloader {
+		bootloaderName = *device.Board.Bootloader
+	}
+
+	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, bootloaderName)
 	log.Printf("Device: %q, selected bootloader: %q, forced bootloader: %t\n",
 		device.General.Board,
 		bootloaderName,
 		forcedBootloader)
 
 	if forcedBootloader && bootloaderConfig == nil {
-		return nil, fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", device.Board.Bootloader)
+		return nil, fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", *device.Board.Bootloader)
 	}
 
 	if bootloaderConfig != nil {
@@ -133,6 +140,10 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 
 	if device.Board.Debug != nil && device.Board.Debug.Enabled {
 		providedExtenders = append(providedExtenders, extenders.NewDebugUARTLog(*device.Board.Debug))
+
+		if device.Board.Debug.Console == extenders.DebugConsoleUSB {
+			providedExtenders = append(providedExtenders, extenders.NewUSBUART())
+		}
 	}
 
 	if len(device.Board.UART) != 0 {
@@ -185,5 +196,5 @@ func getBootloaderConfig(boardName, bootloader string) (*board.Bootloader, strin
 		return board.BootloaderConfig(bootloader), bootloader
 	}
 
-	return board.BoardBootloaderConfig(boardName)
+	return board.BootloaderConfigFromBoard(boardName)
 }
