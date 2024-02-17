@@ -20,5 +20,8 @@ func (OnOff) ReportAttrCount() int {
 }
 
 func (OnOff) Side() Side {
+	// This only allows to be controlled from the client,
+	// i.e. home assistant.
+	// But it cannot be controlled from device for now.
 	return Server
 }
