@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	None            Side = iota
 	Server          Side = 1 << iota
 	Client          Side = 1 << iota
 	ClientAndServer Side = Server | Client
@@ -31,6 +32,25 @@ type Cluster interface {
 }
 
 type Clusters []Cluster
+
+func (s Side) String() string {
+	switch s {
+	case Client:
+		return "ZB_ZCL_CLUSTER_CLIENT_ROLE"
+	case Server:
+		return "ZB_ZCL_CLUSTER_SERVER_ROLE"
+	default:
+		return "<unsupported>" // Idea is that build will break on invalid value.
+	}
+}
+
+func (s Side) IsClient() bool {
+	return s == Client
+}
+
+func (s Side) IsServer() bool {
+	return s == Server
+}
 
 func (s *Side) UnmarshalYAML(node *yaml.Node) error {
 	switch node.Value {

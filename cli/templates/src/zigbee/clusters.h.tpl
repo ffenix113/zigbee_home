@@ -37,7 +37,7 @@
 			{{.ID}},						\
 			ZB_ZCL_ARRAY_SIZE({{.CVarName}}_attr_list, zb_zcl_attr_t),			\
 			({{.CVarName}}_attr_list),							\
-			ZB_ZCL_CLUSTER_SERVER_ROLE,	 /* For now let's say all are server role. Later this can be cluster parameter */					\
+			{{.Side.String}},	\
 			MANUFACTURER_CODE						\
 			),									\
 		{{- end}}
