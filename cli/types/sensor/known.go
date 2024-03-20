@@ -39,7 +39,13 @@ func fromConstructor(constr any) func() Sensor {
 
 var knownSensors = map[string]func() Sensor{
 	// Generic
-	"on_off": fromType[*base.OnOff],
+	"on_off":  fromType[*base.OnOff],
+	"contact": fromConstructor(base.NewContact),
+	// Generic ias zone sensor.
+	// While it is defined here - for now it is
+	// not useful much, as it only can be used
+	// as contact sensor.
+	"ias_zone": fromType[*base.IASZone],
 
 	// Specific devices
 

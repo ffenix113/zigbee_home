@@ -34,7 +34,7 @@
 	{											\
 		{{- range $sensor.Clusters}}
 		ZB_ZCL_CLUSTER_DESC(								\
-			{{.ID}},						\
+			{{.ID.ToZCL}},						\
 			ZB_ZCL_ARRAY_SIZE({{.CVarName}}_attr_list, zb_zcl_attr_t),			\
 			({{.CVarName}}_attr_list),							\
 			{{.Side.String}},	\
@@ -62,7 +62,7 @@
 		{{$outClusterNum}},								\
 		{									\
 			{{- range $sensor.Clusters}}
-			{{.ID}}, \
+			{{.ID.ToZCL}}, \
 			{{- end}}
 		}									\
 	}

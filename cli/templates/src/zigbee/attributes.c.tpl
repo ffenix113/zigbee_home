@@ -25,5 +25,17 @@ typedef struct {
 	zb_int16_t max_measure_value;
 } zb_zcl_humidity_measurement_attrs_t;
 
+typedef struct {
+	zb_int8_t zone_state;
+	zb_int16_t zone_type;
+	zb_int16_t zone_status;
+	zb_uint8_t zone_id;
+	zb_int64_t ias_cie_address;
+	zb_int8_t cie_short_addr;
+	zb_int16_t cie_ep;
+	zb_uint8_t number_of_zone_sens_levels_supported;
+	zb_uint8_t current_zone_sens_level;
+} zb_zcl_ias_zone_attrs_t;
+
 //
 {{end}}

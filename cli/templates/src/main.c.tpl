@@ -29,6 +29,23 @@
 {{- end}}
 // Extender includes end
 
+// Define buttons and leds, so we can use them later.
+#define BUTTONS_NODE DT_PATH(buttons)
+#define LEDS_NODE DT_PATH(leds)
+#define GPIO_SPEC_AND_COMMA(button_or_led) GPIO_DT_SPEC_GET(button_or_led, gpios),
+
+static const struct gpio_dt_spec buttons[] = {
+#if DT_NODE_EXISTS(BUTTONS_NODE)
+	DT_FOREACH_CHILD(BUTTONS_NODE, GPIO_SPEC_AND_COMMA)
+#endif
+};
+
+static const struct gpio_dt_spec leds[] = {
+#if DT_NODE_EXISTS(LEDS_NODE)
+	DT_FOREACH_CHILD(LEDS_NODE, GPIO_SPEC_AND_COMMA)
+#endif
+};
+
 // Extender top levels
 {{- range .Extenders}}
 {{- maybeRenderExtender .Template "top_level" (sensorCtx 0 $.Device nil .)}}
@@ -53,6 +70,32 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #define DEVICE_INITIAL_DELAY_MSEC 10000
 
+typedef struct {
+	bool state;
+	bool has_changed;
+} zigbee_home_button_state;
+
+static const zigbee_home_button_state button_state_not_changed = {0};
+
+// Check if the passed in button is pressed or not.
+// This will iterate over all buttons, which is not efficient,
+// but it should be rather rare.
+static zigbee_home_button_state has_button_changed(const struct gpio_dt_spec * btn, uint32_t button_state, uint32_t has_changed) {
+	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
+		if (btn->port != buttons[i].port || btn->pin != buttons[i].pin) {
+			continue;
+		}
+
+		zigbee_home_button_state state;
+		state.state = button_state & BIT(i);
+		state.has_changed = true;
+
+		return state;
+	}
+
+	return button_state_not_changed;
+}
+
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
 	if (IDENTIFY_MODE_BUTTON & has_changed) {
@@ -73,6 +116,30 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
 			}
 		}
 	}
+
+	zigbee_home_button_state button_status = button_state_not_changed;
+	// Extender button change
+	{{- range .Extenders}}
+	{{- with maybeRenderExtender .Template "button_changed" (sensorCtx 0 $.Device nil .)}}
+	{
+		{{.}}
+	}
+	{{end}}
+	{{- end}}
+	// Extender button change end
+
+	// Sensor templates button change
+	{{- range $i, $sensor := .Device.Sensors}}
+	{{- $endpoint := (sum $i 1)}}
+	{{- with maybeRenderExtender $sensor.Template "button_changed" (sensorCtx $endpoint $.Device $sensor nil)}}
+	{
+		// -- {{$sensor}}, for endpoint {{$i}}
+		{{.}}
+		// -- {{$sensor}}, for endpoint {{$i}} end
+	}
+	{{end}}
+	{{- end}}
+	// Sensor templates button change end
 
 	check_factory_reset_button(button_state, has_changed);
 }

@@ -43,35 +43,46 @@
 
 package cluster
 
+import "fmt"
+
 type ID int
 
-func (id ID) String() string {
+func (id ID) ToZCL() (string, error) {
+	var value string
+
 	switch id {
 	case ID_BASIC:
-		return "ZB_ZCL_CLUSTER_ID_BASIC"
+		value = "ZB_ZCL_CLUSTER_ID_BASIC"
 	case ID_DEVICE_TEMP_CONFIG:
-		return "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
+		value = "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
 	case ID_IDENTIFY:
-		return "ZB_ZCL_CLUSTER_ID_IDENTIFY"
+		value = "ZB_ZCL_CLUSTER_ID_IDENTIFY"
 	case ID_ON_OFF:
-		return "ZB_ZCL_CLUSTER_ID_ON_OFF"
+		value = "ZB_ZCL_CLUSTER_ID_ON_OFF"
 	case ID_TEMP_MEASUREMENT:
-		return "ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT"
+		value = "ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT"
 	case ID_PRESSURE_MEASUREMENT:
-		return "ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT"
+		value = "ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT"
 	case ID_REL_HUMIDITY_MEASUREMENT:
-		return "ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT"
+		value = "ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT"
 	case ID_CARBON_DIOXIDE:
-		return "ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE"
+		value = "ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE"
+	case ID_IAS_ZONE:
+		value = "ZB_ZCL_CLUSTER_ID_IAS_ZONE"
 	}
 
-	return "<unknown>"
+	if value == "" {
+		return "", fmt.Errorf("cluster ID %d does not have string represenstation", id)
+	}
+
+	return value, nil
 }
 
 const ID_BASIC ID = 0              // Basic cluster identifier.
 const ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
 const ID_IDENTIFY ID = 3           // Identify cluster identifier.
 const ID_ON_OFF ID = 6             // On/Off cluster identifier.
+const ID_IAS_ZONE ID = 0x0500
 
 /* Measurement and Sensing */
 const ID_TEMP_MEASUREMENT ID = 1026         // Temperature measurement

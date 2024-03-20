@@ -34,6 +34,7 @@ var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_REL_HUMIDITY_MEASUREMENT: "humidity",
 	cluster.ID_PRESSURE_MEASUREMENT:     "pressure",
 	cluster.ID_CARBON_DIOXIDE:           "carbon_dioxide",
+	cluster.ID_IAS_ZONE:                 "ias_zone",
 }
 
 type Templates struct {
@@ -313,7 +314,8 @@ func (t *Templates) findExtendedTemplate(templateName string) *template.Template
 func (t *Templates) clusterTpl(clusterID cluster.ID, tplSuffix string) (string, error) {
 	tplName, ok := knownClusterTemplates[clusterID]
 	if !ok {
-		return "", fmt.Errorf("unknown cluster ID: %q", clusterID.String())
+		val, _ := clusterID.ToZCL()
+		return "", fmt.Errorf("unknown cluster ID: %q(%d)", val, clusterID)
 	}
 
 	return tplName + "_" + tplSuffix, nil
