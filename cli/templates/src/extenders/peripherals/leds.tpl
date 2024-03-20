@@ -1,6 +1,6 @@
 {{/* The templates are non-empty to force their usage. */}}
 {{ define "top_level" }}
-{{- range .Device.Board.LEDs }}
+{{- range .Extender.Instances }}
 static struct gpio_dt_spec {{.ID}} = GPIO_DT_SPEC_GET(DT_NODELABEL({{.ID}}), gpios);
 {{- end }}
 {{end}}
@@ -10,7 +10,7 @@ static struct gpio_dt_spec {{.ID}} = GPIO_DT_SPEC_GET(DT_NODELABEL({{.ID}}), gpi
 {{end}}
 
 {{ define "main"}}
-{{- range .Device.Board.LEDs}}
+{{- range .Extender.Instances}}
 int ret = gpio_pin_configure_dt(&{{.ID}}, GPIO_OUTPUT);
 if (ret != 0) {
     LOG_ERR("Error %d: failed to configure LED device %s pin %d\n",

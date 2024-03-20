@@ -11,6 +11,22 @@ type KnownNode interface {
 	AttachSelf(dt *DeviceTree) error
 }
 
+// Verify that pin implements both interfaces
+var _ interface {
+	LED
+	Button
+} = pin{}
+
+type LED interface {
+	KnownNode
+	led()
+}
+
+type Button interface {
+	KnownNode
+	button()
+}
+
 type UART struct {
 	Tx, Rx types.Pin
 }
@@ -63,13 +79,32 @@ func (u UART) AttachSelf(dt *DeviceTree) error {
 	return nil
 }
 
-type LED struct {
-	ID  string
-	Pin types.Pin
+func NewLED(ledPin types.Pin) LED {
+	return pin{
+		Pin: ledPin,
+
+		nodeName:   "leds",
+		compatible: "gpio-leds",
+	}
 }
 
-func (p LED) AttachSelf(dt *DeviceTree) error {
-	pinName := p.ID
+func NewButton(btnPin types.Pin) Button {
+	return pin{
+		Pin: btnPin,
+
+		nodeName:   "buttons",
+		compatible: "gpio-keys",
+	}
+}
+
+type pin struct {
+	Pin types.Pin
+
+	nodeName, compatible string
+}
+
+func (p pin) AttachSelf(dt *DeviceTree) error {
+	pinName := p.Pin.ID
 	if pinName == "" {
 		pinName = p.Pin.Label()
 	}
@@ -78,19 +113,18 @@ func (p LED) AttachSelf(dt *DeviceTree) error {
 	aliases.Properties = append(aliases.Properties,
 		NewProperty(strings.ReplaceAll(pinName, "_", "-"), Label(pinName)))
 
-	// If pin is not re-defined - do not add its configuration.
+	// If pin is not defined - do not add its configuration.
 	if p.Pin.Pin == 0 {
 		return nil
 	}
 
-	const pinsNodeName = "pins"
-	pinsNode := dt.FindSpecificNode(SearchByName(NodeNameRoot), SearchByName(pinsNodeName))
+	pinsNode := dt.FindSpecificNode(SearchByName(NodeNameRoot), SearchByName(p.nodeName))
 	if pinsNode == nil {
 		pinsNode = &Node{
-			Name:  pinsNodeName,
-			Label: pinsNodeName,
+			Name:  p.nodeName,
+			Label: p.nodeName,
 			Properties: []Property{
-				NewProperty(PropertyNameCompatible, FromValue("gpio-leds")),
+				NewProperty(PropertyNameCompatible, FromValue(p.compatible)),
 			},
 		}
 
@@ -112,3 +146,6 @@ func (p LED) AttachSelf(dt *DeviceTree) error {
 
 	return nil
 }
+
+func (pin) led()    {}
+func (pin) button() {}

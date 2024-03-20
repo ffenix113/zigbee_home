@@ -3,6 +3,7 @@ package extenders
 import (
 	"fmt"
 
+	"github.com/ffenix113/zigbee_home/cli/types"
 	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
 	"github.com/ffenix113/zigbee_home/cli/types/generator"
 )
@@ -13,10 +14,10 @@ var _ devicetree.Applier = LED{}
 type LED struct {
 	generator.SimpleExtender
 
-	Instances []devicetree.LED
+	Instances []types.Pin
 }
 
-func NewLEDs(instances ...devicetree.LED) generator.Extender {
+func NewLEDs(instances ...types.Pin) generator.Extender {
 	return LED{
 		Instances: instances,
 	}
@@ -32,7 +33,8 @@ func (l LED) Includes() []string {
 
 func (l LED) ApplyOverlay(dt *devicetree.DeviceTree) error {
 	for _, instance := range l.Instances {
-		if err := instance.AttachSelf(dt); err != nil {
+		ledInstance := devicetree.NewLED(instance)
+		if err := ledInstance.AttachSelf(dt); err != nil {
 			return fmt.Errorf("attach led: %w", err)
 		}
 	}

@@ -9,7 +9,7 @@ import (
 
 	"github.com/ffenix113/zigbee_home/cli/sensor/base"
 	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
-	"github.com/ffenix113/zigbee_home/cli/types/devicetree"
+	"github.com/ffenix113/zigbee_home/cli/types"
 	"github.com/ffenix113/zigbee_home/cli/types/sensor"
 	"gopkg.in/yaml.v3"
 )
@@ -42,7 +42,7 @@ type Board struct {
 	Bootloader *string
 	Debug      *extenders.DebugConfig
 	IsRouter   bool `yaml:"is_router"`
-	LEDs       []devicetree.LED
+	LEDs       []types.Pin
 	I2C        []extenders.I2CInstance
 	UART       []extenders.UARTInstance
 }

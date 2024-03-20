@@ -10,6 +10,7 @@ import (
 )
 
 type Pin struct {
+	ID       string
 	Port     int
 	Pin      int
 	Inverted bool
