@@ -92,7 +92,6 @@ type DefaultAppConfigOptions struct {
 
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
-		CONFIG_USB_DEVICE_STACK,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,

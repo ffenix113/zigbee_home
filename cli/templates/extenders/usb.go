@@ -21,7 +21,7 @@ func NewUSBUART() generator.Extender {
 		},
 		Config: []appconfig.ConfigValue{
 			appconfig.CONFIG_USB_DEVICE_STACK.Required(appconfig.Yes),
-			appconfig.CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT.Required(appconfig.Yes),
+			appconfig.CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT.Required(appconfig.No),
 		},
 		OverlayFn: applyOverlay,
 	}

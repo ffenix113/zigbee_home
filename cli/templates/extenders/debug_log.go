@@ -55,6 +55,9 @@ func NewDebugUARTLog(config DebugConfig) generator.Extender {
 			appconfig.CONFIG_CONSOLE.Required(appconfig.Yes),
 			appconfig.CONFIG_SERIAL.Required(appconfig.Yes),
 			appconfig.CONFIG_LOG_BACKEND_UART.Required(appconfig.Yes),
+			appconfig.CONFIG_UART_CONSOLE.Required(appconfig.Yes),
+			appconfig.CONFIG_UART_LINE_CTRL.Required(appconfig.Yes),
+			appconfig.CONFIG_PRINTK.Required(appconfig.Yes),
 
 			// ZBHome Debug enable
 			appconfig.NewValue("CONFIG_ZBHOME_DEBUG_ENABLE").Required(appconfig.Yes),
