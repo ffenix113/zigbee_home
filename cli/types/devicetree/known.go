@@ -45,13 +45,13 @@ func (u UART) AttachSelf(dt *DeviceTree) error {
 				{
 					Name: "group1",
 					Properties: []Property{
-						NewProperty("psels", NrfPSel("UART_TX", u.Tx.Port, u.Tx.Pin)),
+						NewProperty("psels", NrfPSel("UART_TX", u.Tx.Port.Value(), u.Tx.Pin.Value())),
 					},
 				},
 				{
 					Name: "group2",
 					Properties: []Property{
-						NewProperty("psels", NrfPSel("UART_RX", u.Rx.Port, u.Rx.Pin)),
+						NewProperty("psels", NrfPSel("UART_RX", u.Rx.Port.Value(), u.Rx.Pin.Value())),
 						NewProperty("bias-pull-up", nil),
 					},
 				},
@@ -67,8 +67,8 @@ func (u UART) AttachSelf(dt *DeviceTree) error {
 				Name: "group1",
 				Properties: []Property{
 					NewProperty("psels", Array(
-						NrfPSel("UART_TX", u.Tx.Port, u.Tx.Pin),
-						NrfPSel("UART_RX", u.Rx.Port, u.Rx.Pin),
+						NrfPSel("UART_TX", u.Tx.Port.Value(), u.Tx.Pin.Value()),
+						NrfPSel("UART_RX", u.Rx.Port.Value(), u.Rx.Pin.Value()),
 					)),
 					NewProperty("low-power-enable", nil),
 				},
@@ -114,7 +114,7 @@ func (p pin) AttachSelf(dt *DeviceTree) error {
 		NewProperty(strings.ReplaceAll(pinName, "_", "-"), Label(pinName)))
 
 	// If pin is not defined - do not add its configuration.
-	if p.Pin.Pin == 0 {
+	if !p.Pin.PinsDefined() {
 		return nil
 	}
 

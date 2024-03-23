@@ -43,7 +43,7 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 	for _, instance := range i.Instances {
 		// Add pin definitions only if we have some.
 		// Otherwise just enable the I2C instance.
-		if instance.SDA.Pin != 0 && instance.SCL.Pin != 0 {
+		if instance.SDA.PinsDefined() && instance.SCL.PinsDefined() {
 			pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
 		}
 
@@ -78,8 +78,8 @@ func buildI2CNode(i I2CInstance, lowPowerEnable bool) *devicetree.Node {
 		Properties: []devicetree.Property{
 			devicetree.NewProperty("psels",
 				devicetree.Array(
-					devicetree.NrfPSel("TWIM_SDA", i.SDA.Port, i.SDA.Pin),
-					devicetree.NrfPSel("TWIM_SCL", i.SCL.Port, i.SCL.Pin),
+					devicetree.NrfPSel("TWIM_SDA", i.SDA.Port.Value(), i.SDA.Pin.Value()),
+					devicetree.NrfPSel("TWIM_SCL", i.SCL.Port.Value(), i.SCL.Pin.Value()),
 				),
 			),
 		},
