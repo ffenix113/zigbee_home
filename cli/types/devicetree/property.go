@@ -92,7 +92,7 @@ func FromValue(val any) PropertyValue {
 	switch typed := val.(type) {
 	case string:
 		return Quoted(typed)
-	case int, int8:
+	case uint8, int, int8:
 		return Angled(rawValue(fmt.Sprintf("%d", val)))
 	}
 

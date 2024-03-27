@@ -5,6 +5,7 @@ go 1.21.4
 require (
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.26.0
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8
 	gopkg.in/yaml.v3 v3.0.1
 )
 

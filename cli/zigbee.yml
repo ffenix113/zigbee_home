@@ -127,3 +127,7 @@ sensors:
   #     port: 0
   #     pin: 6
   #     inverted: true
+  # power_configuration uses ADC to measure positive voltage
+  # on pin 0.04 and report it as a battery voltage.
+  # - type: power_configuration
+  #   adc_pin: 0.04

@@ -17,8 +17,20 @@ type Pin struct {
 	Inverted bool
 }
 
+func (p Pin) Name() string {
+	if p.ID != "" {
+		return p.ID
+	}
+
+	return p.Label()
+}
+
 func (p Pin) Label() string {
-	return fmt.Sprintf("pin%d%d", p.Port, p.Pin)
+	return fmt.Sprintf("pin%s", p.NumericLabel())
+}
+
+func (p Pin) NumericLabel() string {
+	return fmt.Sprintf("%d%d", p.Port, p.Pin)
 }
 
 func (p Pin) PinsDefined() bool {

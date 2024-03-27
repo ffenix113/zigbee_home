@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -28,6 +27,7 @@ var TemplateFS embed.FS
 
 var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_BASIC:                    "basic",
+	cluster.ID_POWER_CONFIG:             "power_config",
 	cluster.ID_DEVICE_TEMP_CONFIG:       "device_temp_config",
 	cluster.ID_ON_OFF:                   "on_off",
 	cluster.ID_TEMP_MEASUREMENT:         "temperature",
@@ -68,6 +68,7 @@ type Context struct {
 
 type ContextWithAdditional struct {
 	Context
+	Extender          generator.Extender
 	AdditionalContext any
 }
 
@@ -212,7 +213,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 			if err := writeTemplate(
 				template,
 				path.Join(srcDir, fileToWrite.FileName),
-				ContextWithAdditional{Context: ctx, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
+				ContextWithAdditional{Context: ctx, Extender: extender, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
 				return fmt.Errorf("write extender file %q: %w", fileToWrite.FileName, err)
 			}
 		}
@@ -397,8 +398,13 @@ func sum(a, b int) int {
 	return a + b
 }
 
-func formatHex(i int) string {
-	return "0x" + strconv.FormatInt(int64(i), 16)
+func formatHex(val any) (string, error) {
+	switch i := val.(type) {
+	case uint8, int8, int:
+		return fmt.Sprintf("%#x", i), nil
+	default:
+		return "", fmt.Errorf("unknown type to format: %T", val)
+	}
 }
 
 func must(err error) {

@@ -53,6 +53,8 @@ func (id ID) ToZCL() (string, error) {
 	switch id {
 	case ID_BASIC:
 		value = "ZB_ZCL_CLUSTER_ID_BASIC"
+	case ID_POWER_CONFIG:
+		value = "ZB_ZCL_CLUSTER_ID_POWER_CONFIG"
 	case ID_DEVICE_TEMP_CONFIG:
 		value = "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
 	case ID_IDENTIFY:
@@ -82,10 +84,12 @@ const ID_BASIC ID = 0              // Basic cluster identifier.
 const ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
 const ID_IDENTIFY ID = 3           // Identify cluster identifier.
 const ID_ON_OFF ID = 6             // On/Off cluster identifier.
-const ID_IAS_ZONE ID = 0x0500
+const ID_POWER_CONFIG ID = 1
 
 /* Measurement and Sensing */
 const ID_TEMP_MEASUREMENT ID = 1026         // Temperature measurement
 const ID_PRESSURE_MEASUREMENT ID = 1027     // Pressure measurement
 const ID_REL_HUMIDITY_MEASUREMENT ID = 1029 // Relative humidity measurement
 const ID_CARBON_DIOXIDE ID = 0x040d
+
+const ID_IAS_ZONE ID = 0x0500
