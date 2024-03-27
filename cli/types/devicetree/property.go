@@ -3,7 +3,6 @@ package devicetree
 import (
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 )
 
@@ -65,11 +64,10 @@ func Label(label string) PropertyValue {
 
 // NrfPSel
 // Reference: https://docs.zephyrproject.org/apidoc/latest/nrf-pinctrl_8h.html
-func NrfPSel(fun string, port, pin int) PropertyValue {
-	portStr := strconv.Itoa(port)
-	pinStr := strconv.Itoa(pin)
+func NrfPSel(fun string, port, pin uint8) PropertyValue {
+	formatted := fmt.Sprintf("NRF_PSEL(%s, %d, %d)")
 
-	return Angled(rawValue("NRF_PSEL(" + fun + ", " + portStr + ", " + pinStr + ")"))
+	return Angled(rawValue(formatted))
 }
 
 func Angled(value PropertyValue) PropertyValue {
@@ -94,7 +92,7 @@ func FromValue(val any) PropertyValue {
 	switch typed := val.(type) {
 	case string:
 		return Quoted(typed)
-	case int, int8:
+	case uint8, int, int8:
 		return Angled(rawValue(fmt.Sprintf("%d", val)))
 	}
 

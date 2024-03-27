@@ -58,7 +58,7 @@ func (i UART) ApplyOverlay(dt *devicetree.DeviceTree) error {
 
 		// Add pin definitions only if we have some.
 		// Otherwise just enable the UART instance.
-		if instance.RX.Pin != 0 && instance.TX.Pin != 0 {
+		if instance.RX.PinsDefined() && instance.TX.PinsDefined() {
 			pinctrl.AddNodes(buildPinctrlUART(instance.ID, instance)...)
 		}
 
@@ -103,8 +103,8 @@ func buildUARTNode(i UARTInstance, lowPowerEnable bool) *devicetree.Node {
 		Properties: []devicetree.Property{
 			devicetree.NewProperty("psels",
 				devicetree.Array(
-					devicetree.NrfPSel("UART_TX", i.TX.Port, i.TX.Pin),
-					devicetree.NrfPSel("UART_RX", i.RX.Port, i.RX.Pin),
+					devicetree.NrfPSel("UART_TX", i.TX.Port.Value(), i.TX.Pin.Value()),
+					devicetree.NrfPSel("UART_RX", i.RX.Port.Value(), i.RX.Pin.Value()),
 				),
 			),
 		},
