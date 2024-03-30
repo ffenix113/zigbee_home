@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	"github.com/ffenix113/zigbee_home/cli/config"
 	"github.com/ffenix113/zigbee_home/cli/generate"
@@ -35,7 +36,10 @@ func buildFirmware(ctx *cli.Context) error {
 	}
 
 	// Will work in the future.
-	workDir := ctx.String("workdir")
+	workDir, err := filepath.Abs(ctx.String("workdir"))
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
 	if workDir == "" {
 		workDir = "."
 	}
