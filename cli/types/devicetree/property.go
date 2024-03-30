@@ -65,7 +65,7 @@ func Label(label string) PropertyValue {
 // NrfPSel
 // Reference: https://docs.zephyrproject.org/apidoc/latest/nrf-pinctrl_8h.html
 func NrfPSel(fun string, port, pin uint8) PropertyValue {
-	formatted := fmt.Sprintf("NRF_PSEL(%s, %d, %d)")
+	formatted := fmt.Sprintf("NRF_PSEL(%s, %d, %d)", fun, port, pin)
 
 	return Angled(rawValue(formatted))
 }
