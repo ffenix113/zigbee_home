@@ -38,12 +38,11 @@ typedef struct {
 } zb_zcl_ias_zone_attrs_t;
 
 typedef struct {
-	zb_int8_t voltage;
-	zb_int16_t size;
-	zb_int16_t quantity;
+	zb_uint8_t voltage;
 	zb_uint8_t rated_voltage;
-	zb_int64_t alarm_mask;
-	zb_int8_t voltage_min_threshold;
+	zb_uint8_t alarm_mask;
+	zb_uint8_t voltage_min_threshold;
+	zb_uint8_t percentage_remaining;
 } zb_zcl_power_config_attrs_t;
 
 //

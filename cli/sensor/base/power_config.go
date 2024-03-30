@@ -19,7 +19,7 @@ func (*PowerConfiguration) String() string {
 }
 
 func (*PowerConfiguration) Template() string {
-	return "sensors/common"
+	return "sensors/power_config"
 }
 
 func (o *PowerConfiguration) Clusters() cluster.Clusters {

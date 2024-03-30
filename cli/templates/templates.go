@@ -400,7 +400,8 @@ func sum(a, b int) int {
 
 func formatHex(val any) (string, error) {
 	switch i := val.(type) {
-	case uint8, int8, int:
+	case uint8, uint16, uint32, uint64, uint,
+		int8, int16, int32, int64, int:
 		return fmt.Sprintf("%#x", i), nil
 	default:
 		return "", fmt.Errorf("unknown type to format: %T", val)

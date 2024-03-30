@@ -127,7 +127,11 @@ sensors:
   #     port: 0
   #     pin: 6
   #     inverted: true
-  # power_configuration uses ADC to measure positive voltage
+  # power_config uses ADC to measure positive voltage
   # on pin 0.04 and report it as a battery voltage.
-  # - type: power_configuration
+  # ZCL 4.9 will be implemented to do general 
+  # electricity measurements through ADC.
+  # Capacitive mositure sensors would be added
+  # with ZCL 4.7.
+  # - type: power_config
   #   adc_pin: 0.04
