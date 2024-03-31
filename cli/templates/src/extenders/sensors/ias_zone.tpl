@@ -17,6 +17,10 @@ void update_zone_status(zb_bufid_t bufid, bool status) {
 		ZB_ZCL_IAS_ZONE_CLEAR_BITS(bufid, 2, ZB_ZCL_IAS_ZONE_ZONE_STATUS_ALARM1);
 		break;
 	}
+
+	if (bufid) {
+		zb_buf_free(bufid);
+	}
 }
 {{ end }}
 

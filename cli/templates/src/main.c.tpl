@@ -253,6 +253,10 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	}
 
 	LOG_INF("%s status: %hd", __func__, device_cb_param->status);
+
+	if (bufid) {
+		zb_buf_free(bufid);
+	}
 }
 
 static void loop(zb_bufid_t bufid) 
@@ -289,6 +293,10 @@ static void loop(zb_bufid_t bufid)
 					ZB_MILLISECONDS_TO_BEACON_INTERVAL({{.Device.General.RunEvery.Milliseconds}}));
 	if (zb_err) {
 		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
+	}
+
+	if (bufid) {
+		zb_buf_free(bufid);
 	}
 }
 
