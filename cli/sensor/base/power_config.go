@@ -23,8 +23,11 @@ func (*PowerConfiguration) Template() string {
 }
 
 func (o *PowerConfiguration) Clusters() cluster.Clusters {
+	clusterConfig := o.PowerConfiguration
+	clusterConfig.BatteryRatedVoltage /= 100
+	clusterConfig.BatteryVoltageMinThreshold /= 100
 	return []cluster.Cluster{
-		o.PowerConfiguration,
+		clusterConfig,
 	}
 }
 

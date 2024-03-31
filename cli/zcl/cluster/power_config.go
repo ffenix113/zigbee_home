@@ -1,9 +1,8 @@
 package cluster
 
 type PowerConfiguration struct {
-	BatterySize                uint8 `yaml:"battery_size"`
-	BatteryRatedVoltage        uint8 `yaml:"battery_rated_voltage"`
-	BatteryVoltageMinThreshold uint8 `yaml:"battery_voltage_min_threshold"`
+	BatteryRatedVoltage        uint16 `yaml:"battery_rated_voltage"`
+	BatteryVoltageMinThreshold uint16 `yaml:"battery_voltage_min_threshold"`
 }
 
 func (o PowerConfiguration) ID() ID {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ffenix113/zigbee_home/cli/types"
 	"golang.org/x/exp/maps"
+	"gopkg.in/yaml.v3"
 )
 
 var resolutions = []uint8{8, 10, 12, 14}
@@ -28,9 +29,9 @@ var referenecs = map[string]string{
 }
 
 var aquisitionTimeUnits = map[string]string{
-	"ms": "ADC_ACQ_TIME_MICROSECONDS",
-	"ns": "ADC_ACQ_TIME_NANOSECONDS",
-	"t":  "ADC_ACQ_TIME_TICKS",
+	"ms":    "ADC_ACQ_TIME_MICROSECONDS",
+	"ns":    "ADC_ACQ_TIME_NANOSECONDS",
+	"ticks": "ADC_ACQ_TIME_TICKS",
 }
 
 type aquisitionTime struct {
@@ -55,7 +56,20 @@ type ADCPin struct {
 	Oversampling   uint8
 	AquisitionTime aquisitionTime
 
-	types.Pin
+	Pin types.Pin
+}
+
+func (p ADCPin) Name() string {
+	return p.Pin.Name()
+}
+
+func (p *ADCPin) UnmarshalYAML(node *yaml.Node) error {
+	if node.Kind == yaml.ScalarNode {
+		return p.Pin.UnmarshalYAML(node)
+	}
+
+	type a ADCPin
+	return node.Decode((*a)(p))
 }
 
 func (p ADCPin) AttachSelf(dt *DeviceTree) error {

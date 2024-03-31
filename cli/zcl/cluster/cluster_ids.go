@@ -71,6 +71,8 @@ func (id ID) ToZCL() (string, error) {
 		value = "ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE"
 	case ID_IAS_ZONE:
 		value = "ZB_ZCL_CLUSTER_ID_IAS_ZONE"
+	case ID_SOIL_MOISTURE_MEASUREMENT:
+		value = "ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE"
 	}
 
 	if value == "" {
@@ -87,9 +89,10 @@ const ID_ON_OFF ID = 6             // On/Off cluster identifier.
 const ID_POWER_CONFIG ID = 1
 
 /* Measurement and Sensing */
-const ID_TEMP_MEASUREMENT ID = 1026         // Temperature measurement
-const ID_PRESSURE_MEASUREMENT ID = 1027     // Pressure measurement
-const ID_REL_HUMIDITY_MEASUREMENT ID = 1029 // Relative humidity measurement
+const ID_TEMP_MEASUREMENT ID = 0x0402          // Temperature measurement
+const ID_PRESSURE_MEASUREMENT ID = 0x0403      // Pressure measurement
+const ID_REL_HUMIDITY_MEASUREMENT ID = 0x0405  // Relative humidity measurement
+const ID_SOIL_MOISTURE_MEASUREMENT ID = 0x0408 // Soil moisture measurement
 const ID_CARBON_DIOXIDE ID = 0x040d
 
 const ID_IAS_ZONE ID = 0x0500

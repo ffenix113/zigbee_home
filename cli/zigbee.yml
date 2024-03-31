@@ -127,6 +127,7 @@ sensors:
   #     port: 0
   #     pin: 6
   #     inverted: true
+  #
   # power_config uses ADC to measure positive voltage
   # on pin 0.04 and report it as a battery voltage.
   # ZCL 4.9 will be implemented to do general 
@@ -135,3 +136,17 @@ sensors:
   # with ZCL 4.7.
   # - type: power_config
   #   adc_pin: 0.04
+  #   battery_rated_voltage: 3000
+  #   battery_voltage_min_threshold: 2500
+  #
+  # This example is crude example of using soil_moisture_adc
+  # sensor to get water moisture percentage.
+  #
+  # Note: min & max mv values may differ for your sensor,
+  # so please test it and adjust them accordingly!
+  # - type: soil_moisture_adc
+  #   adc_pin: 
+  #     pin: 0.04
+  #     oversampling: 4
+  #   min_moisture_mv: 730
+  #   max_moisture_mv: 430

@@ -25,16 +25,20 @@ import (
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var TemplateFS embed.FS
 
+// This map can be removed in favor of cluster telling
+// which template it want's to use, or try
+// CVarName value as template as well.
 var knownClusterTemplates = map[cluster.ID]string{
-	cluster.ID_BASIC:                    "basic",
-	cluster.ID_POWER_CONFIG:             "power_config",
-	cluster.ID_DEVICE_TEMP_CONFIG:       "device_temp_config",
-	cluster.ID_ON_OFF:                   "on_off",
-	cluster.ID_TEMP_MEASUREMENT:         "temperature",
-	cluster.ID_REL_HUMIDITY_MEASUREMENT: "humidity",
-	cluster.ID_PRESSURE_MEASUREMENT:     "pressure",
-	cluster.ID_CARBON_DIOXIDE:           "carbon_dioxide",
-	cluster.ID_IAS_ZONE:                 "ias_zone",
+	cluster.ID_BASIC:                     "basic",
+	cluster.ID_POWER_CONFIG:              "power_config",
+	cluster.ID_DEVICE_TEMP_CONFIG:        "device_temp_config",
+	cluster.ID_ON_OFF:                    "on_off",
+	cluster.ID_TEMP_MEASUREMENT:          "temperature",
+	cluster.ID_REL_HUMIDITY_MEASUREMENT:  "humidity",
+	cluster.ID_PRESSURE_MEASUREMENT:      "pressure",
+	cluster.ID_CARBON_DIOXIDE:            "carbon_dioxide",
+	cluster.ID_IAS_ZONE:                  "ias_zone",
+	cluster.ID_SOIL_MOISTURE_MEASUREMENT: "water_content",
 }
 
 type Templates struct {
