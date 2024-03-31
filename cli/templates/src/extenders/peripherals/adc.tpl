@@ -5,12 +5,7 @@ static const struct adc_dt_spec adc_channel_{{$instance.Name}} = ADC_DT_SPEC_GET
 {{end}}
 {{end}}
 
-{{ define "loop"}}
-int32_t adc_val_mv;
-{{ range .Extender.Instances }}
-(void)zigbee_home_read_adc_mv(&adc_channel_{{.Name}}, &adc_val_mv);
-{{end}}
-{{end}}
+{{ define "loop"}} {{end}}
 
 
 {{ define "main"}}
