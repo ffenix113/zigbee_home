@@ -28,10 +28,7 @@ func (SCD4X) Clusters() cluster.Clusters {
 			MaxMeasuredValue: 60,
 			Tolerance:        1,
 		},
-		cluster.RelativeHumidity{
-			MinMeasuredValue: 0,
-			MaxMeasuredValue: 100,
-		},
+		cluster.NewRelativeHumidity(0, 100),
 		cluster.CarbonDioxide{
 			MinMeasuredValue: 400,
 			MaxMeasuredValue: 5000,

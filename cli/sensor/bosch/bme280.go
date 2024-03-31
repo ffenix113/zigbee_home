@@ -39,10 +39,7 @@ func (BME280) Clusters() cluster.Clusters {
 			MaxMeasuredValue: 110,
 			Tolerance:        0,
 		},
-		cluster.RelativeHumidity{
-			MinMeasuredValue: 10,
-			MaxMeasuredValue: 90,
-		},
+		cluster.NewRelativeHumidity(10, 90),
 	}
 }
 
