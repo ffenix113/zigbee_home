@@ -98,6 +98,10 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 		"/usr/bin",
 		"/usr/local/bin",
 		"/opt/bin",
+		"/opt/nanopb/generator-bin",
+		"/opt/zephyr-sdk/aarch64-zephyr-elf/bin",
+		"/opt/zephyr-sdk/x86_64-zephyr-elf/bin",
+		"/opt/zephyr-sdk/arm-zephyr-eabi/bin",
 	})
 
 	envPath := os.Getenv("PATH")
@@ -106,12 +110,24 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 		combinedPath += ":" + envPath
 	}
 
+	pythonPath := generateEnvArray(ncsToolchainPath, []string{
+		"/usr/local/lib/python3.8",
+		"/usr/local/lib/python3.8/site-packages",
+	})
+
 	ldLibraryPath := generateEnvArray(ncsToolchainPath, []string{
-        "/usr/local/lib/",
+		"/usr/lib",
+		"/usr/lib/x86_64-linux-gnu",
+		"/usr/local/lib",
 	})
 
 	return []string{
 		"PATH=" + combinedPath,
+		"ZEPHYR_BASE=" + zephyrPath,
+		"ZEPHYR_SDK_INSTALL_DIR=" + path.Join(ncsToolchainPath, "/opt/zephyr-sdk"),
+		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
+		"PYTHOHOME=" + path.Join(ncsCombinedPath, "/usr/local"),
+		"PYTHONPATH=" + pythonPath,
 		"LD_LIBRARY_PATH=" + ldLibraryPath,
 	}
 }
