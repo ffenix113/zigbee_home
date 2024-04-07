@@ -103,11 +103,10 @@ board:
       rx: 1.10
   leds:
     - id: led_green
-      # The `pin` section is optional, if led is already present in board definition.
-      pin:
-        port: 0
-        pin: 6
-        inverted: true
+      # The pin definition is optional, if led is already present in board definition.
+      port: 0
+      pin: 6
+      inverted: true
 
 sensors:
   # - type: bme680
