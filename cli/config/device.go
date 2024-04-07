@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"slices"
 	"strings"
@@ -23,6 +24,7 @@ type Device struct {
 
 type General struct {
 	NCSToolChainBase string `yaml:"ncs_toolchain_base"`
+	NCSVersion       string `yaml:"ncs_version"`
 	ZephyrBase       string `yaml:"zephyr_base"`
 
 	Manufacturer string
@@ -50,12 +52,9 @@ type Board struct {
 func ParseFromFile(configPath string) (*Device, error) {
 	cfg := &Device{
 		General: General{
-			RunEvery: time.Minute,
-			// Path for v2.5.0
-			// TODO: there is nice config file in ~/ncs/toolchains/toolchains.json
-			// which can be used to determine location of necessary toolchain.
-			NCSToolChainBase: "~/ncs/toolchains/7795df4459/",
-			ZephyrBase:       "~/ncs/zephyr/",
+			RunEvery:         time.Minute,
+			NCSToolChainBase: "~/ncs",
+			NCSVersion:       "v2.5.0",
 		},
 	}
 
@@ -100,14 +99,30 @@ func (d *Device) PrependCommonClusters() {
 func (g General) GetToochainsPath() (string, string) {
 	// If env variables are defined - they have higher priority.
 	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
+	ncsVersion := os.Getenv("NCS_VERSION")
 	zephyrPath := os.Getenv("ZEPHYR_BASE")
 
+	if ncsVersion == "" {
+		ncsVersion = g.NCSVersion
+	}
+
+	var locations NCSLocation
+	if ncsToolchainPath == "" || zephyrPath == "" {
+		var err error
+		locations, err = FindNCSLocation(g.NCSToolChainBase, ncsVersion)
+		if err != nil {
+			log.Panicf("find ncs location: %s", err.Error())
+		}
+
+		log.Printf("found toolchain version %q, requested version %q", locations.Version, ncsVersion)
+	}
+
 	if ncsToolchainPath == "" {
-		ncsToolchainPath = g.NCSToolChainBase
+		ncsToolchainPath = locations.NCS
 	}
 
 	if zephyrPath == "" {
-		zephyrPath = g.ZephyrBase
+		zephyrPath = locations.Zephyr
 	}
 
 	return ncsToolchainPath, zephyrPath

@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -77,7 +78,13 @@ func WithWorkDir(workDir string) CmdOpt {
 // WithToolchainPath updates environment of command
 // to inlcude necessary variables for building firmware.
 func WithToolchainPath(ncsToolchainBase, zephyrBase string) CmdOpt {
-	if ncsToolchainBase == "" || zephyrBase == "" {
+	// For now check that we don't want to setup env here,
+	// and move it to CLI ASAP.
+	// This could be useful if run inside environment that
+	// is already set up properly.
+	if noSetupEnv() || ncsToolchainBase == "" || zephyrBase == "" {
+		log.Println("environment will not be prepared because either one of the paths is empty, or requested not to")
+
 		return func(c *exec.Cmd) {}
 	}
 
@@ -107,13 +114,8 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 	envPath := os.Getenv("PATH")
 	combinedPath := ncsCombinedPath
 	if envPath != "" {
-		combinedPath += ":" + envPath
+		combinedPath += string(os.PathListSeparator) + envPath
 	}
-
-	pythonPath := generateEnvArray(ncsToolchainPath, []string{
-		"/usr/local/lib/python3.8",
-		"/usr/local/lib/python3.8/site-packages",
-	})
 
 	ldLibraryPath := generateEnvArray(ncsToolchainPath, []string{
 		"/usr/lib",
@@ -126,8 +128,6 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 		"ZEPHYR_BASE=" + zephyrPath,
 		"ZEPHYR_SDK_INSTALL_DIR=" + path.Join(ncsToolchainPath, "/opt/zephyr-sdk"),
 		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
-		"PYTHOHOME=" + path.Join(ncsCombinedPath, "/usr/local"),
-		"PYTHONPATH=" + pythonPath,
 		"LD_LIBRARY_PATH=" + ldLibraryPath,
 	}
 }
@@ -159,4 +159,10 @@ func updateCurrentPath(envs []string) {
 	if envPath != "" {
 		os.Setenv("PATH", envPath)
 	}
+}
+
+func noSetupEnv() bool {
+	_, ok := os.LookupEnv("NO_SETUP_ENV")
+
+	return ok
 }
