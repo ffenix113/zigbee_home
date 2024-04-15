@@ -13,7 +13,7 @@ It is possible to point the CLI to this configuration file by providing a flag. 
 
 ## Example configuration
 !!! note
-    The complete and latest file is located in the repository, in [`cli/zigbee.yml`](https://github.com/ffenix113/zigbee_home/blob/develop/cli/zigbee.yml). It may contain newer/changed configuration options.
+    The complete and latest file is located in the repository, in [`zigbee.yml`](https://github.com/ffenix113/zigbee_home/blob/develop/zigbee.yml). It may contain newer/changed configuration options.
 
 ```yaml
 # Format for this file is not stable, and can change at any time.

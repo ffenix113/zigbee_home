@@ -14,7 +14,7 @@ This will be best for users that don't want to mess with source code or have no 
 
 To install the CLI just run
 ```bash
-go install github.com/ffenix113/zigbee_home/cli/cmd/zigbee@develop
+go install github.com/ffenix113/zigbee_home/cmd/zigbee@develop
 ```
 This will install the CLI and it can be later used by running `zigbee` from command line.
 
@@ -30,7 +30,7 @@ $ git clone git@github.com:ffenix113/zigbee_home.git
 ```
 Inside the cloned directory run
 ```bash
-$ go run ./zigbee_home/cli/cmd/zigbee/... [args...]
+$ go run ./zigbee_home/cmd/zigbee/... [args...]
 ```
 
 This will not add any executables in your PATH. Instead you would need to execute `go run` command mentioned above each time to run the CLI.

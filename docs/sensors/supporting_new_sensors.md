@@ -97,12 +97,12 @@ package bosch
 import (
 	"strings"
 
-	"github.com/ffenix113/zigbee_home/cli/sensor/base"
-	"github.com/ffenix113/zigbee_home/cli/templates/extenders"
-	"github.com/ffenix113/zigbee_home/cli/types/appconfig"
-	dt "github.com/ffenix113/zigbee_home/cli/types/devicetree"
-	"github.com/ffenix113/zigbee_home/cli/types/generator"
-	"github.com/ffenix113/zigbee_home/cli/zcl/cluster"
+	"github.com/ffenix113/zigbee_home/sensor/base"
+	"github.com/ffenix113/zigbee_home/templates/extenders"
+	"github.com/ffenix113/zigbee_home/types/appconfig"
+	dt "github.com/ffenix113/zigbee_home/types/devicetree"
+	"github.com/ffenix113/zigbee_home/types/generator"
+	"github.com/ffenix113/zigbee_home/zcl/cluster"
 )
 
 type BME280 struct {

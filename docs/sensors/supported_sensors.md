@@ -7,7 +7,7 @@ When this change will be done - all sensors officially supported by Zephyr, will
 
 ## Supported sensors
 !!! note
-    Full per-sensor options will be defined later. For now please refer to [configuration file](../using_the_cli/configuration_file.md) documentation or [latest configuration](https://github.com/ffenix113/zigbee_home/blob/develop/cli/zigbee.yml) in repository for sensor configuration options.
+    Full per-sensor options will be defined later. For now please refer to [configuration file](../using_the_cli/configuration_file.md) documentation or [latest configuration](https://github.com/ffenix113/zigbee_home/blob/develop/zigbee.yml) in repository for sensor configuration options.
 
 * `bme280` & `bme680` - Bosch BME280 / BME680
 * `scd4x` - Sensirion SCD41 ([driver](https://github.com/nobodyguy/sensirion_zephyr_drivers) by [nobodyguy](https://github.com/nobodyguy))
