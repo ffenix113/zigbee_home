@@ -20,6 +20,8 @@ At top level there is only option to provide path for configuration file, if it 
 --config <path_to_file>
 ```
 
+Default configuration file called `zigbee.yml`.
+
 For example
 
 ```bash
