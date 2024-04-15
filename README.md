@@ -118,3 +118,7 @@ This project uses information from ZBOSS SDK, license for which can be found in 
 * [Zephyr project](https://www.zephyrproject.org/)
 * [ESPHome](https://esphome.io/)
 * [Zigbee Cluster Library](https://csa-iot.org/wp-content/uploads/2022/01/07-5123-08-Zigbee-Cluster-Library-1.pdf)
+
+## Special thanks
+* @rsporsche - for donating nRF52840 DK board
+* @Hedda - for informational support
