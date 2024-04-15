@@ -81,6 +81,23 @@ func ParseFromFile(configPath string) (*Device, error) {
 	return cfg, nil
 }
 
+// UnamrshalYAML is implemented to intercept the original
+// configuration file and resolve any known tags inside.
+func (d *Device) UnmarshalYAML(node *yaml.Node) error {
+	resolver := newTagsResolver()
+	if err := resolver.resolve(node, 1); err != nil {
+		return fmt.Errorf("resolve tags: %w", err)
+	}
+
+	type dev Device
+
+	if err := node.Decode((*dev)(d)); err != nil {
+		return fmt.Errorf("unamrshal config: %w", err)
+	}
+
+	return nil
+}
+
 // PrependCommonClusters adds common device clusters as first endpoint.
 //
 // This allows to have dynamic set of common device clusters,
