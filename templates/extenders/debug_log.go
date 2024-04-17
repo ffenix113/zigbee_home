@@ -72,6 +72,10 @@ func NewDebugUARTLog(config DebugConfig) generator.Extender {
 	}
 }
 
+func (d *DebugConfig) IsEnabled() bool {
+	return d != nil && d.Enabled
+}
+
 func overlayFn(console string) func(*devicetree.DeviceTree) error {
 	if console == DebugConsoleUSB {
 		console = "cdc_acm_uart0"

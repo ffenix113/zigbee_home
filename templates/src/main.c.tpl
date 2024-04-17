@@ -29,6 +29,8 @@
 {{- end}}
 // Extender includes end
 
+#ifdef GPIO_INPUT // Quick hack to not generate gpio-related definitions.
+
 // Define buttons and leds, so we can use them later.
 #define BUTTONS_NODE DT_PATH(buttons)
 #define LEDS_NODE DT_PATH(leds)
@@ -45,6 +47,8 @@ static const struct gpio_dt_spec leds[] = {
 	DT_FOREACH_CHILD(LEDS_NODE, GPIO_SPEC_AND_COMMA)
 #endif
 };
+
+#endif
 
 // Extender top levels
 {{- range .Extenders}}
@@ -70,12 +74,15 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #define DEVICE_INITIAL_DELAY_MSEC 10000
 
+
 typedef struct {
 	bool state;
 	bool has_changed;
 } zigbee_home_button_state;
 
 static const zigbee_home_button_state button_state_not_changed = {0};
+
+#ifdef GPIO_INPUT // Quick hack to not generate gpio-related definitions.
 
 // Check if the passed in button is pressed or not.
 // This will iterate over all buttons, which is not efficient,
@@ -95,6 +102,8 @@ static zigbee_home_button_state has_button_changed(const struct gpio_dt_spec * b
 
 	return button_state_not_changed;
 }
+
+#endif
 
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
@@ -414,7 +423,7 @@ int main(void)
 	zigbee_enable();
 
 	#if CONFIG_ZBHOME_DEBUG_LEDS
-	gpio_pin_set_dt({{ if .Device.Board.Debug.Enabled}}&{{.Device.Board.Debug.LEDs.Power}}{{else}}none{{end}}, 1);
+	gpio_pin_set_dt({{ if .Device.Board.Debug.IsEnabled}}&{{.Device.Board.Debug.LEDs.Power}}{{else}}none{{end}}, 1);
 	#endif /* CONFIG_ZBHOME_DEBUG_LEDS */
 
 	return 0;
