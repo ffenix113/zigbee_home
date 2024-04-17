@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/ffenix113/zigbee_home/config"
@@ -11,6 +13,8 @@ import (
 	"github.com/ffenix113/zigbee_home/runner"
 	"github.com/urfave/cli/v2"
 )
+
+const filenameArg = "config"
 
 func buildCmd() *cli.Command {
 	return &cli.Command{
@@ -61,7 +65,7 @@ func buildFirmware(ctx *cli.Context) error {
 }
 
 func parseConfig(ctx *cli.Context) (*config.Device, error) {
-	configPath := ctx.String("config")
+	configPath := getConfigName(ctx)
 	if configPath == "" {
 		return nil, errors.New("config path cannot be empty (it is set by default)")
 	}
@@ -72,6 +76,25 @@ func parseConfig(ctx *cli.Context) (*config.Device, error) {
 	}
 
 	return conf, nil
+}
+
+func getConfigName(ctx *cli.Context) string {
+	if ctx.IsSet(filenameArg) {
+		return ctx.String(filenameArg)
+	}
+
+	preferences := []string{"zigbee.yaml", "zigbee.yml"}
+	for _, preference := range preferences {
+		if _, err := os.Stat(preference); err == nil {
+			if preference == "zigbee.yml" {
+				log.Println("Default config file name changed to 'zigbee.yaml', please change name of your configuration file.")
+			}
+
+			return preference
+		}
+	}
+	// If both files don't exist - return default value.
+	return "zigbee.yaml"
 }
 
 func runBuild(ctx context.Context, device *config.Device, workDir string) error {

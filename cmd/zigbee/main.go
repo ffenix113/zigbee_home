@@ -21,7 +21,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "config",
-				Value: "zigbee.yml",
+				Value: "zigbee.yaml",
 			},
 		},
 	}
