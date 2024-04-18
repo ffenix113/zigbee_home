@@ -70,7 +70,12 @@ func parseConfig(ctx *cli.Context) (*config.Device, error) {
 		return nil, errors.New("config path cannot be empty (it is set by default)")
 	}
 
-	conf, err := config.ParseFromFile(configPath)
+	absConfigPath, err := filepath.Abs(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("make config path %q absolute: %w", configPath, err)
+	}
+
+	conf, err := config.ParseFromFile(absConfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("parse config file: %w", err)
 	}

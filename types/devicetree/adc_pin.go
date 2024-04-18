@@ -50,11 +50,11 @@ func (at aquisitionTime) String() string {
 type ADCPin struct {
 	// Define configurations,
 	// as not all usages will be equal
-	Gain           string
-	Reference      string
-	Resolution     uint8
-	Oversampling   uint8
-	AquisitionTime aquisitionTime
+	Gain            string
+	Reference       string
+	Resolution      uint8
+	Oversampling    uint8
+	AcquisitionTime aquisitionTime `yaml:"acquisition_time"`
 
 	Pin types.Pin
 }
@@ -64,18 +64,26 @@ func (p ADCPin) Name() string {
 }
 
 func (p *ADCPin) UnmarshalYAML(node *yaml.Node) error {
+	p.setDefaults()
+
 	if node.Kind == yaml.ScalarNode {
-		return p.Pin.UnmarshalYAML(node)
+		if err := p.Pin.UnmarshalYAML(node); err != nil {
+			return fmt.Errorf("unmarshal scalar pin: %w", err)
+		}
+	} else {
+		type a ADCPin
+
+		if err := node.Decode((*a)(p)); err != nil {
+			return fmt.Errorf("decode adc pin: %w", err)
+		}
 	}
 
-	type a ADCPin
-	return node.Decode((*a)(p))
+	return nil
 }
 
 func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 	pinName := p.Pin.Name()
 
-	p.setDefaults()
 	if err := p.validate(); err != nil {
 		return fmt.Errorf("validate adc pin: %w", err)
 	}
@@ -106,7 +114,7 @@ func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 			NewProperty("reg", Angled(String(numericLabel))),
 			NewProperty("zephyr,gain", Quoted("ADC_GAIN_"+p.Gain)),
 			NewProperty("zephyr,reference", Quoted("ADC_REF_"+referenecs[p.Reference])),
-			NewProperty("zephyr,acquisition-time", Angled(String(p.AquisitionTime.String()))),
+			NewProperty("zephyr,acquisition-time", Angled(String(p.AcquisitionTime.String()))),
 			NewProperty("zephyr,input-positive", Angled(String("NRF_SAADC_"+positivePinName))),
 			NewProperty("zephyr,oversampling", FromValue(p.Oversampling)),
 			NewProperty("zephyr,resolution", FromValue(p.Resolution)),
@@ -142,6 +150,10 @@ func (p *ADCPin) setDefaults() {
 
 	if p.Resolution == 0 {
 		p.Resolution = 12
+	}
+
+	if p.Oversampling == 0 {
+		p.Oversampling = 2
 	}
 }
 
@@ -180,7 +192,7 @@ func (p ADCPin) validate() error {
 }
 
 func (p ADCPin) validateAquisitionTime() error {
-	aqTime := p.AquisitionTime
+	aqTime := p.AcquisitionTime
 
 	if aqTime.Value == 0 {
 		// This will be default, nothing to do here.

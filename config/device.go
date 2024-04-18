@@ -71,6 +71,7 @@ func ParseFromFile(configPath string) (*Device, error) {
 	if err := dec.Decode(cfg); err != nil {
 		return cfg, fmt.Errorf("unmarshal config: %w", err)
 	}
+
 	// This may contain environment variables,
 	// so be kind and try to resolve
 	cfg.General.NCSToolChainBase = resolveStringEnv(cfg.General.NCSToolChainBase)
