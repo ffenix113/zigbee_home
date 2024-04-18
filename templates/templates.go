@@ -34,7 +34,7 @@ var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_DEVICE_TEMP_CONFIG:        "device_temp_config",
 	cluster.ID_ON_OFF:                    "on_off",
 	cluster.ID_TEMP_MEASUREMENT:          "temperature",
-	cluster.ID_REL_HUMIDITY_MEASUREMENT:  "humidity",
+	cluster.ID_REL_HUMIDITY_MEASUREMENT:  "water_content",
 	cluster.ID_PRESSURE_MEASUREMENT:      "pressure",
 	cluster.ID_CARBON_DIOXIDE:            "carbon_dioxide",
 	cluster.ID_IAS_ZONE:                  "ias_zone",

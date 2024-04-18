@@ -1,7 +1,5 @@
 package cluster
 
-import "fmt"
-
 var _ Cluster = WaterContent{}
 
 func NewRelativeHumidity(minVal, maxVal uint16) *WaterContent {
@@ -10,7 +8,7 @@ func NewRelativeHumidity(minVal, maxVal uint16) *WaterContent {
 		MaxMeasuredValue: maxVal,
 
 		ClusterID:   ID_REL_HUMIDITY_MEASUREMENT,
-		CVarNameStr: "humidity_measurement",
+		CVarNameStr: "humidity",
 	}
 }
 
@@ -40,7 +38,7 @@ func (wc WaterContent) ID() ID {
 }
 
 func (wc WaterContent) CAttrType() string {
-	return fmt.Sprintf("zb_zcl_%s_attrs_t", wc.CVarNameStr)
+	return "zb_zcl_water_content_attrs_t"
 }
 func (wc WaterContent) CVarName() string {
 	return wc.CVarNameStr

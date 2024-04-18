@@ -23,7 +23,7 @@ typedef struct {
 	zb_uint16_t measure_value;
 	zb_uint16_t min_measure_value;
 	zb_uint16_t max_measure_value;
-} zb_zcl_soil_moisture_attrs_t;
+} zb_zcl_water_content_attrs_t;
 
 typedef struct {
 	zb_int8_t zone_state;
