@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -129,10 +129,13 @@ func (g General) GetToochainsPath() (string, string) {
 		var err error
 		locations, err = FindNCSLocation(g.NCSToolChainBase, ncsVersion)
 		if err != nil {
-			log.Panicf("find ncs location: %s", err.Error())
+			slog.Error("find ncs location", slog.String("err", err.Error()))
+			os.Exit(1)
 		}
 
-		log.Printf("found toolchain version %q, requested version %q", locations.Version, ncsVersion)
+		slog.Debug("selected toolchain",
+			slog.String("requested_version", ncsVersion),
+			slog.String("using_version", locations.Version))
 	}
 
 	if ncsToolchainPath == "" {
@@ -150,7 +153,7 @@ func resolveStringEnv(input string) string {
 	if strings.HasPrefix(input, "~/") {
 		userHome, err := os.UserHomeDir()
 		if err != nil {
-			panic(fmt.Sprintf("could not resolve user home dir: %s", err.Error()))
+			panic("could not resolve user home dir: " + err.Error())
 		}
 
 		input = strings.Replace(input, "~/", userHome+"/", 1)

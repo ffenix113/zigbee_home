@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -92,7 +92,9 @@ func getConfigName(ctx *cli.Context) string {
 	for _, preference := range preferences {
 		if _, err := os.Stat(preference); err == nil {
 			if preference == "zigbee.yml" {
-				log.Println("Default config file name changed to 'zigbee.yaml', please change name of your configuration file.")
+				slog.Warn("please update your default config file to new name",
+					slog.String("old", "zigbee.yml"),
+					slog.String("new", "zigbee.yaml"))
 			}
 
 			return preference

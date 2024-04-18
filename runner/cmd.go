@@ -3,7 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path"
@@ -83,9 +83,9 @@ func WithToolchainPath(ncsToolchainBase, zephyrBase string) CmdOpt {
 	// This could be useful if run inside environment that
 	// is already set up properly.
 	if noSetupEnv() || ncsToolchainBase == "" || zephyrBase == "" {
-		log.Println("environment will not be prepared because either one of the paths is empty, or requested not to")
+		slog.Debug("environment will not be prepared because either one of the paths is empty, or requested not to")
 
-		return func(c *exec.Cmd) {}
+		return func(_ *exec.Cmd) {}
 	}
 
 	return WithEnvironment(extendEnv(ncsToolchainBase, zephyrBase)...)

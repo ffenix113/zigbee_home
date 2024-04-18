@@ -2,8 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path"
 	"slices"
@@ -54,7 +55,7 @@ func FindNCSLocation(ncsBase, version string) (NCSLocation, error) {
 	}
 
 	if len(toolchainFile) == 0 {
-		return NCSLocation{}, fmt.Errorf("toolchain file does not contain definitions")
+		return NCSLocation{}, errors.New("toolchain file does not contain definitions")
 	}
 
 	first := toolchainFile[0]
@@ -70,7 +71,7 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 		return NCSLocation{}, fmt.Errorf("no toolchain versions found in toolchain configuration path %q", toolchainConfigPath(ncsBase))
 	}
 
-	log.Printf("available toolchain versions: %v", availableVersions)
+	slog.Debug("available toolchains", "versions", availableVersions)
 
 	bundleID := versionToIdentifier[version]
 
@@ -80,7 +81,7 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 	}
 
 	if bundleID == "" {
-		log.Println("toolchain config does not provide default version, and required version was not found, falling back to latest version in config")
+		slog.Warn("toolchain config does not provide default version, and required version was not found, falling back to latest version in config")
 
 		slices.Sort(availableVersions)
 		version = availableVersions[len(availableVersions)-1]

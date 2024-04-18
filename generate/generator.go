@@ -2,7 +2,7 @@ package generate
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/ffenix113/zigbee_home/config"
@@ -103,10 +103,11 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 	}
 
 	bootloaderConfig, bootloaderName := getBootloaderConfig(device.General.Board, bootloaderName)
-	log.Printf("Device: %q, selected bootloader: %q, forced bootloader: %t\n",
-		device.General.Board,
-		bootloaderName,
-		forcedBootloader)
+	slog.Info("Device info",
+		slog.String("board", device.General.Board),
+		slog.String("bootloader", bootloaderName),
+		slog.Bool("forced_bootloader", forcedBootloader),
+	)
 
 	if forcedBootloader && bootloaderConfig == nil {
 		return nil, fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", *device.Board.Bootloader)

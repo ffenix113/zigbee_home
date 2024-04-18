@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -39,7 +38,7 @@ func (r *tagsResolver) resolve(node *yaml.Node, depth int) error {
 		}
 
 		if depth+1 > r.maxIncludeDepth {
-			log.Fatalf("max include resolution depth of %d reached", depth)
+			return fmt.Errorf("max include resolution depth of %d reached", depth)
 		}
 
 		if err := r.resolve(newNode, depth+1); err != nil {
