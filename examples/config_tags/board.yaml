@@ -1,0 +1,2 @@
+bootloader: adafruit_nrf52_sd140_v6
+is_router: true

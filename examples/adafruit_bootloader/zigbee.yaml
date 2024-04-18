@@ -1,0 +1,8 @@
+general:
+  board: arduino_nano_33_ble
+
+board:
+  # Other valid Adafruit bootloaders include 
+  # adafruit_nrf52_sd130
+  # adafruit_nrf52_sd140_v7
+  bootloader: adafruit_nrf52_sd140_v6

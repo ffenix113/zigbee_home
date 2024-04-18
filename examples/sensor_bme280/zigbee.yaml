@@ -1,0 +1,23 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+board:
+  i2c:
+      # ID of instance is the same as defined in the SoC definition.
+      # Generally they are in form of `i2c[0-9]`.
+      # Number of i2c instances is also limited, and this allows only to
+      # re-define pins for specified i2c instance.
+    - id: i2c0
+      # Pins can also be defined, if want to re-bind I2C to another ones.
+      # sda: 0.29
+      # scl:
+      #   port: 0
+      #   pin: 31
+
+sensors:
+  - type: bme280
+    i2c:
+      # I2C instance ID. Should be defined in Zephyr's board definition.
+      id: i2c0
+      # Default address for BME280.
+      addr: '0x76'

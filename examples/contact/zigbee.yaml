@@ -1,0 +1,6 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+sensors:
+  - type: contact
+    pin: 0.04

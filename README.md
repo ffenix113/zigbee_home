@@ -15,6 +15,9 @@ Priorities can be ordered as:
 * Adding known sensors
 * Adding Zigbee clusters & templates for unavailable clusters in ZBOSS
 
+## Examples
+Some examples of configuration files can be seen in `examples` directory. They do not provide complete and full configuration option usage, at least for now.
+
 ### Licenses
 This project uses information from ZBOSS SDK, license for which can be found in `zboss_license.txt`. 
 

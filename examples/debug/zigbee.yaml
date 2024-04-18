@@ -1,0 +1,16 @@
+general:
+  board: arduino_nano_33_ble
+
+board:
+  bootloader: adafruit_nrf52_sd140_v6
+  debug:
+    enabled: false
+    console: usb
+    leds:
+      enabled: true
+      power: led1
+      connection: led2
+  leds:
+    - id: led1
+    - id: led2
+      pin: 0.04

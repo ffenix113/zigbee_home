@@ -1,0 +1,4 @@
+general:
+  board: !env ZBHOME_BOARD_NAME
+
+board: !include board.yaml

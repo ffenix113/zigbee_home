@@ -1,0 +1,9 @@
+general:
+  board: arduino_nano_33_ble
+
+sensors:
+  - type: power_config
+    adc_pin: 0.04
+    # Voltages are defined in mV.
+    battery_rated_voltage: 3300
+    battery_voltage_min_threshold: 2500
