@@ -44,6 +44,15 @@ typedef struct {
 	zb_uint8_t voltage_min_threshold;
 	zb_uint8_t percentage_remaining;
 } zb_zcl_power_config_attrs_t;
-
 //
+
+// Types for used clusters.
+{{- range $i, $cluster := .UniqueClusters}}
+{{- with (maybeRender (clusterTpl $cluster.ID "attr_types") (clusterCtx $i $cluster))}}
+// {{ $cluster.CVarName }}
+{{.}}
+{{- end}}
+{{end}}
+// End types for used clusters.
+
 {{end}}

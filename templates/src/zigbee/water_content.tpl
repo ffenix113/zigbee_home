@@ -9,8 +9,7 @@
 
 {{ end }}
 
-{{ define "water_content_attr_list" }}
-
+{{ define "water_content_attr_types"}}
 void zb_zcl_soil_moisture_init_server()
 {
   zb_zcl_add_cluster_handlers(ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE,
@@ -22,7 +21,9 @@ void zb_zcl_soil_moisture_init_server()
 
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_SERVER_ROLE_INIT zb_zcl_soil_moisture_init_server
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_CLIENT_ROLE_INIT (NULL)
+{{end}}
 
+{{ define "water_content_attr_list" }}
 ZB_ZCL_DECLARE_REL_HUMIDITY_MEASUREMENT_ATTRIB_LIST(
 	{{.Cluster.CVarName}}_{{.Endpoint}}_attr_list,
 	&dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.measure_value,
