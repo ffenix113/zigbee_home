@@ -1,5 +1,4 @@
-{{ define "power_config_attr_list" }}
-
+{{define "power_config_attr_types"}}
 // Define fixed attr list, as normal list does not contain
 // battery percentage, while extended is bugged:
 // does not provide `batt_num` value to macro.
@@ -11,8 +10,9 @@
  ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_VOLTAGE_MIN_THRESHOLD_ID(voltage_min_threshold, ), \
  ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_POWER_CONFIG_BATTERY_PERCENTAGE_REMAINING_ID(percentage_remaining, ), \
  ZB_ZCL_FINISH_DECLARE_ATTRIB_LIST
+{{end}}
 
-
+{{ define "power_config_attr_list" }}
 ZB_ZCL_DECLARE_POWER_CONFIG_BATTERY_ATTRIB_LIST(
 	{{.Cluster.CVarName}}_{{.Endpoint}}_attr_list,
 	&dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.voltage,

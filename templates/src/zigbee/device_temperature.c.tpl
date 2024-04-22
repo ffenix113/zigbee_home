@@ -1,4 +1,4 @@
-{{ define "device_temp_config_attr_list" }}
+{{ define "device_temp_config_attr_types"}}
 // ZCL spec 3.4.1.1
 #define ZB_ZCL_DEVICE_TEMP_CONFIG_CLUSTER_REVISION_DEFAULT ((zb_uint16_t)0x0001u)
 
@@ -35,7 +35,9 @@ typedef void * zb_voidp_t;
   ZB_ZCL_SET_ATTR_DESC(ZB_ZCL_ATTR_DEVICE_TEMP_CONFIG_CURRENT_TEMPERATURE_ID, (current_temperature))          \
   ZB_ZCL_FINISH_DECLARE_ATTRIB_LIST
 
+{{end}}
 
+{{ define "device_temp_config_attr_list" }}
 ZB_ZCL_DECLARE_DEVICE_TEMP_CONFIG_ATTRIB_LIST(
 	{{.Cluster.CVarName}}_{{.Endpoint}}_attr_list,
 	&dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.current_temperature

@@ -16,7 +16,7 @@
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID (0x0003)
 {{end}}
 
-{{ define "carbon_dioxide_attr_list" }}
+{{ define "carbon_dioxide_attr_types"}}
 void zb_zcl_carbon_dioxide_init_server()
 {
   zb_zcl_add_cluster_handlers(ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE,
@@ -72,7 +72,9 @@ typedef void * zb_voidp_t;
   ZB_ZCL_SET_ATTR_DESC(ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID, (tolerance))          \
   ZB_ZCL_FINISH_DECLARE_ATTRIB_LIST
 
+{{end}}
 
+{{ define "carbon_dioxide_attr_list" }}
 ZB_ZCL_DECLARE_CARBON_DIOXIDE_ATTRIB_LIST(
 	{{.Cluster.CVarName}}_{{.Endpoint}}_attr_list,
 	&dev_ctx.{{.Cluster.CVarName}}_{{.Endpoint}}_attrs.measure_value,
