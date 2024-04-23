@@ -3,8 +3,8 @@
 *~
 
 # build
-base
-.vscode/
-.venv/
-vendor
-test/
+/base
+/.vscode
+/.venv
+/vendor
+/test
