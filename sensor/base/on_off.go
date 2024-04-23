@@ -35,7 +35,7 @@ func (*OnOff) AppConfig() []appconfig.ConfigValue {
 }
 
 func (o *OnOff) ApplyOverlay(overlay *devicetree.DeviceTree) error {
-	dtPin := devicetree.NewButton(o.Pin)
+	dtPin := devicetree.NewLED(o.Pin)
 	return dtPin.AttachSelf(overlay)
 }
 

@@ -10,7 +10,7 @@ static const struct gpio_dt_spec {{.Sensor.Pin.Label}} = GPIO_DT_SPEC_GET(DT_NOD
 		return -1;
 	}
 
-    int err = gpio_pin_configure_dt(&{{.Sensor.Pin.Label}}, GPIO_INPUT);
+    int err = gpio_pin_configure_dt(&{{.Sensor.Pin.Label}}, GPIO_OUTPUT);
     if (err != 0) {
         LOG_ERR("Cannot configure pin {{.Sensor.Pin.Label}}");
         return err;

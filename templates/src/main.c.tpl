@@ -256,16 +256,12 @@ static void zcl_device_cb(zb_bufid_t bufid)
 
 	default:
 		// if (zcl_scenes_cb(bufid) == ZB_FALSE) {
-		// 	device_cb_param->status = RET_NOT_IMPLEMENTED;
+		device_cb_param->status = RET_NOT_IMPLEMENTED;
 		// }
 		break;
 	}
 
 	LOG_INF("%s status: %hd", __func__, device_cb_param->status);
-
-	if (bufid) {
-		zb_buf_free(bufid);
-	}
 }
 
 static void loop(zb_bufid_t bufid) 
