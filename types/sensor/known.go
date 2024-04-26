@@ -7,6 +7,7 @@ import (
 	"github.com/ffenix113/zigbee_home/sensor"
 	"github.com/ffenix113/zigbee_home/sensor/base"
 	"github.com/ffenix113/zigbee_home/sensor/bosch"
+	"github.com/ffenix113/zigbee_home/sensor/aosong"
 	"github.com/ffenix113/zigbee_home/sensor/sensirion"
 )
 
@@ -61,6 +62,9 @@ var knownSensors = map[string]func() Sensor{
 	// FIXME: It does not yet support IAQ measurements,
 	// and does not expose resistance to Zigbee.
 	"bme680": fromConstructor(bosch.NewBME680),
+
+    // Aosong
+    "dht": fromConstructor(aosong.NewDHT),
 
 	// Sensirion
 	"scd4x": fromType[*sensirion.SCD4X],

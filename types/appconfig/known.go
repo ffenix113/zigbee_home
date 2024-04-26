@@ -47,6 +47,9 @@ var (
 	CONFIG_NET_IP_ADDR_CHECK = NewValue("CONFIG_NET_IP_ADDR_CHECK").Default(No)
 	CONFIG_NET_UDP           = NewValue("CONFIG_NET_UDP").Default(No)
 
+	// Sensors
+	CONFIG_DHT               = NewValue("CONFIG_DHT").Default(Yes)
+
 	// Debug
 	CONFIG_ZBOSS_HALT_ON_ASSERT        = NewValue("CONFIG_ZBOSS_HALT_ON_ASSERT").Default(Yes)
 	CONFIG_RESET_ON_FATAL_ERROR        = NewValue("CONFIG_RESET_ON_FATAL_ERROR").Default(No)

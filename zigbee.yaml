@@ -126,6 +126,13 @@ sensors:
   #     port: 0
   #     pin: 6
   #     inverted: true
+  # Add a dht sensor from aosong manufacturer
+  # If DHT22 or AM2302 is used, variant must be set to "dht22". DHT11 does not need variant.
+  # - type: dht
+  #   variant: "dht22"
+  #   pin:
+  #     port: 1
+  #     pin: 13
   #
   # power_config uses ADC to measure positive voltage
   # on pin 0.04 and report it as a battery voltage.

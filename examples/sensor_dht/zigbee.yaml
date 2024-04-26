@@ -1,0 +1,13 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+board:
+
+sensors:
+  # Add a dht sensor from aosong manufacturer
+  # If DHT22 or AM2302 is used, variant must be set to "dht22". DHT11 does not need variant.
+    - type: dht
+      variant: "dht22"
+      pin:
+        port: 1
+        pin: 13
