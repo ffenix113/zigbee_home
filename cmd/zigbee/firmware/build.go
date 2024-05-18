@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,6 +24,9 @@ func buildCmd() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name: "only-generate",
+			},
+			&cli.BoolFlag{
+				Name: "clear-work-dir",
 			},
 		},
 		Action: buildFirmware,
@@ -51,6 +55,12 @@ func buildFirmware(ctx *cli.Context) error {
 	generator, err := generate.NewGenerator(cfg)
 	if err != nil {
 		return fmt.Errorf("new generator: %w", err)
+	}
+
+	if ctx.Bool("clear-work-dir") {
+		if err := clearWorkDir(workDir); err != nil {
+			return err
+		}
 	}
 
 	if err := generator.Generate(workDir, cfg); err != nil {
@@ -122,4 +132,29 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 	}
 
 	return nil
+}
+
+func clearWorkDir(workDir string) error {
+	return filepath.WalkDir(workDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			var pathErr *os.PathError
+			if !errors.As(err, &pathErr) {
+				return err
+			}
+
+			if errors.Is(pathErr, os.ErrNotExist) {
+				return nil
+			}
+
+			return err
+		}
+
+		if path == workDir {
+			return nil
+		}
+
+		log.Printf("deleting %s\n", path)
+
+		return os.RemoveAll(path)
+	})
 }
