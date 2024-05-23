@@ -131,7 +131,7 @@ func (g General) GetToochainsPath() (string, string) {
 		var err error
 		locations, err = FindNCSLocation(g.NCSToolChainBase, ncsVersion)
 		if err != nil {
-			log.Panicf("find ncs location: %s", err.Error())
+			log.Fatalf("find ncs location: %s", err.Error())
 		}
 
 		log.Printf("found toolchain version %q, requested version %q", locations.Version, ncsVersion)

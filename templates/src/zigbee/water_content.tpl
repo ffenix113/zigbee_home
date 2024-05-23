@@ -1,4 +1,5 @@
 {{ define "water_content_defines"}}
+{{ if (eq .Cluster.ID.ToName "soil_moisture") }}
 // ZCL spec 4.7.1.3
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE (0x0408)
 
@@ -7,9 +8,11 @@
 
 #define ZB_ZCL_ATTR_SOIL_MOISTURE_VALUE_UNKNOWN (0xffff)
 
+{{end}}
 {{ end }}
 
 {{ define "water_content_attr_types"}}
+{{ if (eq .Cluster.ID.ToName "soil_moisture") }}
 void zb_zcl_soil_moisture_init_server()
 {
   zb_zcl_add_cluster_handlers(ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE,
@@ -21,6 +24,7 @@ void zb_zcl_soil_moisture_init_server()
 
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_SERVER_ROLE_INIT zb_zcl_soil_moisture_init_server
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_CLIENT_ROLE_INIT (NULL)
+{{end}}
 {{end}}
 
 {{ define "water_content_attr_list" }}

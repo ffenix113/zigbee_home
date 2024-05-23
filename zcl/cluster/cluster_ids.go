@@ -43,36 +43,39 @@
 
 package cluster
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type ID int
 
-func (id ID) ToZCL() (string, error) {
+func (id ID) ToName() (string, error) {
 	var value string
 
 	switch id {
 	case ID_BASIC:
-		value = "ZB_ZCL_CLUSTER_ID_BASIC"
+		value = "basic"
 	case ID_POWER_CONFIG:
-		value = "ZB_ZCL_CLUSTER_ID_POWER_CONFIG"
+		value = "power_config"
 	case ID_DEVICE_TEMP_CONFIG:
-		value = "ZB_ZCL_CLUSTER_ID_DEVICE_TEMP_CONFIG"
+		value = "device_temp_config"
 	case ID_IDENTIFY:
-		value = "ZB_ZCL_CLUSTER_ID_IDENTIFY"
+		value = "identify"
 	case ID_ON_OFF:
-		value = "ZB_ZCL_CLUSTER_ID_ON_OFF"
+		value = "on_off"
 	case ID_TEMP_MEASUREMENT:
-		value = "ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT"
+		value = "temp_measurement"
 	case ID_PRESSURE_MEASUREMENT:
-		value = "ZB_ZCL_CLUSTER_ID_PRESSURE_MEASUREMENT"
+		value = "pressure_measurement"
 	case ID_REL_HUMIDITY_MEASUREMENT:
-		value = "ZB_ZCL_CLUSTER_ID_REL_HUMIDITY_MEASUREMENT"
+		value = "rel_humidity_measurement"
 	case ID_CARBON_DIOXIDE:
-		value = "ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE"
+		value = "carbon_dioxide"
 	case ID_IAS_ZONE:
-		value = "ZB_ZCL_CLUSTER_ID_IAS_ZONE"
+		value = "ias_zone"
 	case ID_SOIL_MOISTURE_MEASUREMENT:
-		value = "ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE"
+		value = "soil_moisture"
 	}
 
 	if value == "" {
@@ -80,6 +83,15 @@ func (id ID) ToZCL() (string, error) {
 	}
 
 	return value, nil
+}
+
+func (id ID) ToZCL() (string, error) {
+	clusterName, err := id.ToName()
+	if err != nil {
+		return "", err
+	}
+
+	return "ZB_ZCL_CLUSTER_ID_" + strings.ToUpper(clusterName), nil
 }
 
 const ID_BASIC ID = 0              // Basic cluster identifier.
