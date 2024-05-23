@@ -2,11 +2,13 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"path"
-	"slices"
+	"regexp"
+	"strconv"
 
 	"golang.org/x/exp/maps"
 )
@@ -70,22 +72,24 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 		return NCSLocation{}, fmt.Errorf("no toolchain versions found in toolchain configuration path %q", toolchainConfigPath(ncsBase))
 	}
 
-	log.Printf("available toolchain versions: %v", availableVersions)
+	log.Printf("requested toolchain version: %q, available versions: %v", version, availableVersions)
 
+	// If version is not present - use default from the toolchain.
+	// But if it is present - treat it as required.
+	if version == "" {
+		version = toolchainItem.DefaultToolchain["ncs_version"]
+	}
+	// Get directly requested or default version.
 	bundleID := versionToIdentifier[version]
 
+	// If directly requested version is not present - try to use latest from the same minor version.
 	if bundleID == "" {
-		version = toolchainItem.DefaultToolchain["ncs_version"]
+		version = selectVersion(version, availableVersions)
 		bundleID = versionToIdentifier[version]
 	}
 
 	if bundleID == "" {
-		log.Println("toolchain config does not provide default version, and required version was not found, falling back to latest version in config")
-
-		slices.Sort(availableVersions)
-		version = availableVersions[len(availableVersions)-1]
-
-		bundleID = versionToIdentifier[version]
+		return NCSLocation{}, errors.New("required version was not found and no other suitable version is present")
 	}
 
 	return constructPaths(ncsBase, version, bundleID), nil
@@ -99,6 +103,59 @@ func mapVersions(toolchainItem toolchainTopLevelItem) map[string]string {
 	}
 
 	return mapped
+}
+
+type version [3]uint8
+
+var versionRegx = regexp.MustCompile(`^v(\d+)\.(\d+)(?:\.(\d+))?$`)
+
+func parseVersion(ver string) version {
+	match := versionRegx.FindStringSubmatch(ver)
+	if match == nil {
+		log.Fatalf("incorrect version %q", ver)
+	}
+
+	var result version
+	for i, part := range match[1:] {
+		if i == 2 && part == "" {
+			part = "0"
+		}
+
+		parsed, err := strconv.ParseUint(part, 10, 8)
+		if err != nil {
+			log.Fatalf("should not happen: bad part of the version: %q", part)
+		}
+
+		result[i] = uint8(parsed)
+	}
+
+	return result
+}
+
+func (v version) greaterOrEqual(other version) bool {
+	return v[0] == other[0] &&
+		v[1] == other[1] &&
+		v[2] >= other[2]
+}
+
+func selectVersion(requested string, available []string) string {
+	requestedVer := parseVersion(requested)
+
+	foundIdx := -1
+	for i, availableVer := range available {
+		parsedAvailable := parseVersion(availableVer)
+
+		if parsedAvailable.greaterOrEqual(requestedVer) {
+			foundIdx = i
+			requestedVer = parsedAvailable
+		}
+	}
+
+	if foundIdx == -1 {
+		return ""
+	}
+
+	return available[foundIdx]
 }
 
 func constructPaths(ncsBase, version, bundleID string) NCSLocation {

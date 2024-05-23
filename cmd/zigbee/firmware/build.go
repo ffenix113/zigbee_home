@@ -153,8 +153,6 @@ func clearWorkDir(workDir string) error {
 			return nil
 		}
 
-		log.Printf("deleting %s\n", path)
-
 		return os.RemoveAll(path)
 	})
 }
