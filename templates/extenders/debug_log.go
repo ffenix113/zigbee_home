@@ -59,6 +59,13 @@ func NewDebugUARTLog(config DebugConfig) generator.Extender {
 			appconfig.CONFIG_UART_LINE_CTRL.Required(appconfig.Yes),
 			appconfig.CONFIG_PRINTK.Required(appconfig.Yes),
 
+			appconfig.NewValue("CONFIG_ZBOSS_HALT_ON_ASSERT").Default(appconfig.Yes),
+			appconfig.NewValue("CONFIG_RESET_ON_FATAL_ERROR").Default(appconfig.No),
+			appconfig.NewValue("CONFIG_DEBUG_OPTIMIZATIONS").Default(appconfig.Yes),
+			appconfig.NewValue("CONFIG_DEBUG_THREAD_INFO").Default(appconfig.Yes),
+			// appconfig.NewValue("CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE").Default(`2048`),
+			// appconfig.NewValue("CONFIG_HEAP_MEM_POOL_SIZE").Default(`2048`),
+
 			// ZBHome Debug enable
 			appconfig.NewValue("CONFIG_ZBHOME_DEBUG_ENABLE").Required(appconfig.Yes),
 

@@ -48,15 +48,7 @@ var (
 	CONFIG_NET_UDP           = NewValue("CONFIG_NET_UDP").Default(No)
 
 	// Sensors
-	CONFIG_DHT               = NewValue("CONFIG_DHT").Default(Yes)
-
-	// Debug
-	CONFIG_ZBOSS_HALT_ON_ASSERT        = NewValue("CONFIG_ZBOSS_HALT_ON_ASSERT").Default(Yes)
-	CONFIG_RESET_ON_FATAL_ERROR        = NewValue("CONFIG_RESET_ON_FATAL_ERROR").Default(No)
-	CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE = NewValue("CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE").Default(`2048`)
-	CONFIG_HEAP_MEM_POOL_SIZE          = NewValue("CONFIG_HEAP_MEM_POOL_SIZE").Default(`2048`)
-	CONFIG_DEBUG_OPTIMIZATIONS         = NewValue("CONFIG_DEBUG_OPTIMIZATIONS").Default(No)
-	CONFIG_DEBUG_THREAD_INFO           = NewValue("CONFIG_DEBUG_THREAD_INFO").Default(No)
+	CONFIG_DHT = NewValue("CONFIG_DHT").Default(Yes)
 )
 
 const (
