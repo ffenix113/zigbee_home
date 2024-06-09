@@ -127,7 +127,6 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 		"PATH=" + combinedPath,
 		"ZEPHYR_BASE=" + zephyrPath,
 		"ZEPHYR_SDK_INSTALL_DIR=" + path.Join(ncsToolchainPath, "/opt/zephyr-sdk"),
-		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
 		"LD_LIBRARY_PATH=" + ldLibraryPath,
 	}
 }
