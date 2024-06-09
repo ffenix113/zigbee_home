@@ -18,7 +18,7 @@ import (
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
 )
 
-// This is for sensor templates, but is not used for now: src/*/*/*/*.tpl
+// TemplateFS is for sensor templates.
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
 //go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
@@ -41,7 +41,27 @@ var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_SOIL_MOISTURE_MEASUREMENT: "water_content",
 }
 
+var sourceFiles = [][2]string{
+	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
+	{"../Kconfig", "Kconfig.tpl"},
+	{"main.c", "main.c.tpl"},
+	{"device.h", "device.h.tpl"},
+	{"clusters.h", "clusters.h.tpl"},
+}
+
+var knownExtenders = [...]string{
+	"include",
+	"top_level",
+	"main",
+	"attr_init",
+	"loop",
+}
+
 type Templates struct {
+	// Device is included in struct so it will not be required
+	// as argument in helper function(s).
+	device *config.Device
+
 	templates    *template.Template
 	templateTree templateTree
 }
@@ -81,14 +101,18 @@ func NewTemplates(templateFS fs.FS) *Templates {
 		templateTree: templateTree{
 			tree: make(map[string]*templateTree),
 		},
+		templates: template.Must(template.New("").Parse("")),
 	}
 
-	t.templates = template.Must(template.New("").Parse(""))
 	t.templates.Funcs(template.FuncMap{
 		"clusterTpl":          t.clusterTpl,
 		"render":              t.render,
 		"maybeRender":         t.maybeRender,
 		"maybeRenderExtender": t.maybeRenderExtender,
+		"toButtonIdx":         toButtonIdx,
+		"toButtonBit":         toButtonBit,
+		"toButtonName":        toButtonName,
+		"toButtonBitName":     toButtonBitName,
 		"sensorCtx":           sensorCtx,
 		"clusterCtx":          clusterCtx,
 		"isLast":              isLast,
@@ -237,22 +261,6 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 	return nil
 }
 
-var sourceFiles = [][2]string{
-	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
-	{"../Kconfig", "Kconfig.tpl"},
-	{"main.c", "main.c.tpl"},
-	{"device.h", "device.h.tpl"},
-	{"clusters.h", "clusters.h.tpl"},
-}
-
-var knownExtenders = [...]string{
-	"include",
-	"top_level",
-	"main",
-	"attr_init",
-	"loop",
-}
-
 func (t *Templates) verifyExtender(extender generator.Extender) error {
 	if extender.Template() == "" {
 		return nil
@@ -264,6 +272,7 @@ func (t *Templates) verifyExtender(extender generator.Extender) error {
 	}
 
 	var foundExtenders int
+
 	for _, knownExtender := range knownExtenders {
 		extdTpl := tpl.Lookup(knownExtender)
 		if extdTpl != nil {
@@ -376,6 +385,26 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 	}
 
 	return buf.String(), nil
+}
+
+// toButtonIdx is a helper to get the index of the requested button from the Devicetree.
+//
+// This is mostly useful for DK functions, as they work with the index of the button,
+// and not any other definition(like port & pin).
+func toButtonIdx(btnID string) string {
+	return "DT_NODE_CHILD_IDX(DT_NODELABEL(" + btnID + "))"
+}
+
+func toButtonBit(btnID string) string {
+	return "BIT(" + toButtonIdx(btnID) + ")"
+}
+
+func toButtonName(buttonID string) string {
+	return "BTN_" + strings.ToUpper(buttonID)
+}
+
+func toButtonBitName(buttonID string) string {
+	return toButtonName(buttonID) + "_BIT"
 }
 
 func sensorCtx(endpoint int, device *config.Device, sensor sensor.Sensor, extender generator.Extender) SensorCtx {

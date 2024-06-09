@@ -1,11 +1,6 @@
 package base
 
 import (
-	"github.com/ffenix113/zigbee_home/templates/extenders"
-	"github.com/ffenix113/zigbee_home/types"
-	"github.com/ffenix113/zigbee_home/types/appconfig"
-	"github.com/ffenix113/zigbee_home/types/devicetree"
-	"github.com/ffenix113/zigbee_home/types/generator"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
 )
 
@@ -17,7 +12,7 @@ func NewContact() *IASZone {
 
 type IASZone struct {
 	*Base    `yaml:",inline"`
-	Pin      types.Pin
+	Button   string              `yaml:"button"`
 	ZoneType cluster.IasZoneType `yaml:"zone_type"`
 }
 
@@ -29,31 +24,13 @@ func (*IASZone) Template() string {
 	return "sensors/ias_zone"
 }
 
-func (o *IASZone) Clusters() cluster.Clusters {
+func (z *IASZone) Clusters() cluster.Clusters {
 	// By default - be contact sensor for now.
-	if o.ZoneType == "" {
-		o.ZoneType = cluster.IasZoneContact
+	if z.ZoneType == "" {
+		z.ZoneType = cluster.IasZoneContact
 	}
 
 	return []cluster.Cluster{
-		cluster.IASZone{ZoneType: o.ZoneType},
-	}
-}
-
-func (*IASZone) AppConfig() []appconfig.ConfigValue {
-	return []appconfig.ConfigValue{
-		appconfig.NewValue("CONFIG_GPIO").Required(appconfig.Yes),
-	}
-}
-
-func (z *IASZone) ApplyOverlay(dt *devicetree.DeviceTree) error {
-	btn := devicetree.NewButton(z.Pin)
-	return btn.AttachSelf(dt)
-}
-
-func (z *IASZone) Extenders() []generator.Extender {
-	return []generator.Extender{
-		extenders.GPIO{},
-		extenders.NewButtons(),
+		cluster.IASZone{ZoneType: z.ZoneType},
 	}
 }

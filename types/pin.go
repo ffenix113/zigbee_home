@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 
@@ -9,6 +10,43 @@ import (
 )
 
 var _ yaml.Unmarshaler = (*Pin)(nil)
+
+// PinWithID is similar to Pin,
+// but the difference is that user can define ID & short Pin for this type.
+//
+// So insted of `{id: 'some', port: 0, pin: 1}`
+// user can provide `{id: 'some', pin: 0.04}`.
+//
+// Still, probably there is a more elegant way to achieve this.
+type PinWithID struct {
+	ID  string
+	Pin Pin
+}
+
+func (p PinWithID) ToPin() Pin {
+	if p.ID != "" && p.Pin.ID != "" {
+		// This log message can be improved
+		log.Fatalf("cannot have id & pin.id set at the same time for pin %#v", p)
+	}
+
+	if p.Pin.ID == "" {
+		p.Pin.ID = p.ID
+	}
+
+	return p.Pin
+}
+
+type PinWithIDSlice []PinWithID
+
+func (s PinWithIDSlice) ToPins() []Pin {
+	pins := make([]Pin, 0, len(s))
+
+	for _, pinWithID := range s {
+		pins = append(pins, pinWithID.ToPin())
+	}
+
+	return pins
+}
 
 type Pin struct {
 	ID       string

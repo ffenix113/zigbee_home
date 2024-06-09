@@ -9,10 +9,6 @@
 /* Weather check period */
 #define WEATHER_CHECK_PERIOD_MSEC {{.Device.General.RunEvery.Milliseconds}}
 
-/* Delay for first weather check */
-#define CONFIG_FIRST_WEATHER_CHECK_DELAY_SECONDS 5
-#define WEATHER_CHECK_INITIAL_DELAY_MSEC (1000 * CONFIG_FIRST_WEATHER_CHECK_DELAY_SECONDS)
-
 /* Time of LED on state while blinking for identify mode */
 #define IDENTIFY_LED_BLINK_TIME_MSEC 500
 
@@ -29,7 +25,9 @@
 #define IDENTIFY_LED LED_RED
 
 /* Button used to enter the Identify mode */
-#define IDENTIFY_MODE_BUTTON DK_BTN1_MSK
+#define IDENTIFY_MODE_BUTTON {{ if not (eq .Device.Board.FactoryResetButton "") -}}
+{{ toButtonBit .Device.Board.FactoryResetButton }}
+{{- else -}}DK_BTN1_MSK{{ end }}
 
 /* Button to start Factory Reset */
 #define FACTORY_RESET_BUTTON IDENTIFY_MODE_BUTTON

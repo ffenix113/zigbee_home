@@ -41,12 +41,14 @@ type General struct {
 }
 
 type Board struct {
-	Bootloader *string
-	Debug      *extenders.DebugConfig
-	IsRouter   bool `yaml:"is_router"`
-	LEDs       []types.Pin
-	I2C        []extenders.I2CInstance
-	UART       []extenders.UARTInstance
+	Bootloader         *string
+	Debug              *extenders.DebugConfig
+	IsRouter           bool   `yaml:"is_router"`
+	FactoryResetButton string `yaml:"factory_reset_button"`
+	LEDs               types.PinWithIDSlice
+	Buttons            types.PinWithIDSlice
+	I2C                []extenders.I2CInstance
+	UART               []extenders.UARTInstance
 }
 
 func ParseFromFile(configPath string) (*Device, error) {
@@ -104,7 +106,7 @@ func (d *Device) UnmarshalYAML(node *yaml.Node) error {
 // PrependCommonClusters adds common device clusters as first endpoint.
 //
 // This allows to have dynamic set of common device clusters,
-// such as Identify(server), basic, poll controll, etc.
+// such as Identify(server), basic, poll control, etc.
 //
 // FIXME: It is mostly a "workaround" to simplify device endpoint generation.
 // While the solution is sound to me, the implementation of this function is questionable.
@@ -127,9 +129,11 @@ func (g General) GetToochainsPath() (string, string) {
 	}
 
 	var locations NCSLocation
+
 	if ncsToolchainPath == "" || zephyrPath == "" {
 		var err error
 		locations, err = FindNCSLocation(g.NCSToolChainBase, ncsVersion)
+
 		if err != nil {
 			log.Fatalf("find ncs location: %s", err.Error())
 		}
@@ -152,7 +156,7 @@ func resolveStringEnv(input string) string {
 	if strings.HasPrefix(input, "~/") {
 		userHome, err := os.UserHomeDir()
 		if err != nil {
-			panic(fmt.Sprintf("could not resolve user home dir: %s", err.Error()))
+			panic("could not resolve user home dir: " + err.Error())
 		}
 
 		input = strings.Replace(input, "~/", userHome+"/", 1)

@@ -151,7 +151,11 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 	}
 
 	if len(device.Board.LEDs) != 0 {
-		providedExtenders = append(providedExtenders, extenders.NewLEDs(device.Board.LEDs...))
+		providedExtenders = append(providedExtenders, extenders.NewLEDs(device.Board.LEDs.ToPins()...))
+	}
+
+	if len(device.Board.Buttons) != 0 {
+		providedExtenders = append(providedExtenders, extenders.NewButtons(device.Board.Buttons.ToPins()...))
 	}
 
 	return providedExtenders, nil

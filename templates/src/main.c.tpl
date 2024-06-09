@@ -29,27 +29,6 @@
 {{- end}}
 // Extender includes end
 
-#ifdef GPIO_INPUT // Quick hack to not generate gpio-related definitions.
-
-// Define buttons and leds, so we can use them later.
-#define BUTTONS_NODE DT_PATH(buttons)
-#define LEDS_NODE DT_PATH(leds)
-#define GPIO_SPEC_AND_COMMA(button_or_led) GPIO_DT_SPEC_GET(button_or_led, gpios),
-
-static const struct gpio_dt_spec buttons[] = {
-#if DT_NODE_EXISTS(BUTTONS_NODE)
-	DT_FOREACH_CHILD(BUTTONS_NODE, GPIO_SPEC_AND_COMMA)
-#endif
-};
-
-static const struct gpio_dt_spec leds[] = {
-#if DT_NODE_EXISTS(LEDS_NODE)
-	DT_FOREACH_CHILD(LEDS_NODE, GPIO_SPEC_AND_COMMA)
-#endif
-};
-
-#endif
-
 // Extender top levels
 {{- range .Extenders}}
 {{- maybeRenderExtender .Template "top_level" (sensorCtx 0 $.Device nil .)}}
@@ -72,38 +51,8 @@ static const struct device *{{$sensor.Label}}_{{$endpoint}} = DEVICE_DT_GET(DT_N
 
 LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
-#define DEVICE_INITIAL_DELAY_MSEC 10000
+#define DEVICE_INITIAL_DELAY_MSEC 2000
 
-
-typedef struct {
-	bool state;
-	bool has_changed;
-} zigbee_home_button_state;
-
-static const zigbee_home_button_state button_state_not_changed = {0};
-
-#ifdef GPIO_INPUT // Quick hack to not generate gpio-related definitions.
-
-// Check if the passed in button is pressed or not.
-// This will iterate over all buttons, which is not efficient,
-// but it should be rather rare.
-static zigbee_home_button_state has_button_changed(const struct gpio_dt_spec * btn, uint32_t button_state, uint32_t has_changed) {
-	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
-		if (btn->port != buttons[i].port || btn->pin != buttons[i].pin) {
-			continue;
-		}
-
-		zigbee_home_button_state state;
-		state.state = button_state & BIT(i);
-		state.has_changed = true;
-
-		return state;
-	}
-
-	return button_state_not_changed;
-}
-
-#endif
 
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
@@ -126,7 +75,6 @@ static void button_changed(uint32_t button_state, uint32_t has_changed)
 		}
 	}
 
-	zigbee_home_button_state button_status = button_state_not_changed;
 	// Extender button change
 	{{- range .Extenders}}
 	{{- with maybeRenderExtender .Template "button_changed" (sensorCtx 0 $.Device nil .)}}
@@ -319,7 +267,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
-		/* ZBOSS framework has started - schedule first weather check */
+		/* ZBOSS framework has started - schedule first loop iteration */
 		err = ZB_SCHEDULE_APP_ALARM(loop,
 					    0,
 					    ZB_MILLISECONDS_TO_BEACON_INTERVAL(

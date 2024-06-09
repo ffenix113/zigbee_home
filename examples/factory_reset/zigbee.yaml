@@ -1,0 +1,17 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+board:
+  # `btn1` is a reference to any button defined in `board.buttons` via its `id`.
+  factory_reset_button: btn1
+
+  buttons:
+      # This could be either button that already defined in the board(in that case `pin` definition can be omited, and specify only `id`),
+      # or user can define any custom pin to be a button. 
+      # For custom pin both `id` and `pin` must be defined.
+    - id: btn1
+      # For this example random pin 0.13 is chosen to be a button.
+      pin: 0.13
+      # `button0` is defined in board definition here: https://github.com/zephyrproject-rtos/zephyr/blob/453ab8a9a356acf475a965a777a370795effa255/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840.dts#L64
+      # User can choose any button from their board definition.
+    - id: button0
