@@ -2,6 +2,10 @@
 
 This example demonstrates how to set up custom factory reset button.
 
+Note: if factory reset button is not defined in the configuration it will be the first button available in board definition. For example for nRF52840 Dongle it would be [this](https://github.com/zephyrproject-rtos/zephyr/blob/453ab8a9a356acf475a965a777a370795effa255/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840.dts#L64) button, for Adafruit Feather nRF52840 Express it would be [this](https://github.com/zephyrproject-rtos/zephyr/blob/453ab8a9a356acf475a965a777a370795effa255/boards/adafruit/feather/adafruit_feather_nrf52840.dts#L43) button. 
+
+If board definition does not have any buttons and configuration does not define one - factory reset functionality through button press will not be available. In this case to reset Zigbee connection information it is needed to erase the device.
+
 To properly test this example the board should be connected to a Zigbee network, and then the factory reset procedure(see `Usage`) should be done.
 
 ### Explanation
