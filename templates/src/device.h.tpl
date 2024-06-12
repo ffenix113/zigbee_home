@@ -19,7 +19,9 @@
 #define LED_BLUE DK_LED4
 
 /* LED indicating that device successfully joined Zigbee network */
-#define ZIGBEE_NETWORK_STATE_LED LED_BLUE
+#define ZIGBEE_NETWORK_STATE_LED {{ if not (eq .Device.Board.NetworkStateLED "") -}}
+{{ toButtonBit .Device.Board.NetworkStateLED }}
+{{- else -}}LED_BLUE{{ end }}
 
 /* LED used for device identification */
 #define IDENTIFY_LED LED_RED

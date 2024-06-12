@@ -64,6 +64,12 @@ func NewDebugUARTLog(config DebugConfig) generator.Extender {
 			appconfig.NewValue("CONFIG_DEBUG_OPTIMIZATIONS").Default(appconfig.Yes),
 			appconfig.NewValue("CONFIG_DEBUG_THREAD_INFO").Default(appconfig.Yes),
 			appconfig.NewValue("CONFIG_THREAD_NAME").Default(appconfig.Yes),
+
+			// Configurations for (hopefully) generating
+			// good address for addr2line on exception.
+			appconfig.NewValue("CONFIG_DEBUG_COREDUMP").Default(appconfig.Yes),
+			appconfig.NewValue("CONFIG_DEBUG_COREDUMP_BACKEND_LOGGING").Default(appconfig.Yes),
+			appconfig.NewValue("CONFIG_COREDUMP_DEVICE").Default(appconfig.Yes),
 			// appconfig.NewValue("CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE").Default(`2048`),
 			// appconfig.NewValue("CONFIG_HEAP_MEM_POOL_SIZE").Default(`2048`),
 

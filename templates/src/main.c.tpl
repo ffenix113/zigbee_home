@@ -53,6 +53,22 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #define DEVICE_INITIAL_DELAY_MSEC 2000
 
+static void toggle_identify_led(uint16_t led_data)
+{
+	bool led_on = led_data & 1;
+	uint8_t led_idx = led_data >> 1;
+
+	led_on = !led_on;
+
+	dk_set_led(led_idx, led_on);
+	zb_ret_t err = ZB_SCHEDULE_APP_ALARM(toggle_identify_led,
+					     (uint16_t)(led_idx << 1 | led_on),
+					     ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+						     IDENTIFY_LED_BLINK_TIME_MSEC));
+	if (err) {
+		LOG_ERR("Failed to schedule app alarm: %d", err);
+	}
+}
 
 static void button_changed(uint32_t button_state, uint32_t has_changed)
 {
@@ -275,6 +291,18 @@ void zboss_signal_handler(zb_bufid_t bufid)
 		if (err) {
 			LOG_ERR("Failed to schedule app alarm: %d", err);
 		}
+		break;
+	case ZB_ZDO_SIGNAL_LEAVE:
+	case ZB_BDB_SIGNAL_DEVICE_FIRST_START:
+		// When leaving network - start blinking led.
+		ZB_SCHEDULE_APP_CALLBACK(toggle_identify_led, ZIGBEE_NETWORK_STATE_LED << 1 | 0);
+		break;
+	case ZB_BDB_SIGNAL_STEERING:
+		ZB_SCHEDULE_APP_ALARM_CANCEL(toggle_identify_led,
+						   ZB_ALARM_ANY_PARAM);
+		// While we will stop blinking it does not mean that 
+		// the LED will be in off state on last iteration.
+		dk_set_led_off(ZIGBEE_NETWORK_STATE_LED);
 		break;
 	default:
 		break;

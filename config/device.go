@@ -45,6 +45,7 @@ type Board struct {
 	Debug              *extenders.DebugConfig
 	IsRouter           bool   `yaml:"is_router"`
 	FactoryResetButton string `yaml:"factory_reset_button"`
+	NetworkStateLED    string `yaml:"network_state_led"`
 	LEDs               types.PinWithIDSlice
 	Buttons            types.PinWithIDSlice
 	I2C                []extenders.I2CInstance
