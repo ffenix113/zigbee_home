@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"gopkg.in/yaml.v3"
 )
 
@@ -90,7 +91,7 @@ func (p *Pin) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind != yaml.ScalarNode {
 		// A trick to remove custom unmarshaling behavior.
 		type pin Pin
-		if err := value.Decode((*pin)(p)); err != nil {
+		if err := yamlstrict.Unmarshal((*pin)(p), value); err != nil {
 			return fmt.Errorf("unmarshal pin: %w", err)
 		}
 

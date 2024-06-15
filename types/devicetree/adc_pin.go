@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ffenix113/zigbee_home/types"
+	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
@@ -73,7 +74,7 @@ func (p *ADCPin) UnmarshalYAML(node *yaml.Node) error {
 	} else {
 		type a ADCPin
 
-		if err := node.Decode((*a)(p)); err != nil {
+		if err := yamlstrict.Unmarshal((*a)(p), node); err != nil {
 			return fmt.Errorf("decode adc pin: %w", err)
 		}
 	}

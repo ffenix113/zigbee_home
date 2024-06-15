@@ -58,10 +58,6 @@ var knownExtenders = [...]string{
 }
 
 type Templates struct {
-	// Device is included in struct so it will not be required
-	// as argument in helper function(s).
-	device *config.Device
-
 	templates    *template.Template
 	templateTree templateTree
 }

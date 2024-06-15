@@ -10,6 +10,7 @@ import (
 	"github.com/ffenix113/zigbee_home/types/appconfig"
 	"github.com/ffenix113/zigbee_home/types/devicetree"
 	"github.com/ffenix113/zigbee_home/types/generator"
+	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
 	"gopkg.in/yaml.v3"
 )
@@ -84,7 +85,7 @@ func (s *Sensors) UnmarshalYAML(value *yaml.Node) error {
 
 func unmarshalSensor(node *yaml.Node) (Sensor, error) {
 	var sensorType base.SensorType
-	if err := node.Decode(&sensorType); err != nil {
+	if err := node.Decode(&sensorType); err != nil { //nolint:forbidigo // In this case we want specific subset of fields.
 		return nil, fmt.Errorf("get sensor type: %w", err)
 	}
 
@@ -94,7 +95,7 @@ func unmarshalSensor(node *yaml.Node) (Sensor, error) {
 	}
 
 	rVal := reflect.ValueOf(sensorConfigConstructor())
-	if err := node.Decode(rVal.Interface()); err != nil {
+	if err := yamlstrict.Unmarshal(rVal.Interface(), node); err != nil {
 		return nil, fmt.Errorf("decode sensor type %q: %w", sensorType.Type, err)
 	}
 

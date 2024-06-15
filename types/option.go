@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 
+	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"gopkg.in/yaml.v3"
 )
 
@@ -53,7 +54,7 @@ func (o Option[T]) Format(f fmt.State, verb rune) {
 func (o *Option[T]) UnmarshalYAML(n *yaml.Node) error {
 	var val T
 
-	if err := n.Decode(&val); err != nil {
+	if err := yamlstrict.Unmarshal(&val, n); err != nil {
 		return fmt.Errorf("unmarshal option with type %T: %w", val, err)
 	}
 

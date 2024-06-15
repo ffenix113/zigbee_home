@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"slices"
@@ -12,6 +13,7 @@ import (
 	"github.com/ffenix113/zigbee_home/templates/extenders"
 	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/sensor"
+	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"gopkg.in/yaml.v3"
 )
 
@@ -47,9 +49,12 @@ type Board struct {
 	FactoryResetButton string `yaml:"factory_reset_button"`
 	NetworkStateLED    string `yaml:"network_state_led"`
 	LEDs               types.PinWithIDSlice
-	Buttons            types.PinWithIDSlice
-	I2C                []extenders.I2CInstance
-	UART               []extenders.UARTInstance
+	// Buttons provide definitions(or references) to board buttons.
+	// They will be used in other configuration places to
+	// reference specific button.
+	Buttons types.PinWithIDSlice
+	I2C     []extenders.I2CInstance
+	UART    []extenders.UARTInstance
 }
 
 func ParseFromFile(configPath string) (*Device, error) {
@@ -65,26 +70,35 @@ func ParseFromFile(configPath string) (*Device, error) {
 
 	file, err := os.Open(configPath)
 	if err != nil {
-		return cfg, fmt.Errorf("read config file: %w", err)
+		return cfg, fmt.Errorf("open config file: %w", err)
 	}
 
 	defer file.Close()
 
-	dec := yaml.NewDecoder(file)
-	dec.KnownFields(true)
+	cfg, err = ParseFromReader(cfg, file)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal config file: %w", err)
+	}
 
-	if err := dec.Decode(cfg); err != nil {
-		return cfg, fmt.Errorf("unmarshal config: %w", err)
+	return cfg, nil
+}
+
+func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
+	dec := yaml.NewDecoder(rdr)
+	dec.KnownFields(false)
+
+	if err := dec.Decode(defConfig); err != nil {
+		return nil, fmt.Errorf("unmarshal config: %w", err)
 	}
 
 	// This may contain environment variables,
 	// so be kind and try to resolve
-	cfg.General.NCSToolChainBase = resolveStringEnv(cfg.General.NCSToolChainBase)
-	cfg.General.ZephyrBase = resolveStringEnv(cfg.General.ZephyrBase)
+	defConfig.General.NCSToolChainBase = resolveStringEnv(defConfig.General.NCSToolChainBase)
+	defConfig.General.ZephyrBase = resolveStringEnv(defConfig.General.ZephyrBase)
 
-	cfg.PrependCommonClusters()
+	defConfig.PrependCommonClusters()
 
-	return cfg, nil
+	return defConfig, nil
 }
 
 // UnamrshalYAML is implemented to intercept the original
@@ -97,7 +111,7 @@ func (d *Device) UnmarshalYAML(node *yaml.Node) error {
 
 	type dev Device
 
-	if err := node.Decode((*dev)(d)); err != nil {
+	if err := yamlstrict.Unmarshal((*dev)(d), node); err != nil {
 		return fmt.Errorf("unamrshal config: %w", err)
 	}
 
