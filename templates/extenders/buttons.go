@@ -3,6 +3,7 @@ package extenders
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/devicetree"
@@ -31,7 +32,7 @@ func NewButtons(instances ...types.Pin) generator.Extender {
 }
 
 func (b Button) Template() string {
-	return "peripherals/buttons"
+	return filepath.Join("peripherals", "buttons")
 }
 
 func (b Button) Includes() []string {

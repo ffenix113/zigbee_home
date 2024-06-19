@@ -2,6 +2,7 @@ package extenders
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/ffenix113/zigbee_home/types/devicetree"
 	"github.com/ffenix113/zigbee_home/types/generator"
@@ -23,7 +24,7 @@ func NewADC(instances ...devicetree.ADCPin) generator.Extender {
 }
 
 func (l ADC) Template() string {
-	return "peripherals/adc"
+	return filepath.Join("peripherals", "adc")
 }
 
 func (l ADC) WriteFiles() []generator.WriteFile {

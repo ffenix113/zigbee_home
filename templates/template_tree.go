@@ -2,7 +2,7 @@ package templates
 
 import (
 	"fmt"
-	"strings"
+	"path/filepath"
 	"text/template"
 )
 
@@ -11,14 +11,12 @@ type templateTree struct {
 	tpl  *template.Template
 }
 
-func (t *templateTree) FindByPath(prefix string) []*template.Template {
-	parts := strings.Split(prefix, "/")
-
+func (t *templateTree) FindByPath(parts ...string) []*template.Template {
 	currentTree := t
 	for _, part := range parts {
 		currentTree = currentTree.tree[part]
 		if currentTree == nil {
-			panic(fmt.Sprintf("part %q of prefix %q is not present in template tree", part, prefix))
+			panic(fmt.Sprintf("part %q of prefix %q is not present in template tree", part, filepath.Join(parts...)))
 		}
 	}
 

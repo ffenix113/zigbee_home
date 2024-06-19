@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 	"time"
@@ -42,8 +43,8 @@ var knownClusterTemplates = map[cluster.ID]string{
 }
 
 var sourceFiles = [][2]string{
-	{"../CMakeLists.txt", "CMakeLists.txt.tpl"},
-	{"../Kconfig", "Kconfig.tpl"},
+	{filepath.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
+	{filepath.Join("..", "Kconfig"), "Kconfig.tpl"},
 	{"main.c", "main.c.tpl"},
 	{"device.h", "device.h.tpl"},
 	{"clusters.h", "clusters.h.tpl"},
@@ -115,7 +116,7 @@ func NewTemplates(templateFS fs.FS) *Templates {
 		"sum":                 sum,
 		"formatHex":           formatHex,
 		"joinPath": func(strs ...string) string {
-			return strings.Join(strs, "/")
+			return filepath.Join(strs...)
 		},
 	})
 
@@ -126,7 +127,7 @@ func NewTemplates(templateFS fs.FS) *Templates {
 	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "dts", "bindings", "sensor", "*"), nil))
 	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "zephyr", "*"), nil))
 
-	t.templates = template.Must(t.templates.ParseFS(templateFS, path.Join("src", "*.tpl"), path.Join("src", "zigbee", "*.tpl")))
+	t.templates = template.Must(t.templates.ParseFS(templateFS, filepath.Join("src", "*.tpl"), filepath.Join("src", "zigbee", "*.tpl")))
 
 	return t
 }
@@ -144,7 +145,7 @@ func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *
 		}
 		defer openTpl.Close()
 
-		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src/"))
+		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src"+string(os.PathSeparator)))
 
 		tplText, err := io.ReadAll(openTpl)
 		if err != nil {
@@ -183,6 +184,7 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 			}
 			tree.tree[pathPart] = subTree
 		}
+
 		tree = subTree
 	}
 
@@ -196,6 +198,7 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 		}
 		tree.tree[pathPart] = subTree
 	}
+
 	tree = subTree
 
 	tree.tpl, _ = baseTpl.Clone()
@@ -236,7 +239,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 			template := t.findExtendedTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(
 				template,
-				path.Join(srcDir, fileToWrite.FileName),
+				filepath.Join(srcDir, fileToWrite.FileName),
 				ContextWithAdditional{Context: ctx, Extender: extender, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
 				return fmt.Errorf("write extender file %q: %w", fileToWrite.FileName, err)
 			}
@@ -244,10 +247,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 		// Module files. For example drivers for sensors.
 		for _, module := range extender.ZephyrModules() {
-			moduleTemplates := (&t.templateTree).FindByPath("modules/" + module)
+			moduleTemplates := (&t.templateTree).FindByPath("modules", module)
 			for _, moduleTemplate := range moduleTemplates {
 				// Modules are not in 'src' dir, but in the root instead.
-				if err := writeTemplate(moduleTemplate, path.Join(srcDir+"/../"+moduleTemplate.Name()), ctx); err != nil {
+				if err := writeTemplate(moduleTemplate, filepath.Join(srcDir, "..", moduleTemplate.Name()), ctx); err != nil {
 					return fmt.Errorf("write extender module %q file %q: %w", module, moduleTemplate.Name(), err)
 				}
 			}
@@ -308,7 +311,8 @@ func writeTemplate(template *template.Template, filePath string, ctx any) error 
 }
 
 func (t *Templates) findExtendedTemplate(templateName string) *template.Template {
-	nameParts := strings.Split("extenders/"+templateName, "/")
+
+	nameParts := append([]string{"extenders"}, strings.Split(templateName, string(os.PathSeparator))...)
 
 	tree := &t.templateTree
 	for _, namePart := range nameParts {
