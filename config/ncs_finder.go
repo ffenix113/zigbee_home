@@ -104,7 +104,9 @@ func mapVersions(toolchainItem toolchainTopLevelItem) map[string]string {
 	mapped := make(map[string]string, len(toolchainItem.Toolchains))
 
 	for _, toolchain := range toolchainItem.Toolchains {
-		mapped[toolchain.NCSVersions[0]] = toolchain.Identifier.BundleID
+		for _, version := range toolchain.NCSVersions {
+			mapped[version] = toolchain.Identifier.BundleID
+		}
 	}
 
 	return mapped
