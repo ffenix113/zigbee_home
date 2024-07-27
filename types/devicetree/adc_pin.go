@@ -8,7 +8,6 @@ import (
 
 	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/yamlstrict"
-	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
@@ -24,7 +23,7 @@ var pinConversionMap = map[uint8]string{
 	31: "AIN7",
 }
 
-var referenecs = map[string]string{
+var references = map[string]string{
 	"vdd_1_4":  "VDD_1_4",
 	"internal": "INTERNAL",
 }
@@ -114,7 +113,7 @@ func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 		Properties: []Property{
 			NewProperty("reg", Angled(String(numericLabel))),
 			NewProperty("zephyr,gain", Quoted("ADC_GAIN_"+p.Gain)),
-			NewProperty("zephyr,reference", Quoted("ADC_REF_"+referenecs[p.Reference])),
+			NewProperty("zephyr,reference", Quoted("ADC_REF_"+references[p.Reference])),
 			NewProperty("zephyr,acquisition-time", Angled(String(p.AcquisitionTime.String()))),
 			NewProperty("zephyr,input-positive", Angled(String("NRF_SAADC_"+positivePinName))),
 			NewProperty("zephyr,oversampling", FromValue(p.Oversampling)),
@@ -172,8 +171,13 @@ func (p ADCPin) validate() error {
 		return fmt.Errorf("pin %d cannot be used as ADC pin", p.Pin.Pin.Value())
 	}
 
-	if _, ok := referenecs[p.Reference]; !ok {
-		return fmt.Errorf("reference value is invalid: %q, valid values are: %v", p.Reference, strings.Join(maps.Keys(referenecs), ", "))
+	if _, ok := references[p.Reference]; !ok {
+		var referenceKeys []string
+		for reference := range references {
+			referenceKeys = append(referenceKeys, reference)
+		}
+
+		return fmt.Errorf("reference value is invalid: %q, valid values are: %v", p.Reference, strings.Join(referenceKeys, ", "))
 	}
 
 	if !slices.Contains(resolutions, p.Resolution) {

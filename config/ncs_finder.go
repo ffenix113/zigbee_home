@@ -8,9 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
-
-	"golang.org/x/exp/maps"
 )
 
 type NCSLocation struct {
@@ -67,10 +66,16 @@ func FindNCSLocation(ncsBase, version string) (NCSLocation, error) {
 func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) (NCSLocation, error) {
 	versionToIdentifier := mapVersions(toolchainItem)
 
-	availableVersions := maps.Keys(versionToIdentifier)
-	if len(availableVersions) == 0 {
+	if len(versionToIdentifier) == 0 {
 		return NCSLocation{}, fmt.Errorf("no toolchain versions found in toolchain configuration path %q", toolchainConfigPath(ncsBase))
 	}
+
+	var availableVersions []string
+	for version := range versionToIdentifier {
+		availableVersions = append(availableVersions, version)
+	}
+
+	sort.Strings(availableVersions)
 
 	log.Printf("requested toolchain version: %q, available versions: %v", version, availableVersions)
 
