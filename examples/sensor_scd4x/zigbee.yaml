@@ -1,0 +1,17 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+board:
+  i2c:
+    # Only ID can be specified if interface is present in board configuration.
+    - id: i2c0
+
+sensors:
+  # Add a SCD4X sensor from Sensirion manufacturer.
+  - type: scd4x
+    i2c: 
+      id: i2c0
+    # This option is defined here:
+    # https://github.com/nobodyguy/sensirion_zephyr_drivers/blob/438ae62df66e9b1d638e0d4eb1c3cf6ad2ae449b/dts/bindings/sensor/sensirion%2Cscd4x.yaml#L51
+    # This parameter is optional and can be omitted.
+    temperature_offset: 2

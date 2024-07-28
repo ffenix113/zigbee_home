@@ -1,0 +1,4 @@
+general:
+  board: nrf52840dongle_nrf52840
+  # We can force specific version of toolchain (if it is available).
+  ncs_version: v2.5.0
