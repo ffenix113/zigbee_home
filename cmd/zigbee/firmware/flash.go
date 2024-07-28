@@ -11,7 +11,9 @@ func flashCmd() *cli.Command {
 		Name:  "flash",
 		Usage: "flash the firmware",
 		Action: func(ctx *cli.Context) error {
-			cfg, err := parseConfig(ctx)
+			configFileName := getConfigFile(ctx)
+
+			cfg, err := parseConfig(configFileName)
 			if err != nil {
 				return fmt.Errorf("prepare config: %w", err)
 			}

@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
-	"strconv"
+
+	"github.com/ffenix113/zigbee_home/types"
 )
 
 type NCSLocation struct {
-	Version string
+	Version types.Semver
 	NCS     string
 	Zephyr  string
 }
@@ -70,12 +70,20 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 		return NCSLocation{}, fmt.Errorf("no toolchain versions found in toolchain configuration path %q", toolchainConfigPath(ncsBase))
 	}
 
-	var availableVersions []string
+	var availableVersions []types.Semver
 	for version := range versionToIdentifier {
-		availableVersions = append(availableVersions, version)
+		parsed, err := types.ParseSemver(version)
+		if err != nil {
+			return NCSLocation{}, fmt.Errorf("parse semver %q: %w", version, err)
+		}
+
+		availableVersions = append(availableVersions, parsed)
 	}
 
-	sort.Strings(availableVersions)
+	// Sort versions in increasing order
+	sort.Slice(availableVersions, func(i, j int) bool {
+		return availableVersions[i].Compare(availableVersions[j]) == -1
+	})
 
 	log.Printf("requested toolchain version: %q, available versions: %v", version, availableVersions)
 
@@ -89,7 +97,17 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 
 	// If directly requested version is not present - try to use latest from the same minor version.
 	if bundleID == "" {
-		version = selectVersion(version, availableVersions)
+		requiredVersion, err := types.ParseSemver(version)
+		if err != nil {
+			return NCSLocation{}, fmt.Errorf("parse required version %q: %w", version, err)
+		}
+
+		foundVersion, err := selectVersion(requiredVersion, availableVersions)
+		if err != nil {
+			return NCSLocation{}, fmt.Errorf("select version: %w", err)
+		}
+
+		version = foundVersion.String()
 		bundleID = versionToIdentifier[version]
 	}
 
@@ -97,7 +115,12 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 		return NCSLocation{}, errors.New("required version was not found and no other suitable version is present")
 	}
 
-	return constructPaths(ncsBase, version, bundleID), nil
+	semver, err := types.ParseSemver(version)
+	if err != nil {
+		return NCSLocation{}, fmt.Errorf("parse found version %q: %w", version, err)
+	}
+
+	return constructPaths(ncsBase, semver, bundleID), nil
 }
 
 func mapVersions(toolchainItem toolchainTopLevelItem) map[string]string {
@@ -112,64 +135,27 @@ func mapVersions(toolchainItem toolchainTopLevelItem) map[string]string {
 	return mapped
 }
 
-type version [3]uint8
-
-var versionRegx = regexp.MustCompile(`^v(\d+)\.(\d+)(?:\.(\d+))?$`)
-
-func parseVersion(ver string) version {
-	match := versionRegx.FindStringSubmatch(ver)
-	if match == nil {
-		log.Fatalf("incorrect version %q", ver)
-	}
-
-	var result version
-	for i, part := range match[1:] {
-		if i == 2 && part == "" {
-			part = "0"
-		}
-
-		parsed, err := strconv.ParseUint(part, 10, 8)
-		if err != nil {
-			log.Fatalf("should not happen: bad part of the version: %q", part)
-		}
-
-		result[i] = uint8(parsed)
-	}
-
-	return result
-}
-
-func (v version) greaterOrEqual(other version) bool {
-	return v[0] == other[0] &&
-		v[1] == other[1] &&
-		v[2] >= other[2]
-}
-
-func selectVersion(requested string, available []string) string {
-	requestedVer := parseVersion(requested)
-
+func selectVersion(requested types.Semver, available []types.Semver) (types.Semver, error) {
 	foundIdx := -1
 	for i, availableVer := range available {
-		parsedAvailable := parseVersion(availableVer)
-
-		if parsedAvailable.greaterOrEqual(requestedVer) {
+		if availableVer.SameMajorMinor(requested) && availableVer.Compare(requested) > 0 {
 			foundIdx = i
-			requestedVer = parsedAvailable
+			requested = availableVer
 		}
 	}
 
 	if foundIdx == -1 {
-		return ""
+		return types.Semver{}, nil
 	}
 
-	return available[foundIdx]
+	return available[foundIdx], nil
 }
 
-func constructPaths(ncsBase, version, bundleID string) NCSLocation {
+func constructPaths(ncsBase string, version types.Semver, bundleID string) NCSLocation {
 	return NCSLocation{
 		Version: version,
 		NCS:     filepath.Join(ncsBase, "toolchains", bundleID),
-		Zephyr:  filepath.Join(ncsBase, version, "zephyr"),
+		Zephyr:  filepath.Join(ncsBase, version.String(), "zephyr"),
 	}
 }
 

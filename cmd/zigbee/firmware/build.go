@@ -17,6 +17,15 @@ import (
 
 const filenameArg = "config"
 
+// BuildConfig is aimed to provide build information
+// independently of how that information was obtained.
+type BuildConfig struct {
+	WorkDir      string
+	ConfigFile   string
+	OnlyGenerate bool
+	ClearWorkDir bool
+}
+
 func buildCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "build",
@@ -29,12 +38,33 @@ func buildCmd() *cli.Command {
 				Name: "clear-work-dir",
 			},
 		},
-		Action: buildFirmware,
+		Action: func(ctx *cli.Context) error {
+			buildCtx, err := newBuildConfigFromCLI(ctx)
+			if err != nil {
+				return fmt.Errorf("build context: %w", err)
+			}
+
+			return BuildFirmware(ctx.Context, buildCtx)
+		},
 	}
 }
 
-func buildFirmware(ctx *cli.Context) error {
-	cfg, err := parseConfig(ctx)
+func newBuildConfigFromCLI(ctx *cli.Context) (BuildConfig, error) {
+	workdir, err := getWorkdir(ctx)
+	if err != nil {
+		return BuildConfig{}, fmt.Errorf("get workdir: %w", err)
+	}
+
+	return BuildConfig{
+		WorkDir:      workdir,
+		ConfigFile:   getConfigFile(ctx),
+		OnlyGenerate: ctx.Bool("only-generate"),
+		ClearWorkDir: ctx.Bool("clear-work-dir"),
+	}, nil
+}
+
+func BuildFirmware(ctx context.Context, buildConfig BuildConfig) error {
+	cfg, err := parseConfig(buildConfig.ConfigFile)
 	if err != nil {
 		return fmt.Errorf("prepare config: %w", err)
 	}
@@ -43,22 +73,24 @@ func buildFirmware(ctx *cli.Context) error {
 		return fmt.Errorf("board name cannot be empty")
 	}
 
-	// Will work in the future.
-	workDir, err := filepath.Abs(ctx.String("workdir"))
-	if err != nil {
-		return fmt.Errorf("%w", err)
+	if err := GenerateFirmwareFiles(ctx, buildConfig.WorkDir, buildConfig.ClearWorkDir, cfg); err != nil {
+		return fmt.Errorf("generate firmware files: %w", err)
 	}
-	if workDir == "" {
-		workDir = "."
-	}
-	workDir = filepath.ToSlash(workDir) // This will make sure that workdir uses slashes as path separators even on windows, which will be fine for cmake.
 
+	if !buildConfig.OnlyGenerate {
+		return runBuild(ctx, cfg, buildConfig.WorkDir)
+	}
+
+	return nil
+}
+
+func GenerateFirmwareFiles(ctx context.Context, workDir string, shouldClearWorkDir bool, cfg *config.Device) error {
 	generator, err := generate.NewGenerator(cfg)
 	if err != nil {
 		return fmt.Errorf("new generator: %w", err)
 	}
 
-	if ctx.Bool("clear-work-dir") {
+	if shouldClearWorkDir {
 		if err := clearWorkDir(workDir); err != nil {
 			return err
 		}
@@ -68,15 +100,10 @@ func buildFirmware(ctx *cli.Context) error {
 		return fmt.Errorf("generate base: %w", err)
 	}
 
-	if !ctx.Bool("only-generate") {
-		return runBuild(ctx.Context, cfg, workDir)
-	}
-
 	return nil
 }
 
-func parseConfig(ctx *cli.Context) (*config.Device, error) {
-	configPath := getConfigName(ctx)
+func parseConfig(configPath string) (*config.Device, error) {
 	if configPath == "" {
 		return nil, errors.New("config path cannot be empty (it is set by default)")
 	}
@@ -94,25 +121,6 @@ func parseConfig(ctx *cli.Context) (*config.Device, error) {
 	return conf, nil
 }
 
-func getConfigName(ctx *cli.Context) string {
-	if ctx.IsSet(filenameArg) {
-		return ctx.String(filenameArg)
-	}
-
-	preferences := []string{"zigbee.yaml", "zigbee.yml"}
-	for _, preference := range preferences {
-		if _, err := os.Stat(preference); err == nil {
-			if preference == "zigbee.yml" {
-				log.Println("Default config file name changed to 'zigbee.yaml', please change name of your configuration file.")
-			}
-
-			return preference
-		}
-	}
-	// If both files don't exist - return default value.
-	return "zigbee.yaml"
-}
-
 func runBuild(ctx context.Context, device *config.Device, workDir string) error {
 	build := runner.NewCmd(
 		"west",
@@ -128,7 +136,8 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
 	)
 
-	if err := build.Run(ctx, runner.WithToolchainPath(device.General.GetToochainsPath())); err != nil {
+	toolchainsPath := device.General.GetToochainsPath()
+	if err := build.Run(ctx, runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr)); err != nil {
 		return fmt.Errorf("build firmware: %w", err)
 	}
 
@@ -156,4 +165,40 @@ func clearWorkDir(workDir string) error {
 
 		return os.RemoveAll(path)
 	})
+}
+
+func getWorkdir(ctx *cli.Context) (string, error) {
+	workDir, err := filepath.Abs(ctx.String("workdir"))
+	if err != nil {
+		return "", fmt.Errorf("%w", err)
+	}
+	if workDir == "" {
+		workDir = "."
+	}
+
+	// This will make sure that workdir uses slashes as path separators even on windows,
+	// which will be fine for cmake.
+	workDir = filepath.ToSlash(workDir)
+
+	return workDir, nil
+}
+
+func getConfigFile(ctx *cli.Context) string {
+	if ctx.IsSet(filenameArg) {
+		return ctx.String(filenameArg)
+	}
+
+	preferences := []string{"zigbee.yaml", "zigbee.yml"}
+	for _, preference := range preferences {
+		if _, err := os.Stat(preference); err == nil {
+			if preference == "zigbee.yml" {
+				log.Println("Default config file name changed to 'zigbee.yaml', please change name of your configuration file.")
+			}
+
+			return preference
+		}
+	}
+
+	// If both files don't exist - return default value.
+	return "zigbee.yaml"
 }

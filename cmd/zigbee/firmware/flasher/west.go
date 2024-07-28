@@ -21,10 +21,11 @@ func (w West) Flash(ctx context.Context, device *config.Device, workDir string) 
 		opts = append(opts, "--"+opt, fmt.Sprint(val))
 	}
 
+	toolchainsPath := device.General.GetToochainsPath()
 	return runner.NewCmd("west", opts...).Run(
 		ctx,
 		runner.WithWorkDir(workDir),
-		runner.WithToolchainPath(device.General.GetToochainsPath()),
+		runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr),
 	)
 }
 

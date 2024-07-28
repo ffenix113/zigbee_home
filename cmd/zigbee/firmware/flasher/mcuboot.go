@@ -13,9 +13,10 @@ import (
 type MCUBoot struct{}
 
 func (MCUBoot) Flash(ctx context.Context, device *config.Device, workDir string) error {
+	toolchainsPath := device.General.GetToochainsPath()
 	opts := []runner.CmdOpt{
 		runner.WithWorkDir(workDir),
-		runner.WithToolchainPath(device.General.GetToochainsPath()),
+		runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr),
 	}
 
 	// 1. Sign the firmware
