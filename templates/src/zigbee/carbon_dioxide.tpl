@@ -36,7 +36,9 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY | ZB_ZCL_ATTR_ACCESS_REPORTING, \
+    {{ if not ncsVersionIs_2_5 -}}
     (ZB_UINT16_MAX), \
+    {{ end -}}
     (zb_voidp_t) data_ptr \
   }
 
@@ -45,7 +47,9 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_MIN_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
+    {{ if not ncsVersionIs_2_5 -}}
     (ZB_UINT16_MAX), \
+    {{ end -}}
     (zb_voidp_t) data_ptr \
   }
 
@@ -54,7 +58,9 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_MAX_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
+    {{ if not ncsVersionIs_2_5 -}}
     (ZB_UINT16_MAX), \
+    {{ end -}}
     (zb_voidp_t) data_ptr \
   }
 
@@ -63,7 +69,9 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
+    {{ if not ncsVersionIs_2_5 -}}
     (ZB_UINT16_MAX), \
+    {{ end -}}
     (zb_voidp_t) data_ptr \
   }
 

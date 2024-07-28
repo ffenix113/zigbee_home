@@ -3,6 +3,7 @@ package source
 import (
 	"github.com/ffenix113/zigbee_home/config"
 	"github.com/ffenix113/zigbee_home/templates"
+	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/generator"
 )
 
@@ -10,9 +11,9 @@ type Source struct {
 	templates *templates.Templates
 }
 
-func NewSource() *Source {
+func NewSource(ncsVersion types.Semver) *Source {
 	return &Source{
-		templates: templates.NewTemplates(templates.TemplateFS),
+		templates: templates.NewTemplates(templates.TemplateFS, ncsVersion),
 	}
 }
 

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/ffenix113/zigbee_home/config"
+	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/generator"
 	"github.com/ffenix113/zigbee_home/types/sensor"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
@@ -93,7 +94,7 @@ type ContextWithAdditional struct {
 	AdditionalContext any
 }
 
-func NewTemplates(templateFS fs.FS) *Templates {
+func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	t := &Templates{
 		templateTree: templateTree{
 			tree: make(map[string]*templateTree),
@@ -118,6 +119,11 @@ func NewTemplates(templateFS fs.FS) *Templates {
 		"joinPath": func(strs ...string) string {
 			return path.Join(strs...)
 		},
+		// Specific functions to check exact version
+		// so we would know where each one is used,
+		// and what we can deprecate.
+		"ncsVersionIs_2_5": ncsVersionIs(ncsVersion, types.Semver{2, 5, 0}),
+		"ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
 	})
 
 	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*.tpl"), nil))
@@ -438,6 +444,14 @@ func formatHex(val any) (string, error) {
 		return fmt.Sprintf("%#x", i), nil
 	default:
 		return "", fmt.Errorf("unknown type to format: %T", val)
+	}
+}
+
+func ncsVersionIs(current, another types.Semver) func() bool {
+	isSame := current.SameMajorMinor(another)
+
+	return func() bool {
+		return isSame
 	}
 }
 

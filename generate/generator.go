@@ -7,6 +7,7 @@ import (
 
 	"github.com/ffenix113/zigbee_home/config"
 	"github.com/ffenix113/zigbee_home/templates/extenders"
+	"github.com/ffenix113/zigbee_home/types"
 	"github.com/ffenix113/zigbee_home/types/appconfig"
 	"github.com/ffenix113/zigbee_home/types/board"
 	"github.com/ffenix113/zigbee_home/types/devicetree"
@@ -32,10 +33,15 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 		return nil, fmt.Errorf("default app config: %w", err)
 	}
 
+	ncsVersion, err := types.ParseSemver(device.General.NCSVersion)
+	if err != nil {
+		return nil, fmt.Errorf("parse provided ncs version: %w", err)
+	}
+
 	return &Generator{
 		AppConfig:  appConfig,
 		DeviceTree: devicetree.NewDeviceTree(),
-		Source:     source.NewSource(),
+		Source:     source.NewSource(ncsVersion),
 	}, nil
 }
 
