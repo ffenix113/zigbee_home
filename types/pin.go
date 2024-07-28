@@ -108,17 +108,17 @@ func (p *Pin) UnmarshalYAML(value *yaml.Node) error {
 
 	matches := pinRegex.FindStringSubmatch(value.Value)
 	if matches == nil {
-		return fmt.Errorf("pin definition must be in a form of X.XX, where X is a number")
+		return fmt.Errorf("pin definition must be in a form of X.XX, where X is a number, but got: %q", value.Value)
 	}
 
 	port, err := strconv.ParseUint(matches[1], 10, 8)
 	if err != nil {
-		return fmt.Errorf("pin's port is invalid: %w", err)
+		return fmt.Errorf("pin's port %q is invalid: %w", matches[1], err)
 	}
 
 	pin, err := strconv.ParseUint(matches[2], 10, 8)
 	if err != nil {
-		return fmt.Errorf("pin's pin is invalid: %w", err)
+		return fmt.Errorf("pin's pin %q is invalid: %w", matches[2], err)
 	}
 
 	p.Port = NewOption(uint8(port))

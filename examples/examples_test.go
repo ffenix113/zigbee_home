@@ -34,6 +34,15 @@ func TestGenerateAllExamples(t *testing.T) {
 	}
 }
 
+// This test will generate the configuration from the repository root.
+// Hopefuly resulting in less issues and up-to-date configuration.
+func TestGenerateRootConfiguration(t *testing.T) {
+	cwdAbsPath, err := filepath.Abs("./../")
+	require.NoError(t, err)
+
+	runExample(t, cwdAbsPath)
+}
+
 func runExample(t *testing.T, exampleDir string) {
 	// FIXME: This is needed for config parser to
 	// resolve includes in config files.

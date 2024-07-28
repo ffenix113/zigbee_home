@@ -56,6 +56,12 @@ board:
   # to be selected one, even if the value is empty string.
   #bootloader: nrf52_legacy
 
+  # This will make "btn1" factory reset button. 
+  # Pressing this button for at least 5 seconds 
+  # would remove current network configuration,
+  # allowing it to be connected to another network.
+  factory_reset_button: btn1
+
   # This option will add UART loging functionality.
   # User can choose which console to use(usb or uart).
   # UART has to be defined either in default device tree,
@@ -85,6 +91,20 @@ board:
   # By default device will be configured as sleepy end device.
   # Note: Enabling router will increase the size of the firmware.
   is_router: false
+  # Buttons is optional, to provide information about available buttons on the board.
+  # Available button is not necessary a physical button, but can also be a pin.
+  buttons:
+    # If only ID is provided it means that this button is already present in board definition,
+    # and it will be just referenced from it.
+    - id: btn1
+    # Button can also have a pin, which will create new "button" on specified pin.
+    # To make it active-low - set "inverted" configuration option to "true".
+    - id: btn2
+      pin:
+        port: 0
+        pin: 18
+        inverted: true
+  
   # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
       # ID of instance is the same as defined in the SoC definition.
@@ -104,9 +124,10 @@ board:
   leds:
     - id: led_green
       # The pin definition is optional, if led is already present in board definition.
-      port: 0
-      pin: 6
-      inverted: true
+      pin:
+        port: 0
+        pin: 6
+        inverted: true
 
 sensors:
   # - type: bme680

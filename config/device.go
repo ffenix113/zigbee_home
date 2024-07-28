@@ -91,10 +91,10 @@ func ParseFromFile(configPath string) (*Device, error) {
 
 func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
 	dec := yaml.NewDecoder(rdr)
-	dec.KnownFields(false)
+	dec.KnownFields(true)
 
 	if err := dec.Decode(defConfig); err != nil {
-		return nil, fmt.Errorf("unmarshal config: %w", err)
+		return nil, fmt.Errorf("decode: %w", err)
 	}
 
 	// This may contain environment variables,
