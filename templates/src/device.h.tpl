@@ -1,5 +1,6 @@
 #pragma once
 
+#include <zboss_api_addons.h>
 #include "clusters.h"
 
 /* Delay for console initialization */

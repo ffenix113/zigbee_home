@@ -8,6 +8,10 @@ if (err != NRFX_SUCCESS)
 }
 {{ end}}
 
+{{ define "top_level" }}
+{{/* No need to define a device, as it is handled by NRFX lib */}}
+{{- end}}
+
 {{ define "loop"}}
 int res = nrfx_temp_measure();
 if (res != NRFX_SUCCESS) {
