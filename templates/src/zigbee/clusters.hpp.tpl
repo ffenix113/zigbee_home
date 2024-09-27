@@ -1,6 +1,14 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <zboss_api.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 #define MANUFACTURER_CODE ZB_ZCL_MANUF_CODE_INVALID
 

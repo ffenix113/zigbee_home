@@ -1,7 +1,7 @@
 #pragma once
 
 #include <zboss_api_addons.h>
-#include "clusters.h"
+#include "clusters.hpp"
 
 /* Delay for console initialization */
 #define WAIT_FOR_CONSOLE_MSEC 100

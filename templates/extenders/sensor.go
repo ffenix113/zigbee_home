@@ -23,7 +23,7 @@ func (Sensor) AppConfig() []appconfig.ConfigValue {
 
 // Includes implements templates.Extender.
 func (Sensor) Includes() []string {
-	return []string{"zephyr/drivers/sensor.h", "zbhome_sensor.h"}
+	return []string{"zephyr/drivers/sensor.h", "zbhome_sensor.hpp"}
 }
 
 // Template implements templates.Extender.
@@ -35,12 +35,12 @@ func (Sensor) Template() string {
 func (Sensor) WriteFiles() []generator.WriteFile {
 	return []generator.WriteFile{
 		{
-			FileName:     "zbhome_sensor.h",
-			TemplateName: "zbhome_sensor.h",
+			FileName:     "zbhome_sensor.hpp",
+			TemplateName: "zbhome_sensor.hpp",
 		},
 		{
-			FileName:     "zbhome_sensor.c",
-			TemplateName: "zbhome_sensor.c",
+			FileName:     "zbhome_sensor.cpp",
+			TemplateName: "zbhome_sensor.cpp",
 		},
 	}
 }

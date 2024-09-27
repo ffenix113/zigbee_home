@@ -46,9 +46,9 @@ var knownClusterTemplates = map[cluster.ID]string{
 var sourceFiles = [][2]string{
 	{path.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
 	{path.Join("..", "Kconfig"), "Kconfig.tpl"},
-	{"main.c", "main.c.tpl"},
-	{"device.h", "device.h.tpl"},
-	{"clusters.h", "clusters.h.tpl"},
+	{"main.cpp", "main.cpp.tpl"},
+	{"device.hpp", "device.hpp.tpl"},
+	{"clusters.hpp", "clusters.hpp.tpl"},
 }
 
 var knownExtenders = [...]string{
@@ -122,7 +122,6 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		// Specific functions to check exact version
 		// so we would know where each one is used,
 		// and what we can deprecate.
-		"ncsVersionIs_2_5": ncsVersionIs(ncsVersion, types.Semver{2, 5, 0}),
 		"ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
 	})
 

@@ -5,6 +5,9 @@ package appconfig
 // As such they do not represent good/best configurations,
 // but mostly the ones that work for this project.
 var (
+	// Zephyr config
+	CONFIG_CPP = NewValue("CONFIG_CPP").Default(Yes)
+
 	// Logging
 	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(No)
 	CONFIG_SERIAL           = NewValue("CONFIG_SERIAL").Default(No)

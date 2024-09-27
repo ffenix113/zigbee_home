@@ -59,6 +59,8 @@ type Board struct {
 }
 
 func ParseFromFile(configPath string) (*Device, error) {
+	var minimumNCSVersion = types.NewSemver(2, 6, 0)
+
 	cfg := &Device{
 		General: General{
 			RunEvery: time.Minute,
@@ -68,7 +70,7 @@ func ParseFromFile(configPath string) (*Device, error) {
 				}
 				return "~/ncs"
 			}(),
-			NCSVersion:   "v2.6.1",
+			NCSVersion:   minimumNCSVersion.String(),
 			Manufacturer: "FFexix113",
 			DeviceName:   "dongle",
 		},
@@ -84,6 +86,15 @@ func ParseFromFile(configPath string) (*Device, error) {
 	cfg, err = ParseFromReader(cfg, file)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal config file: %w", err)
+	}
+
+	selectedNCSVersion, err := types.ParseSemver(cfg.General.NCSVersion)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse selected NCS version: %w", err)
+	}
+
+	if minimumNCSVersion.Compare(selectedNCSVersion) == 1 {
+		return nil, fmt.Errorf("selected NCS version is lower than minimum supported version: selected %q, minimum supported %q", cfg.General.NCSVersion, minimumNCSVersion)
 	}
 
 	return cfg, nil

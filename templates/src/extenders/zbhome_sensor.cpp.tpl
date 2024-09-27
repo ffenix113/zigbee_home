@@ -1,9 +1,8 @@
-#include <zboss_api.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/sensor.h>
 
-#include "zbhome_sensor.h"
-#include "clusters.h"
+#include "zbhome_sensor.hpp"
+#include "clusters.hpp"
 
 LOG_MODULE_DECLARE(app, LOG_LEVEL_INF);
 

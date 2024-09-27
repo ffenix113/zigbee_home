@@ -92,6 +92,7 @@ type DefaultAppConfigOptions struct {
 
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
+		CONFIG_CPP,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,
@@ -117,6 +118,7 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 
 	if len(opts.ZigbeeChannels) != 0 {
 		channel := int32(0)
+
 		for _, chann := range opts.ZigbeeChannels {
 			if chann < 11 || chann > 26 {
 				return nil, fmt.Errorf("zigbee channels must be in range [11, 26], but have %d", chann)
@@ -148,6 +150,7 @@ func (c *AppConfig) AddValue(configValues ...ConfigValue) *AppConfig {
 				}
 
 				c.values[dep.Name] = dep
+
 				continue
 			}
 		}

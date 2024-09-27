@@ -23,7 +23,7 @@ void zb_zcl_soil_moisture_init_server()
 }
 
 #define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_SERVER_ROLE_INIT zb_zcl_soil_moisture_init_server
-#define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_CLIENT_ROLE_INIT (NULL)
+#define ZB_ZCL_CLUSTER_ID_SOIL_MOISTURE_CLIENT_ROLE_INIT ((zb_zcl_cluster_init_t)NULL)
 {{end}}
 {{end}}
 

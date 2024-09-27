@@ -1,5 +1,4 @@
-#ifndef ZBHOME_SENSOR_H
-#define ZBHOME_SENSOR_H
+#pragma once
 
 #define GENERATE_ATTR_VAL_SETTER(cluster_name, cluster) \
     zb_zcl_status_t zbhome_set_attr_val_for_##cluster_name(int endpoint, zb_uint8_t * data_ptr) { \
@@ -50,6 +49,4 @@ NAME_GENERATE_SENSOR_FULL_FOR_ATTR(pressure);
 
 #ifdef ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
 NAME_GENERATE_SENSOR_FULL_FOR_ATTR(carbon_dioxide);
-#endif
-
 #endif

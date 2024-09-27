@@ -8,7 +8,7 @@ import (
 
 type Semver [3]uint8
 
-var versionRegx = regexp.MustCompile(`^v?(\d+)\.(\d+)(?:\.(\d+))?$`)
+var versionRegx = regexp.MustCompile(`^v?(\d+)\.(\d+)(?:\.(\d+))?(?:-.*)?$`)
 
 func NewSemver(major, minor, patch uint8) Semver {
 	return Semver{major, minor, patch}
