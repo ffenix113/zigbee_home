@@ -28,6 +28,15 @@ general:
   runevery: 1m
   # Board name, as defined in Zephyr.
   board: nrf52840dongle_nrf52840
+
+  # Defines specific major & minor version that should be used.
+  # Later patch version can be automatically selected by the program, 
+  # if specific version is not found. 
+  # I.e. if requested v2.7.0, but only v2.7.2 is found - v2.7.2 will be used instead.
+  # Higher then minimum supported version can be specified (but may be incompatible),
+  # but lower then minimum version will result in an error.
+  # This is optional configuration.
+  ncs_version: v2.7.0
   
   # This paths are necessary to build the generated firmware.
   # If nRF Connect setup was done with VS Code extension -
@@ -57,10 +66,10 @@ general:
 # This section is for defining peripherals
 # on the board. I.e. uart, spi, i2c, etc.
 # NOTE: Only changes should be defined here.
-# See https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/<arch>/<board_name>/<board_name>.dts
+# See https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/<vendor>/<board_name>/<board_name>.dts
 # for existing definitions for the board.
 # For example nRF52840 Dongle would have board devicetree at
-# https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
+# https://github.com/zephyrproject-rtos/zephyr/blob/26603cefaf41298c417f2eee834ed40d9ab35d3a/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840.dts
 board:
   # Specifically define bootloader for the board.
   # This field is optional, and in most cases this might not be needed.
@@ -73,6 +82,12 @@ board:
   # Note: if this field is present - this will force bootloader
   # to be selected one, even if the value is empty string.
   #bootloader: nrf52_legacy
+
+  # This will make "button0" factory reset button. 
+  # Pressing this button for at least 5 seconds 
+  # would remove current network configuration,
+  # allowing it to be connected to another network.
+  factory_reset_button: button0
 
   # This option will add UART loging functionality.
   # User can choose which console to use(usb or uart).
@@ -103,6 +118,20 @@ board:
   # By default device will be configured as sleepy end device.
   # Note: Enabling router will increase the size of the firmware.
   is_router: false
+  # Buttons is optional, to provide information about available buttons on the board.
+  # Available button is not necessary a physical button, but can also be a pin.
+  buttons:
+    # If only ID is provided it means that this button is already present in board definition,
+    # and it will be just referenced from it.
+    - id: button0
+    # Button can also have a pin, which will create new "button" on specified pin.
+    # To make it active-low - set "inverted" configuration option to "true".
+    - id: button1
+      pin:
+        port: 0
+        pin: 18
+        inverted: true
+  
   # I2C is optional, only to provide different pins for i2c instance(s)
   i2c:
       # ID of instance is the same as defined in the SoC definition.
@@ -121,7 +150,7 @@ board:
       rx: 1.10
   leds:
     - id: led_green
-      # The `pin` section is optional, if led is already present in board definition.
+      # The pin definition is optional, if led is already present in board definition.
       pin:
         port: 0
         pin: 6
@@ -130,7 +159,7 @@ board:
 # Sensors define a list of devices that 
 # can provide sensor values or be controlled
 sensors:
-  # All sensors have type, and most will 
+  # All sensors have type, and most will, 
   # also have sensor-specific configuration.
   - type: bme680
     i2c:
@@ -153,6 +182,36 @@ sensors:
   #     port: 0
   #     pin: 6
   #     inverted: true
+  # Add a dht sensor from aosong manufacturer
+  # If DHT22 or AM2302 is used, variant must be set to "dht22". DHT11 does not need variant.
+  # - type: dht
+  #   variant: "dht22"
+  #   pin:
+  #     port: 1
+  #     pin: 13
+  #
+  # power_config uses ADC to measure positive voltage
+  # on pin 0.04 and report it as a battery voltage.
+  # ZCL 4.9 will be implemented to do general 
+  # electricity measurements through ADC.
+  # Capacitive mositure sensors would be added
+  # with ZCL 4.7.
+  # - type: power_config
+  #   adc_pin: 0.04
+  #   battery_rated_voltage: 3000
+  #   battery_voltage_min_threshold: 2500
+  #
+  # This example is crude example of using soil_moisture_adc
+  # sensor to get water moisture percentage.
+  #
+  # Note: min & max mv values may differ for your sensor,
+  # so please test it and adjust them accordingly!
+  # - type: soil_moisture_adc
+  #   adc_pin: 
+  #     pin: 0.04
+  #     oversampling: 4
+  #   min_moisture_mv: 730
+  #   max_moisture_mv: 430
 ```
 
 ## Sensor options

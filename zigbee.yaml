@@ -10,6 +10,15 @@ general:
   runevery: 1m
   # Board name, as defined in Zephyr.
   board: nrf52840dongle_nrf52840
+
+  # Defines specific major & minor version that should be used.
+  # Later patch version can be automatically selected by the program, 
+  # if specific version is not found. 
+  # I.e. if requested v2.7.0, but only v2.7.2 is found - v2.7.2 will be used instead.
+  # Higher then minimum supported version can be specified (but may be incompatible),
+  # but lower then minimum version will result in an error.
+  # This is optional configuration.
+  ncs_version: v2.7.0
   
   # This paths are necessary to build the generated firmware.
   # If nRF Connect setup was done with VS Code extension -
@@ -39,10 +48,10 @@ general:
 # This section is for defining peripherals
 # on the board. I.e. uart, spi, i2c, etc.
 # NOTE: Only changes should be defined here.
-# See https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/<arch>/<board_name>/<board_name>.dts
+# See https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/<vendor>/<board_name>/<board_name>.dts
 # for existing definitions for the board.
 # For example nRF52840 Dongle would have board devicetree at
-# https://github.com/zephyrproject-rtos/zephyr/tree/main/boards/arm/nrf52840dongle_nrf52840/nrf52840dongle_nrf52840.dts
+# https://github.com/zephyrproject-rtos/zephyr/blob/26603cefaf41298c417f2eee834ed40d9ab35d3a/boards/nordic/nrf52840dongle/nrf52840dongle_nrf52840.dts
 board:
   # Specifically define bootloader for the board.
   # This field is optional, and in most cases this might not be needed.
@@ -56,11 +65,11 @@ board:
   # to be selected one, even if the value is empty string.
   #bootloader: nrf52_legacy
 
-  # This will make "btn1" factory reset button. 
+  # This will make "button0" factory reset button. 
   # Pressing this button for at least 5 seconds 
   # would remove current network configuration,
   # allowing it to be connected to another network.
-  factory_reset_button: btn1
+  factory_reset_button: button0
 
   # This option will add UART loging functionality.
   # User can choose which console to use(usb or uart).
@@ -96,10 +105,10 @@ board:
   buttons:
     # If only ID is provided it means that this button is already present in board definition,
     # and it will be just referenced from it.
-    - id: btn1
+    - id: button0
     # Button can also have a pin, which will create new "button" on specified pin.
     # To make it active-low - set "inverted" configuration option to "true".
-    - id: btn2
+    - id: button1
       pin:
         port: 0
         pin: 18
@@ -129,14 +138,22 @@ board:
         pin: 6
         inverted: true
 
+# Sensors define a list of devices that 
+# can provide sensor values or be controlled
 sensors:
-  # - type: bme680
-  #   i2c:
-  #     id: i2c0
-  #     addr: '0x76'
-  # - type: scd4x
-  #   i2c:
-  #     id: i2c0
+  # All sensors have type, and most will, 
+  # also have sensor-specific configuration.
+  - type: bme680
+    i2c:
+      id: i2c0
+      # Some devices might have changable I2C address, 
+      # which can be defined here.
+      # Note: this does not change the device address,
+      # only tells which address to use.
+      addr: '0x76'
+  - type: scd4x
+    i2c:
+      id: i2c0
   # - type: device_temperature
   # on_off is a sensor that will respond to on/off state of the pin.
   # For now verifyied to be controlled by the client only,
