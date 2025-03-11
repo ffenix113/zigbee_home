@@ -103,6 +103,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	}
 
 	t.templates.Funcs(template.FuncMap{
+		"typeFromSensor":      typeFromSensor,
 		"clusterTpl":          t.clusterTpl,
 		"render":              t.render,
 		"maybeRender":         t.maybeRender,
@@ -390,6 +391,10 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 	}
 
 	return buf.String(), nil
+}
+
+func typeFromSensor(sensor SensorCtx) string {
+	return sensor.Sensor.String()
 }
 
 // toButtonIdx is a helper to get the index of the requested button from the Devicetree.

@@ -59,6 +59,9 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #define DEVICE_INITIAL_DELAY_MSEC 2000
 
+std::vector<std::shared_ptr<zbhome::types::Component>> components;
+std::vector<std::weak_ptr<zbhome::types::Sensor>> sensors;
+
 {{/* This check should be a helper really */}}
 {{- if not (eq .Device.Board.NetworkStateLED "") }}
 static void toggle_identify_led(uint16_t led_data)
@@ -268,6 +271,10 @@ static void loop(zb_bufid_t bufid)
 	// -- {{$sensor}}, for endpoint {{$i}} end
 	{{- end}}
 
+	for (auto sensor : sensors) {
+		sensor.lock()->on_loop();
+	}
+
 	zb_ret_t zb_err = ZB_SCHEDULE_APP_ALARM(loop,
 					0,
 					ZB_MILLISECONDS_TO_BEACON_INTERVAL({{.Device.General.RunEvery.Milliseconds}}));
@@ -367,6 +374,46 @@ int init_templates() {
 	return 0;
 }
 
+// Template function to add object to the correct vector
+template <typename T>
+void store_component(std::shared_ptr<T> obj) {
+    static_assert(std::is_base_of<zbhome::types::Component, T>::value, "value is not derived from Base");
+	components.push_back(obj);
+
+	// Probably we can get away with using dynamic_cast instead.
+	// It is done only once on startup, so no much harm,
+	// but it may save some bytes of the firmware size.
+	if constexpr (std::is_base_of<zbhome::types::Sensor, T>::value) {
+        sensors.push_back(obj);
+        // printf("Added to sensors\n");
+    }
+}
+
+bool setup_components() {
+	{{- /* Loop here over all sensors and add them */ -}}
+	{{- range $i, $sensor := .Device.Sensors }}
+	{{ $endpoint := (sum $i 1) -}}
+	// -- {{$sensor}}, for endpoint {{$i}}
+	{{- /* 
+		We need to possibly have some arguments for components
+		For exmaple, for buttons & LEDs we want to have gpio configuration.
+
+		It is a shame that at this point we are using templates to generate arguments,
+		as all of this endavor of using C++ & templated functions is 
+		to reduce Golang templates needed and move closer to just C++.
+		*/ -}}
+	{{- $sensorCtx := sensorCtx $endpoint $.Device $sensor nil -}}
+	{{- maybeRenderExtender $sensor.Template "construct_arguments" $sensorCtx}}
+	{{- $constructorArgNames := maybeRenderExtender $sensor.Template "construct_argument_names" $sensorCtx}}
+	auto sensor_endpoint_{{$i}} = std::make_shared<zbhome::types::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
+	if (!sensor_endpoint_{{$i}}->setup()) {
+		LOG_ERR("sensor {{$i}} failed setup");
+		return false;
+	};
+	store_component(sensor_endpoint_{{$i}});
+	{{ end }}
+}
+
 int main(void)
 {
 	#ifdef CONFIG_USB_DEVICE_STACK
@@ -375,6 +422,10 @@ int main(void)
 
 	register_factory_reset_button(FACTORY_RESET_BUTTON);
 	gpio_init();
+
+	if (!setup_components()) {
+		return 0;
+	}
 
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);
