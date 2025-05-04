@@ -25,7 +25,17 @@ import (
 //
 //go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
-var TemplateFS embed.FS
+var embTemplateFS embed.FS
+
+var TemplateFS = func() fs.FS {
+	// FIXME: This is for debug, so should be at least put behind some option.
+	expanded, err := filepath.Abs("./templates")
+	if err != nil {
+		panic(err)
+	}
+
+	return os.DirFS(expanded)
+}()
 
 // This map can be removed in favor of cluster telling
 // which template it want's to use, or try
@@ -49,6 +59,9 @@ var sourceFiles = [][2]string{
 	{"main.cpp", "main.cpp.tpl"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
+	{"types.hpp", "types.hpp"},
+	{"types_basic_sensor.hpp", "types_basic_sensor.hpp"},
+	{"types_basic_sensor.cpp", "types_basic_sensor.cpp"},
 }
 
 var knownExtenders = [...]string{
@@ -133,7 +146,12 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "dts", "bindings", "sensor", "*"), nil))
 	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "zephyr", "*"), nil))
 
-	t.templates = template.Must(t.templates.ParseFS(templateFS, path.Join("src", "*.tpl"), path.Join("src", "zigbee", "*.tpl")))
+	t.templates = template.Must(t.templates.ParseFS(templateFS,
+		path.Join("src", "*.tpl"),
+		path.Join("src", "*.cpp"),
+		path.Join("src", "*.hpp"),
+		path.Join("src", "zigbee", "*.tpl")),
+	)
 
 	return t
 }
@@ -394,7 +412,7 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 }
 
 func typeFromSensor(sensor SensorCtx) string {
-	return sensor.Sensor.String()
+	return sensor.Sensor.CPPComponentType()
 }
 
 // toButtonIdx is a helper to get the index of the requested button from the Devicetree.
@@ -460,7 +478,15 @@ func ncsVersionIs(current, another types.Semver) func() bool {
 }
 
 func must(err error) {
-	if err != nil {
-		panic(err)
+	if err == nil {
+		return
 	}
+
+	errText := err.Error()
+
+	if strings.Contains(errText, "template: pattern matches no") {
+		return
+	}
+
+	panic(err)
 }

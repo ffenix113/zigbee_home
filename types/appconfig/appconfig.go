@@ -93,6 +93,8 @@ type DefaultAppConfigOptions struct {
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
 		CONFIG_CPP,
+		CONFIG_REQUIRES_FULL_LIBCPP,
+		CONFIG_STD_CPP17,
 		CONFIG_DK_LIBRARY,
 		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,

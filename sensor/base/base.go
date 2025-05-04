@@ -39,6 +39,14 @@ func (*Base) Clusters() cluster.Clusters {
 	return nil
 }
 
+func (*Base) NeedsDevice() bool {
+	return false
+}
+
+func (*Base) CPPComponentType() string {
+	return ""
+}
+
 func (*Base) AppConfig() []appconfig.ConfigValue {
 	return nil
 }

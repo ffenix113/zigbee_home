@@ -73,6 +73,19 @@ func BuildFirmware(ctx context.Context, buildConfig BuildConfig) error {
 		return fmt.Errorf("board name cannot be empty")
 	}
 
+	if _, err = os.Stat(buildConfig.WorkDir); err != nil {
+		switch {
+		case errors.Is(err, os.ErrNotExist):
+			if err := os.Mkdir(buildConfig.WorkDir, os.ModeDir); err != nil {
+				return fmt.Errorf("create workdir: %w", err)
+			}
+		case errors.Is(err, os.ErrPermission):
+			return fmt.Errorf("access workdir permission error: %w", err)
+		default:
+			return fmt.Errorf("stat workdir: %w", err)
+		}
+	}
+
 	if err := GenerateFirmwareFiles(ctx, buildConfig.WorkDir, buildConfig.ClearWorkDir, cfg); err != nil {
 		return fmt.Errorf("generate firmware files: %w", err)
 	}
