@@ -67,7 +67,7 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 #define DEVICE_INITIAL_DELAY_MSEC 2000
 
 std::vector<std::shared_ptr<zbhome::types::Component>> components;
-std::vector<std::weak_ptr<zbhome::types::Sensor>> sensors;
+std::vector<std::shared_ptr<zbhome::types::Sensor>> sensors;
 
 {{/* This check should be a helper really */}}
 {{- if not (eq .Device.Board.NetworkStateLED "") }}
@@ -262,25 +262,28 @@ static void loop(zb_bufid_t bufid)
 	{{- range $i, $sensor := .Device.Sensors}}
 	{{ $endpointID := (sum $i 1)}}
 	// -- {{$sensor}}, for endpoint {{$i}}
-	{{- with maybeRenderExtender $sensor.Template "loop" (sensorCtx $endpointID $.Device $sensor nil)}}
+	{{ $sensorCtx := (sensorCtx $endpointID $.Device $sensor nil) }}
+	{{- with maybeRenderExtender $sensor.Template "loop" $sensorCtx}}
 	{
 		{{.}}
 	}
 	{{- else }}
 	{
+		{{ if eq (typeFromSensor $sensorCtx) ""}}
 		sensor_sample_fetch({{$sensor.Label}}_{{$endpointID}});
 
 		{{- range $sensor.Clusters }}
 		zbhome_sensor_fetch_and_update_{{.CVarName}}({{$sensor.Label}}_{{$endpointID}}, {{$endpointID}});
 		{{- end}}
+		{{end}}
 	}
 	{{- end}}
 	// -- {{$sensor}}, for endpoint {{$i}} end
 	{{- end}}
 
-	LOG_INF("start looping");
-	for (auto sensor : sensors) {
-		sensor.lock()->onLoop();
+	LOG_DBG("start looping %d sensor(s)", sensors.size());
+	for (auto& sensor : sensors) {
+		sensor->onLoop();
 	}
 
 	zb_ret_t zb_err = ZB_SCHEDULE_APP_ALARM(loop,
@@ -290,61 +293,6 @@ static void loop(zb_bufid_t bufid)
 		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
 	}
 
-	if (bufid) {
-		zb_buf_free(bufid);
-	}
-}
-
-void zboss_signal_handler(zb_bufid_t bufid)
-{
-	zb_zdo_app_signal_hdr_t *signal_header = NULL;
-	zb_zdo_app_signal_type_t signal = zb_get_app_signal(bufid, &signal_header);
-	zb_ret_t err = RET_OK;
-
-	/* Update network status LED but only for debug configuration */
-	#ifdef CONFIG_ZBHOME_DEBUG_LEDS
-	zigbee_led_status_update(bufid, ZIGBEE_NETWORK_STATE_LED);
-	#endif /* CONFIG_ZBHOME_DEBUG_LEDS */
-
-	/* Detect ZBOSS startup */
-	switch (signal) {
-	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
-		/* ZBOSS framework has started - schedule first loop iteration */
-		err = ZB_SCHEDULE_APP_ALARM(loop,
-					    0,
-					    ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-						    DEVICE_INITIAL_DELAY_MSEC));
-		if (err) {
-			LOG_ERR("Failed to schedule app alarm: %d", err);
-		}
-		break;
-	case ZB_ZDO_SIGNAL_LEAVE:
-	case ZB_BDB_SIGNAL_DEVICE_FIRST_START:
-		{{ if not (eq .Device.Board.NetworkStateLED "") }}
-		// When leaving network - start blinking led.
-		ZB_SCHEDULE_APP_CALLBACK(toggle_identify_led, ZIGBEE_NETWORK_STATE_LED << 1 | 0);
-		{{ end }}
-		break;
-	case ZB_BDB_SIGNAL_STEERING:
-		{{ if not (eq .Device.Board.NetworkStateLED "") }}
-		ZB_SCHEDULE_APP_ALARM_CANCEL(toggle_identify_led,
-						   ZB_ALARM_ANY_PARAM);
-		// While we will stop blinking it does not mean that 
-		// the LED will be in off state on last iteration.
-		dk_set_led_off(ZIGBEE_NETWORK_STATE_LED);
-		{{ end }}
-		break;
-	default:
-		break;
-	}
-
-	/* Let default signal handler process the signal*/
-	ZB_ERROR_CHECK(zigbee_default_signal_handler(bufid));
-
-	/*
-	 * All callbacks should either reuse or free passed buffers.
-	 * If bufid == 0, the buffer is invalid (not passed).
-	 */
 	if (bufid) {
 		zb_buf_free(bufid);
 	}
@@ -413,8 +361,8 @@ bool setup_components() {
 			*/ -}}
 		{{- $sensorCtx := sensorCtx $endpoint $.Device $sensor nil -}}
 		{{- with $componentType := typeFromSensor $sensorCtx -}}
-		{{- maybeRenderExtender $sensor.Template "construct_arguments" $sensorCtx}}
-		{{- $constructorArgNames := maybeRenderExtender $sensor.Template "construct_argument_names" $sensorCtx}}
+		{{- maybeRenderExtender $sensor.Template "constructor_arguments" $sensorCtx}}
+		{{- $constructorArgNames := maybeRenderExtender $sensor.Template "constructor_argument_names" $sensorCtx}}
 		auto component_{{$i}} = std::make_shared<zbhome::types::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
 		component_{{$i}}->setEndpoint({{$endpoint}});
 		{{ if $sensor.NeedsDevice -}}
@@ -436,8 +384,71 @@ bool setup_components() {
 	}
 	{{ end }}
 
-	return true
+	return true;
 }
+
+void zboss_signal_handler(zb_bufid_t bufid)
+{
+	zb_zdo_app_signal_hdr_t *signal_header = NULL;
+	zb_zdo_app_signal_type_t signal = zb_get_app_signal(bufid, &signal_header);
+	zb_ret_t err = RET_OK;
+
+	/* Update network status LED but only for debug configuration */
+	#ifdef CONFIG_ZBHOME_DEBUG_LEDS
+	zigbee_led_status_update(bufid, ZIGBEE_NETWORK_STATE_LED);
+	#endif /* CONFIG_ZBHOME_DEBUG_LEDS */
+
+	/* Detect ZBOSS startup */
+	switch (signal) {
+	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
+		// This part is done in Zigbee thread as I had exceptions
+		// while trying to run it from main().
+		if (!setup_components()) {
+			LOG_ERR("could not add some component");
+			return 0;
+		}
+
+		/* ZBOSS framework has started - schedule first loop iteration */
+		err = ZB_SCHEDULE_APP_ALARM(loop,
+					    0,
+					    ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+						    DEVICE_INITIAL_DELAY_MSEC));
+		if (err) {
+			LOG_ERR("Failed to schedule app alarm: %d", err);
+		}
+		break;
+	case ZB_ZDO_SIGNAL_LEAVE:
+	case ZB_BDB_SIGNAL_DEVICE_FIRST_START:
+		{{ if not (eq .Device.Board.NetworkStateLED "") }}
+		// When leaving network - start blinking led.
+		ZB_SCHEDULE_APP_CALLBACK(toggle_identify_led, ZIGBEE_NETWORK_STATE_LED << 1 | 0);
+		{{ end }}
+		break;
+	case ZB_BDB_SIGNAL_STEERING:
+		{{ if not (eq .Device.Board.NetworkStateLED "") }}
+		ZB_SCHEDULE_APP_ALARM_CANCEL(toggle_identify_led,
+						   ZB_ALARM_ANY_PARAM);
+		// While we will stop blinking it does not mean that 
+		// the LED will be in off state on last iteration.
+		dk_set_led_off(ZIGBEE_NETWORK_STATE_LED);
+		{{ end }}
+		break;
+	default:
+		break;
+	}
+
+	/* Let default signal handler process the signal*/
+	ZB_ERROR_CHECK(zigbee_default_signal_handler(bufid));
+
+	/*
+	 * All callbacks should either reuse or free passed buffers.
+	 * If bufid == 0, the buffer is invalid (not passed).
+	 */
+	if (bufid) {
+		zb_buf_free(bufid);
+	}
+}
+
 
 int main(void)
 {
@@ -447,11 +458,6 @@ int main(void)
 
 	register_factory_reset_button(FACTORY_RESET_BUTTON);
 	gpio_init();
-
-	if (!setup_components()) {
-		LOG_ERR("could not add some component");
-		return 0;
-	}
 
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);
@@ -480,6 +486,10 @@ int main(void)
 	#endif
 
 	if (IS_ENABLED(CONFIG_RAM_POWER_DOWN_LIBRARY)) {
+		// For some reason this function may result in
+		// debugger not being running correctly(at least on nrf52840dk).
+		// This can manifest as debugger not stopping on main() entry.
+		// To fix it comment out this call.
 		power_down_unused_ram();
 	}
 

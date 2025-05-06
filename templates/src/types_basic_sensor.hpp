@@ -6,20 +6,12 @@
 
 namespace zbhome {
     namespace types {
-        // If there is easier way to do this, like enums - that would be so much better.
-        // Open to suggestions/solutions!
-        typedef uint8_t SensorType;
-        constexpr SensorType Temperature    = 1 << 1;
-        constexpr SensorType Humidity       = 1 << 2;
-        constexpr SensorType Pressure       = 1 << 3;
-        constexpr SensorType CarbonDioxide  = 1 << 4;
-        
-        class BasicSensor : public Component {
+        // BasicSensor will update and set all available
+        // sensor channels. Currently it is not possible to 
+        // limit channels that should be checked.
+        class BasicSensor : public Component, public Sensor {
             public:
-                BasicSensor(SensorType sensorType);
                 void onLoop();
-            private:
-                SensorType m_sensorType = 0;
         };
     };
 };

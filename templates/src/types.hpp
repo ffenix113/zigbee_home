@@ -30,7 +30,7 @@ namespace zbhome
                 m_endpoint = endpoint;
             }
 
-            uint8_t getEndpoint()
+            const uint8_t getEndpoint()
             {
                 return m_endpoint;
             }

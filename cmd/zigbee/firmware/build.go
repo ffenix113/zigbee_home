@@ -76,7 +76,7 @@ func BuildFirmware(ctx context.Context, buildConfig BuildConfig) error {
 	if _, err = os.Stat(buildConfig.WorkDir); err != nil {
 		switch {
 		case errors.Is(err, os.ErrNotExist):
-			if err := os.Mkdir(buildConfig.WorkDir, os.ModeDir); err != nil {
+			if err := os.Mkdir(buildConfig.WorkDir, os.ModeDir|0o755); err != nil {
 				return fmt.Errorf("create workdir: %w", err)
 			}
 		case errors.Is(err, os.ErrPermission):

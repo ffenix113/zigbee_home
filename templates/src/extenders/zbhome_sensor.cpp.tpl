@@ -6,20 +6,48 @@
 
 LOG_MODULE_DECLARE(app, LOG_LEVEL_INF);
 
-GENERATE_ATTR_VAL_SETTER(temperature, TEMP_MEASUREMENT)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(temperature, float, int16_t, ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_SENSOR_FULL_FOR_ATTR(temperature, SENSOR_CHAN_AMBIENT_TEMP)
+namespace zbhome {
+    namespace sensors {
+        zb_zcl_status_t setAttrValue(int endpoint, zb_uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
+            return zb_zcl_set_attr_val(
+                endpoint,
+                clusterId,
+                ZB_ZCL_CLUSTER_SERVER_ROLE,
+                valueId,
+                data_ptr,
+                ZB_FALSE);
+        }
+        
+        uint8_t convertAttrValue(struct sensor_value * value, uint8_t multiplier) {
+            float measured_value = sensor_value_to_float(value);
+            return (uint8_t)(measured_value * multiplier);
+        }
+        
+        int updateFetchedSamples(const struct device * sensor, int endpoint) {
+            for (auto& config : sensorTypes) {
+                struct sensor_value value;
+                int err = sensor_channel_get(sensor, config.channel, &value);
+                if (err) {
+                    // If not supported - it is okay. We may try more channels that sensor defines.
+                    if (err == -ENOTSUP) {
+                        continue;
+                    }
 
-GENERATE_ATTR_VAL_SETTER(humidity, REL_HUMIDITY_MEASUREMENT)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(humidity, float, int16_t, ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_SENSOR_FULL_FOR_ATTR(humidity, SENSOR_CHAN_HUMIDITY)
+                    LOG_ERR("Failed to get sensor %s channel %s: %d", sensor->name, config.channelName, err);
+                    return err;
+                }
+                LOG_DBG("Sensor raw   %s/%s:\t%6d.%06d", sensor->name, config.channelName, value.val1, value.val2);
 
-GENERATE_ATTR_VAL_SETTER(pressure, PRESSURE_MEASUREMENT)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(pressure, float, int16_t, ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER)
-GENERATE_SENSOR_FULL_FOR_ATTR(pressure, SENSOR_CHAN_PRESS)
+                auto convertedValue = convertAttrValue(&value, config.multiplier);
 
-#ifdef ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
-GENERATE_ATTR_VAL_SETTER(carbon_dioxide, CARBON_DIOXIDE)
-GENERATE_ATTR_SENSOR_VALUE_SETTER(carbon_dioxide, float, float, ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER)
-GENERATE_SENSOR_FULL_FOR_ATTR(carbon_dioxide, SENSOR_CHAN_CO2)
-#endif
+                err = setAttrValue(endpoint, (zb_uint8_t*)&convertedValue, config.clusterId, config.attrValueId);
+                if (err) {
+                    LOG_ERR("Failed to set ZCL attribute for sensor %s, cluster %s: %d", sensor->name, config.channelName, err);
+                    return err;
+                }
+            }
+
+            return 0;
+        }
+    }
+}
