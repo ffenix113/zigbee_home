@@ -3,6 +3,7 @@ package sensor
 import (
 	"github.com/ffenix113/zigbee_home/types/appconfig"
 	"github.com/ffenix113/zigbee_home/types/devicetree"
+	"github.com/ffenix113/zigbee_home/types/generator"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
 )
 
@@ -12,6 +13,8 @@ type Simple struct {
 	SensorName             string
 	SensorLabel            string
 	SensorTemplate         string
+	SensorIncludes         []string
+	SensorWriteFiles       []generator.WriteFile
 	SensorNeedsDevice      bool
 	SensorCPPComponentType string
 	SensorClusters         cluster.Clusters
@@ -29,6 +32,14 @@ func (s *Simple) Label() string {
 
 func (s *Simple) Template() string {
 	return s.SensorTemplate
+}
+
+func (s *Simple) Includes() []string {
+	return s.SensorIncludes
+}
+
+func (s *Simple) WriteFiles() []generator.WriteFile {
+	return s.SensorWriteFiles
 }
 
 func (s *Simple) NeedsDevice() bool {

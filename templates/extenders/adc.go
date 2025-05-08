@@ -2,7 +2,6 @@ package extenders
 
 import (
 	"fmt"
-	"path"
 
 	"github.com/ffenix113/zigbee_home/types/devicetree"
 	"github.com/ffenix113/zigbee_home/types/generator"
@@ -23,25 +22,24 @@ func NewADC(instances ...devicetree.ADCPin) generator.Extender {
 	}
 }
 
-func (l ADC) Template() string {
-	return path.Join("peripherals", "adc")
-}
-
 func (l ADC) WriteFiles() []generator.WriteFile {
 	return []generator.WriteFile{
 		{
-			FileName:     "adc.c",
-			TemplateName: "adc.c",
+			FileName:     "zbhome_sensor.hpp",
+			TemplateName: "zbhome_sensor.hpp",
 		},
 		{
-			FileName:     "adc.h",
-			TemplateName: "adc.h",
+			FileName:     "zbhome_sensor.cpp",
+			TemplateName: "zbhome_sensor.cpp",
 		},
 	}
 }
 
 func (l ADC) Includes() []string {
-	return []string{"zephyr/drivers/adc.h", "adc.h"}
+	return []string{
+		"zephyr/drivers/adc.h",
+		"zbhome_sensor.hpp",
+	}
 }
 
 func (l ADC) ApplyOverlay(dt *devicetree.DeviceTree) error {

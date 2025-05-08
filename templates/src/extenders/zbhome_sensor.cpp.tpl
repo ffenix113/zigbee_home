@@ -1,14 +1,16 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/sensor.h>
+// TODO: maybe split this file to remove the header from here?
+#include <zephyr/drivers/adc.h>
 
 #include "zbhome_sensor.hpp"
 #include "clusters.hpp"
 
-LOG_MODULE_DECLARE(app, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(zbhome_sensor, LOG_LEVEL_INF);
 
 namespace zbhome {
     namespace sensors {
-        zb_zcl_status_t setAttrValue(int endpoint, zb_uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
+        zb_zcl_status_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
             return zb_zcl_set_attr_val(
                 endpoint,
                 clusterId,
@@ -47,6 +49,39 @@ namespace zbhome {
                 }
             }
 
+            return 0;
+        }
+
+        int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp)
+        {
+            int err;
+            int32_t val_mv;
+            struct adc_sequence sequence = {
+                .buffer = &val_mv,
+                /* buffer size in bytes, not number of samples */
+                .buffer_size = sizeof(val_mv),
+            };
+
+            (void)adc_sequence_init_dt(spec, &sequence);
+            err = adc_read(spec->dev, &sequence);
+            if (err < 0)
+            {
+                LOG_ERR("ADC %s@%d: Could not read (%d)\n", spec->dev->name, spec->channel_id, err);
+                return err;
+            }
+
+            LOG_DBG("ADC %s/%d raw value: %d", spec->dev->name, spec->channel_id, val_mv);
+            err = adc_raw_to_millivolts_dt(spec, &val_mv);
+            /* conversion to mV may not be supported, skip if not */
+            if (err < 0)
+            {
+                LOG_DBG("  (value in mV not available)");
+                return err;
+            }
+
+            LOG_DBG("ADC %s/%d mv value: %d", spec->dev->name, spec->channel_id, val_mv);
+
+            *valp = (uint16_t)val_mv;
             return 0;
         }
     }

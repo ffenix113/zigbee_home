@@ -34,6 +34,14 @@ extern "C" {
 #include "types.hpp"
 #include "types_basic_sensor.hpp"
 
+// Sensors includes
+{{- range .Device.Sensors}}
+{{- range .Includes}}
+#include "{{.}}"
+{{- end}}
+{{- end}}
+// Sensors includes end
+
 // Extender includes
 {{- range .Extenders}}
 {{- range .Includes}}
@@ -361,9 +369,9 @@ bool setup_components() {
 			*/ -}}
 		{{- $sensorCtx := sensorCtx $endpoint $.Device $sensor nil -}}
 		{{- with $componentType := typeFromSensor $sensorCtx -}}
-		{{- maybeRenderExtender $sensor.Template "constructor_arguments" $sensorCtx}}
-		{{- $constructorArgNames := maybeRenderExtender $sensor.Template "constructor_argument_names" $sensorCtx}}
-		auto component_{{$i}} = std::make_shared<zbhome::types::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
+		{{- maybeRenderExtender $sensor.Template "component_constructor_arguments" $sensorCtx}}
+		{{- $constructorArgNames := maybeRenderExtender $sensor.Template "component_constructor_argument_names" $sensorCtx}}
+		auto component_{{$i}} = std::make_shared<zbhome::components::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
 		component_{{$i}}->setEndpoint({{$endpoint}});
 		{{ if $sensor.NeedsDevice -}}
 		{{- /* 
@@ -405,7 +413,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 		// while trying to run it from main().
 		if (!setup_components()) {
 			LOG_ERR("could not add some component");
-			return 0;
+			return;
 		}
 
 		/* ZBOSS framework has started - schedule first loop iteration */
@@ -490,7 +498,12 @@ int main(void)
 		// debugger not being running correctly(at least on nrf52840dk).
 		// This can manifest as debugger not stopping on main() entry.
 		// To fix it comment out this call.
-		power_down_unused_ram();
+		//
+		// Currently it is commented out as it causes issues when allocating
+		// with std::make_shared() when creating components.
+		// Hopefully it may be enabled later, if the issue will be resolved.
+		//
+		// power_down_unused_ram();
 	}
 
 	/* Start Zigbee stack */

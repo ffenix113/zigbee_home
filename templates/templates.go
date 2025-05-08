@@ -104,6 +104,7 @@ type Context struct {
 type ContextWithAdditional struct {
 	Context
 	Extender          generator.Extender
+	Sensor            sensor.Sensor
 	AdditionalContext any
 }
 
@@ -148,8 +149,10 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 
 	t.templates = template.Must(t.templates.ParseFS(templateFS,
 		path.Join("src", "*.tpl"),
+
 		path.Join("src", "*.cpp"),
 		path.Join("src", "*.hpp"),
+
 		path.Join("src", "zigbee", "*.tpl")),
 	)
 
@@ -157,6 +160,8 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 }
 
 func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *template.Template) error) error {
+	// FIXME: it
+
 	files, err := fs.Glob(tplFS, pattern)
 	if err != nil {
 		return fmt.Errorf("glob template fs: %w", err)
@@ -213,6 +218,7 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 	}
 
 	templateName := pathParts[len(pathParts)-1]
+	// FIXME: Removing the suffix results in inconsistent template names.
 	pathPart, _ := strings.CutSuffix(templateName, templateExtention)
 
 	subTree, ok := tree.tree[pathPart]
@@ -242,6 +248,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		Extenders: extenders,
 	}
 
+	// It is possible that sensors or extenders would write duplicate files.
+	// Currently it should be okay, but it should be looked out for.
+	// Maybe one of those files will contain templated values that would be overwritten..
+
 	for _, sourceDefinition := range sourceFiles {
 		template := t.templates.Lookup(sourceDefinition[1])
 		if template == nil {
@@ -260,7 +270,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 		// Files required by extender. Could be some implementation or helper functions.
 		for _, fileToWrite := range extender.WriteFiles() {
-			template := t.findExtendedTemplate(fileToWrite.TemplateName)
+			template := t.findTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(
 				template,
 				filepath.Join(srcDir, fileToWrite.FileName),
@@ -281,6 +291,27 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		}
 	}
 
+	for _, sensor := range device.Sensors {
+		fileWriter, ok := sensor.(interface {
+			WriteFiles() []generator.WriteFile
+		})
+		if !ok {
+			continue
+		}
+
+		filesToWrite := fileWriter.WriteFiles()
+
+		for _, fileToWrite := range filesToWrite {
+			template := t.findTemplate(fileToWrite.TemplateName)
+			if err := writeTemplate(
+				template,
+				filepath.Join(srcDir, fileToWrite.FileName),
+				ContextWithAdditional{Context: ctx, Sensor: sensor, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
+				return fmt.Errorf("write sensor file %q: %w", fileToWrite.FileName, err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -289,7 +320,7 @@ func (t *Templates) verifyExtender(extender generator.Extender) error {
 		return nil
 	}
 
-	tpl := t.findExtendedTemplate(extender.Template())
+	tpl := t.findTemplate(extender.Template())
 	if tpl == nil {
 		return fmt.Errorf("required extention template not found: %q", extender.Template())
 	}
@@ -334,19 +365,35 @@ func writeTemplate(template *template.Template, filePath string, ctx any) error 
 	return nil
 }
 
-func (t *Templates) findExtendedTemplate(templateName string) *template.Template {
-
-	nameParts := append([]string{"extenders"}, strings.Split(templateName, "/")...) // because we always need to use "/" when using embed.FS
-
-	tree := &t.templateTree
-	for _, namePart := range nameParts {
-		tree = tree.tree[namePart]
-		if tree == nil {
-			return nil
-		}
+func (t *Templates) findTemplate(templateName string) *template.Template {
+	tpl := t.templates.Lookup(templateName)
+	if tpl != nil {
+		return tpl
 	}
 
-	return tree.tpl
+	possiblePaths := [][]string{
+		strings.Split(templateName, "/"),
+		append([]string{"extenders"}, strings.Split(templateName, "/")...), // because we always need to use "/" when using embed.FS
+	}
+
+	for _, possiblePath := range possiblePaths {
+		tree := &t.templateTree
+
+		for _, namePart := range possiblePath {
+			tree = tree.tree[namePart]
+			if tree == nil {
+				break
+			}
+		}
+
+		if tree == nil || tree.tpl == nil {
+			continue
+		}
+
+		return tree.tpl
+	}
+
+	return nil
 }
 
 func (t *Templates) clusterTpl(clusterID cluster.ID, tplSuffix string) (string, error) {
@@ -393,7 +440,7 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 		return "", nil
 	}
 
-	tpl := t.findExtendedTemplate(tplPath)
+	tpl := t.findTemplate(tplPath)
 	if tpl == nil {
 		return "", fmt.Errorf("extender template %q is not defined", tplPath)
 	}

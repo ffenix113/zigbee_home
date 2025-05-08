@@ -31,6 +31,11 @@ func (b *Base) SetLabel(label string) {
 	b.label = label
 }
 
+// Includes is an optional include statements that will be written in main.cpp.
+func (*Base) Includes() []string {
+	return nil
+}
+
 func (*Base) Template() string {
 	return ""
 }

@@ -10,7 +10,7 @@ LOG_MODULE_REGISTER(basic_sensor, LOG_LEVEL_INF);
 
 namespace zbhome
 {
-    namespace types
+    namespace components
     {
         void BasicSensor::onLoop()
         {

@@ -1,11 +1,14 @@
 #pragma once
 
+#include <zephyr/drivers/sensor.h>
+
 #include "types.hpp"
 #include "clusters.hpp"
 
 namespace zbhome {
     namespace sensors {
         int updateFetchedSamples(const struct device * sensor, int endpoint);
+        int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp);
 
         struct sensorTypeConfig {
             sensor_channel channel;
