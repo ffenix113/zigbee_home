@@ -10,8 +10,8 @@ LOG_MODULE_REGISTER(zbhome_sensor, LOG_LEVEL_INF);
 
 namespace zbhome {
     namespace sensors {
-        zb_zcl_status_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
-            return zb_zcl_set_attr_val(
+        uint8_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
+            return (uint8_t)zb_zcl_set_attr_val(
                 endpoint,
                 clusterId,
                 ZB_ZCL_CLUSTER_SERVER_ROLE,
@@ -20,7 +20,7 @@ namespace zbhome {
                 ZB_FALSE);
         }
         
-        uint8_t convertAttrValue(struct sensor_value * value, uint8_t multiplier) {
+        uint8_t convertSensorValue(struct sensor_value * value, uint8_t multiplier) {
             float measured_value = sensor_value_to_float(value);
             return (uint8_t)(measured_value * multiplier);
         }
@@ -40,7 +40,7 @@ namespace zbhome {
                 }
                 LOG_DBG("Sensor raw   %s/%s:\t%6d.%06d", sensor->name, config.channelName, value.val1, value.val2);
 
-                auto convertedValue = convertAttrValue(&value, config.multiplier);
+                auto convertedValue = convertSensorValue(&value, config.multiplier);
 
                 err = setAttrValue(endpoint, (zb_uint8_t*)&convertedValue, config.clusterId, config.attrValueId);
                 if (err) {

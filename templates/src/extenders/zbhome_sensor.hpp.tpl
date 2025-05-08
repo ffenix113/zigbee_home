@@ -7,6 +7,7 @@
 
 namespace zbhome {
     namespace sensors {
+        uint8_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId);
         int updateFetchedSamples(const struct device * sensor, int endpoint);
         int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp);
 

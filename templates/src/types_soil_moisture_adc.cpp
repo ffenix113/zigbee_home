@@ -19,6 +19,8 @@ namespace zbhome
                 LOG_ERR("failed to fetch adc mv value: %d", err);
                 return;
             }
+
+            setAttrValue(getEndpoint(), (uint8_t *)(&mv_val), (0x0408), ZB_ZCL_ATTR_REL_HUMIDITY_MEASUREMENT_VALUE_ID);
         };
     }
 }
