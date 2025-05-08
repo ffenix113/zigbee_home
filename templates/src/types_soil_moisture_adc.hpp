@@ -6,7 +6,7 @@
 
 namespace zbhome {
     namespace components {
-        class SoilMoistureADC: public zbhome::types::Component, public zbhome::types::Sensor {
+        class SoilMoistureADC: public zbhome::types::Sensor {
             public:
                 SoilMoistureADC(const struct adc_dt_spec adc_spec, uint16_t min_mv_val, uint16_t max_mv_val): 
                     m_adc_spec(adc_spec), 

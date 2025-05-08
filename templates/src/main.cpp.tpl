@@ -76,6 +76,7 @@ LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 std::vector<std::shared_ptr<zbhome::types::Component>> components;
 std::vector<std::shared_ptr<zbhome::types::Sensor>> sensors;
+std::vector<std::shared_ptr<zbhome::types::ZCLCommandHandler>> zclCommandHandlers;
 
 {{/* This check should be a helper really */}}
 {{- if not (eq .Device.Board.NetworkStateLED "") }}
@@ -199,6 +200,8 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	zb_uint8_t attr_id;
 	zb_uint8_t endpoint_id = device_cb_param->endpoint;
 
+	bool handlerFound = false;
+
 	switch (device_cb_param->device_cb_id) {
 	case ZB_ZCL_SET_ATTR_VALUE_CB_ID:
 		cluster_id = device_cb_param->cb_param.
@@ -215,34 +218,18 @@ static void zcl_device_cb(zb_bufid_t bufid)
 			(zb_uint8_t *)&device_cb_param->cb_param.set_attr_value_param.values.data8,
 			ZB_FALSE);
 
-		switch (cluster_id) {
-		case ZB_ZCL_CLUSTER_ID_ON_OFF: {
-			uint8_t value =
-				device_cb_param->cb_param.set_attr_value_param
-				.values.data8;
-
-			if (attr_id == ZB_ZCL_ATTR_ON_OFF_ON_OFF_ID) {
-				// on_off_set_value((zb_bool_t)value);
-				int state = (zb_bool_t)value ? 1 : 0;
-				{{- range $sensorIdx, $sensor := .Device.Sensors}}
-				{{- range $sensor.Clusters}}
-				{{- if eq .ID 6}}
-				if (endpoint_id == {{sum $sensorIdx 1}}) {
-					gpio_pin_set_dt(&{{.PinLabel}}, state);
-				}
-				{{- end}}
-				{{- end}}
-				{{- end}}
+		for (const auto& handler : zclCommandHandlers) {
+			if (handler->getEndpoint() != endpoint_id) {
+				continue;
 			}
+
+			handlerFound = true;
+			handler->zclSetAttrValue(&device_cb_param->cb_param.set_attr_value_param);
 			break;
 		}
-		default: {
-			/* Other clusters can be processed here */
-			LOG_INF("Unhandled cluster attribute id: %d",
-				cluster_id);
+
+		if (!handlerFound) {
 			device_cb_param->status = RET_NOT_IMPLEMENTED;
-			break;
-		}
 		}
 
 		break;
@@ -349,7 +336,10 @@ void store_component(std::shared_ptr<T> obj) {
 	// but it may save some bytes of the firmware size.
 	if constexpr (std::is_base_of<zbhome::types::Sensor, T>::value) {
         sensors.push_back(obj);
-        // printf("Added to sensors\n");
+    }
+
+	if constexpr (std::is_base_of<zbhome::types::ZCLCommandHandler, T>::value) {
+        zclCommandHandlers.push_back(obj);
     }
 }
 
@@ -411,6 +401,8 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
 		// This part is done in Zigbee thread as I had exceptions
 		// while trying to run it from main().
+		// It should be okay anyway, as without Zigbee init we
+		// can't use these anyway..
 		if (!setup_components()) {
 			LOG_ERR("could not add some component");
 			return;

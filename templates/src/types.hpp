@@ -4,6 +4,8 @@
 
 #include <zephyr/device.h>
 
+#include <zb_zcl_common.h>
+
 namespace zbhome
 {
     namespace types
@@ -49,7 +51,15 @@ namespace zbhome
             const struct device *m_device = nullptr;
         };
 
-        class Sensor
+        // Other components inherit from Component because we needed access
+        // to getEndpoint() from ZCLCommandHandler, and as ZCLCommandHandler
+        // would only have zcl handler function - it was not possible.
+        // It should not result in different resulting class size,
+        // but would allow access to Component functions.
+        //
+        // For now it works, but maybe better separation would be prefered.
+
+        class Sensor : public Component
         {
         public:
             // onLoop will be called on each iteration.
@@ -58,6 +68,14 @@ namespace zbhome
             // Maybe only do some metrics in the future?..
             // Let per-sensor logger(if any) log.
             virtual void onLoop() = 0;
+        };
+
+        class ZCLCommandHandler : public Component {
+            public:
+            // I would much rather prefer to have args like (cluster, attr, value),
+            // but the value inside does not define a type..
+            // Open to suggestions to improve/resolve this.
+            virtual void zclSetAttrValue(zb_zcl_set_attr_value_param_t* setValueParam) = 0;
         };
     }
 }
