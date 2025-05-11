@@ -32,6 +32,7 @@ extern "C" {
 #include "device.hpp"
 
 #include "types.hpp"
+#include "types_button_handler.hpp"
 #include "types_basic_sensor.hpp"
 
 // Sensors includes
@@ -399,6 +400,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
+		setupButtonHandler();
 		// This part is done in Zigbee thread as I had exceptions
 		// while trying to run it from main().
 		// It should be okay anyway, as without Zigbee init we
@@ -416,6 +418,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 		if (err) {
 			LOG_ERR("Failed to schedule app alarm: %d", err);
 		}
+		LOG_DBG("zbhome is initiated");
 		break;
 	case ZB_ZDO_SIGNAL_LEAVE:
 	case ZB_BDB_SIGNAL_DEVICE_FIRST_START:
