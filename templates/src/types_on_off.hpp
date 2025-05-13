@@ -13,7 +13,7 @@ namespace zbhome
         class OnOff : public zbhome::types::ZCLCommandHandler
         {
         public:
-            OnOff(const struct gpio_dt_spec pin) : m_pin(pin) {}
+            OnOff(const struct gpio_dt_spec pin) : m_pin(pin);
             // This function will be called when callback is received with the endpoint
             // that this components is for. Otherwise cluster/attribute id's are not
             // checked and are up to the implementation to validate.

@@ -15,6 +15,9 @@
 #include <ram_pwrdn.h>
 #include <dk_buttons_and_leds.h>
 
+#include "zephyr/logging/log.h"
+LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -70,8 +73,6 @@ static const struct device *{{$sensor.Label}}_{{$endpoint}} = DEVICE_DT_GET(DT_N
 // -- {{$sensor}}, for endpoint {{$i}} end
 {{- end}}
 // Sensor templates top end
-
-LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #define DEVICE_INITIAL_DELAY_MSEC 2000
 
@@ -400,7 +401,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
-		setupButtonHandler();
+		zbhome::setupButtonHandler();
 		// This part is done in Zigbee thread as I had exceptions
 		// while trying to run it from main().
 		// It should be okay anyway, as without Zigbee init we
