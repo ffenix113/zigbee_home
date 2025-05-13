@@ -60,8 +60,8 @@ var sourceFiles = [][2]string{
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
-	{"types_basic_sensor.hpp", "types_basic_sensor.hpp"},
-	{"types_basic_sensor.cpp", "types_basic_sensor.cpp"},
+	{"types_button_handler.hpp", "types_button_handler.hpp"},
+	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
 
 var knownExtenders = [...]string{
@@ -270,6 +270,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 		// Files required by extender. Could be some implementation or helper functions.
 		for _, fileToWrite := range extender.WriteFiles() {
+			if fileToWrite.FileName == "" {
+				fileToWrite.FileName = fileToWrite.TemplateName
+			}
+
 			template := t.findTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(
 				template,
@@ -302,6 +306,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		filesToWrite := fileWriter.WriteFiles()
 
 		for _, fileToWrite := range filesToWrite {
+			if fileToWrite.FileName == "" {
+				fileToWrite.FileName = fileToWrite.TemplateName
+			}
+
 			template := t.findTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(
 				template,

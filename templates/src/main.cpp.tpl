@@ -36,7 +36,6 @@ extern "C" {
 
 #include "types.hpp"
 #include "types_button_handler.hpp"
-#include "types_basic_sensor.hpp"
 
 // Sensors includes
 {{- range .Device.Sensors}}
