@@ -29,6 +29,12 @@ func (*IASZone) CPPComponentType() string {
 	return "IASZone"
 }
 
+func (*IASZone) Includes() []string {
+	return []string{
+		"types_ias_zone.hpp",
+	}
+}
+
 func (*IASZone) WriteFiles() []generator.WriteFile {
 	return []generator.WriteFile{
 		{

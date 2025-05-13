@@ -1,12 +1,16 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
-#include <zboss_api.h>
-#include <zb_zcl_ias_zone.h>
-
-#include <zigbee/zigbee_error_handler.h>
-
 #include "clusters.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <zb_zcl_ias_zone.h>
+#include <zigbee/zigbee_error_handler.h>
+#ifdef __cplusplus
+}
+#endif
+
 #include "types.hpp"
 #include "types_ias_zone.hpp"
 #include "types_button_handler.hpp"

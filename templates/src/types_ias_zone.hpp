@@ -19,6 +19,7 @@ namespace zbhome
     {
         class IASZone : public zbhome::types::Component
         {
+        public:
             IASZone(const struct gpio_dt_spec pin);
 
         private:
