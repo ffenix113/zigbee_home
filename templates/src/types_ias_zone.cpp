@@ -3,7 +3,8 @@
 
 #include "clusters.hpp"
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 #include <zb_zcl_ias_zone.h>
 #include <zigbee/zigbee_error_handler.h>
