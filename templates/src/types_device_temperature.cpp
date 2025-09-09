@@ -2,6 +2,10 @@
 
 #include "types_device_temperature.hpp"
 
+#include <zephyr/logging/log.h>
+
+LOG_MODULE_REGISTER(device_temperature, LOG_LEVEL_INF);
+
 namespace zbhome
 {
     namespace components

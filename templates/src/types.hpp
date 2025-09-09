@@ -4,7 +4,16 @@
 
 #include <zephyr/device.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <zboss_api.h>
 #include <zb_zcl_common.h>
+
+#ifdef __cplusplus
+}
+#endif
 
 namespace zbhome
 {

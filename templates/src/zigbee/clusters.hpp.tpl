@@ -4,6 +4,7 @@
 extern "C" {
 #endif
 
+#include <zboss_api_buf.h>
 #include <zboss_api.h>
 
 #ifdef __cplusplus
