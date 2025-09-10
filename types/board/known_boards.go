@@ -149,5 +149,6 @@ func knownBootloaders() map[string]*Bootloader {
 		"adafruit_nrf52_sd132":    adafruitConfig(0x26000),
 		"adafruit_nrf52_sd140_v6": adafruitConfig(0x26000),
 		"adafruit_nrf52_sd140_v7": adafruitConfig(0x27000),
+		"mcuboot":                 {},
 	}
 }
