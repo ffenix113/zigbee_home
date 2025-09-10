@@ -5,7 +5,8 @@
 #include <zephyr/device.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <zboss_api.h>
@@ -23,37 +24,25 @@ namespace zbhome
         {
         public:
             // If the component requires some device - this would be the function to add it.
-            // It will be added if component(==Sensor in Go code) 
+            // It will be added if component(==Sensor in Go code)
             // definition mentiones that it uses device.
-            void setDevice(const struct device* dev) {
-                m_device = dev;
-            }
-
-            const struct device* getDevice() {
-                return m_device;
-            }
+            void setDevice(const struct device *dev);
+            const struct device *getDevice();
 
             // setEndpoint is separate function so that implementations
             // would not need to define `setup` function and call
             // parent's `setup`.
             // Instead this function will always be called by codegen.
-            void setEndpoint(uint8_t endpoint) {
-                m_endpoint = endpoint;
-            }
+            void setEndpoint(uint8_t endpoint);
 
-            const uint8_t getEndpoint()
-            {
-                return m_endpoint;
-            }
+            const uint8_t getEndpoint();
 
             // Setup should do everything that is needded for component to become operational.
             // For example set default values or create some connection.
             //
             // A component may also have a specific constructor,
             // i.e. to add a device reference, or set min/max values, etc.
-            virtual bool setup() {
-                return true;
-            };
+            bool setup();
 
         private:
             uint8_t m_endpoint = 0;
@@ -79,12 +68,13 @@ namespace zbhome
             virtual void onLoop() = 0;
         };
 
-        class ZCLCommandHandler : public Component {
-            public:
+        class ZCLCommandHandler : public Component
+        {
+        public:
             // I would much rather prefer to have args like (cluster, attr, value),
             // but the value inside does not define a type..
             // Open to suggestions to improve/resolve this.
-            virtual void zclSetAttrValue(zb_zcl_set_attr_value_param_t* setValueParam) = 0;
+            virtual void zclSetAttrValue(zb_zcl_set_attr_value_param_t *setValueParam) = 0;
         };
     }
 }

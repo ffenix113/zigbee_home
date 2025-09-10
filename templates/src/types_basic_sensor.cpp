@@ -17,7 +17,7 @@ namespace zbhome
             const auto sensorDevice = getDevice();
 
             sensor_sample_fetch(sensorDevice);
-            
+
             zbhome::sensors::updateFetchedSamples(sensorDevice, getEndpoint());
         }
     };

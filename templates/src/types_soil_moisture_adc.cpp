@@ -12,10 +12,12 @@ namespace zbhome
 {
     namespace components
     {
-        void SoilMoistureADC::onLoop() {
+        void SoilMoistureADC::onLoop()
+        {
             uint16_t mv_val;
             int err = zbhome::sensors::read_adc_mv(&m_adc_spec, &mv_val);
-            if (err < 0) {
+            if (err < 0)
+            {
                 LOG_ERR("failed to fetch adc mv value: %d", err);
                 return;
             }

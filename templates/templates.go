@@ -60,6 +60,7 @@ var sourceFiles = [][2]string{
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
+	{"types.cpp", "types.cpp"},
 	{"types_button_handler.hpp", "types_button_handler.hpp"},
 	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
