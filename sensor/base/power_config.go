@@ -75,6 +75,5 @@ func (o *PowerConfiguration) ApplyOverlay(overlay *devicetree.DeviceTree) error 
 		return fmt.Errorf("attach adc pin: %w", err)
 	}
 
-	dtPin := devicetree.NewButton(o.ADCPin.Pin)
-	return dtPin.AttachSelf(overlay)
+	return nil
 }
