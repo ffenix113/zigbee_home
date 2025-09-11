@@ -7,7 +7,7 @@
 
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_UNKNOWN ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_UNKNOWN
 
-#define ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER 0.000001
+#define ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER (0.000001)
 
 /*! @brief CurrentTemperature, ZCL spec 3.4.2.2.1 */
 #define ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID (0x0000)
@@ -30,14 +30,13 @@ void zb_zcl_carbon_dioxide_init_server()
 #define ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE_CLIENT_ROLE_INIT ((zb_zcl_cluster_init_t)NULL)
 
 
-typedef void * zb_voidp_t;
 #define ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID(data_ptr) \
   { \
     ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY | ZB_ZCL_ATTR_ACCESS_REPORTING, \
-    (ZB_UINT16_MAX), \
-    (zb_voidp_t) data_ptr \
+    (ZB_ZCL_NON_MANUFACTURER_SPECIFIC), \
+    (void*) data_ptr \
   }
 
 #define ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_CARBON_DIOXIDE_MIN_VALUE_ID(data_ptr) \
@@ -45,8 +44,8 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_MIN_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
-    (ZB_UINT16_MAX), \
-    (zb_voidp_t) data_ptr \
+    (ZB_ZCL_NON_MANUFACTURER_SPECIFIC), \
+    (void*) data_ptr \
   }
 
 #define ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_CARBON_DIOXIDE_MAX_VALUE_ID(data_ptr) \
@@ -54,8 +53,8 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_MAX_VALUE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
-    (ZB_UINT16_MAX), \
-    (zb_voidp_t) data_ptr \
+    (ZB_ZCL_NON_MANUFACTURER_SPECIFIC), \
+    (void*) data_ptr \
   }
 
 #define ZB_SET_ATTR_DESCR_WITH_ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID(data_ptr) \
@@ -63,8 +62,8 @@ typedef void * zb_voidp_t;
     ZB_ZCL_ATTR_CARBON_DIOXIDE_TOLERANCE_ID, \
     ZB_ZCL_ATTR_TYPE_SINGLE, \
     ZB_ZCL_ATTR_ACCESS_READ_ONLY, \
-    (ZB_UINT16_MAX), \
-    (zb_voidp_t) data_ptr \
+    (ZB_ZCL_NON_MANUFACTURER_SPECIFIC), \
+    (void*) data_ptr \
   }
 
 #define ZB_ZCL_DECLARE_CARBON_DIOXIDE_ATTRIB_LIST(attr_list,                  \

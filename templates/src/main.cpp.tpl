@@ -425,7 +425,6 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	case ZB_COMMON_SIGNAL_CAN_SLEEP:
 		{
 			zb_zdo_signal_can_sleep_params_t *can_sleep_params = ZB_ZDO_SIGNAL_GET_PARAMS(signal_header, zb_zdo_signal_can_sleep_params_t);
-			LOG_DBG("Can sleep for %d ms", can_sleep_params->sleep_tmo);
 			zb_sleep_now();
 		}
 

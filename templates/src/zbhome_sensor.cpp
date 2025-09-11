@@ -23,10 +23,14 @@ namespace zbhome
                 ZB_FALSE);
         }
 
-        uint8_t convertSensorValue(struct sensor_value *value, uint8_t multiplier)
+        float convertSensorValue(struct sensor_value *value, float multiplier)
         {
             float measured_value = sensor_value_to_float(value);
-            return (uint8_t)(measured_value * multiplier);
+            float calculated_value = (measured_value * multiplier);
+
+            // LOG_DBG("Sensor converted value:\t%6f (raw: %d.%06d, mul: %f)", calculated_value, value->val1, value->val2, multiplier);
+
+            return calculated_value;
         }
 
         int updateFetchedSamples(const struct device *sensor, int endpoint)
@@ -48,9 +52,26 @@ namespace zbhome
                 }
                 LOG_DBG("Sensor raw   %s/%s:\t%6d.%06d", sensor->name, config.channelName, value.val1, value.val2);
 
-                auto convertedValue = convertSensorValue(&value, config.multiplier);
+                float convertedValue = convertSensorValue(&value, config.multiplier);
 
-                err = setAttrValue(endpoint, (zb_uint8_t *)&convertedValue, config.clusterId, config.attrValueId);
+                // CO2(and maybe some others) needs floating point precision, others can be slimmed to int16
+                // TODO: review this code. Maybe it can be improved?
+                union
+                {
+                    float f;
+                    int16_t i;
+                } val;
+
+                if (config.channel == SENSOR_CHAN_CO2)
+                {
+                    val.f = convertedValue;
+                }
+                else
+                {
+                    val.i = (int16_t)convertedValue;
+                }
+
+                err = setAttrValue(endpoint, (zb_uint8_t *)&val, config.clusterId, config.attrValueId);
                 if (err)
                 {
                     LOG_ERR("Failed to set ZCL attribute for sensor %s, cluster %s: %d", sensor->name, config.channelName, err);
@@ -61,15 +82,14 @@ namespace zbhome
             return 0;
         }
 
-        int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp)
+        int read_adc_mv(const struct adc_dt_spec *spec, int32_t *valp)
         {
             int err;
-            int16_t buf;
+            uint16_t buf;
             struct adc_sequence sequence = {
                 .buffer = &buf,
                 /* buffer size in bytes, not number of samples */
                 .buffer_size = sizeof(buf),
-                .resolution = spec->resolution,
             };
 
             (void)adc_sequence_init_dt(spec, &sequence);
@@ -106,7 +126,7 @@ namespace zbhome
 
             LOG_DBG("ADC %s/%d mv value: %d", spec->dev->name, spec->channel_id, val_mv);
 
-            *valp = (uint16_t)val_mv;
+            *valp = val_mv;
             return 0;
         }
     }

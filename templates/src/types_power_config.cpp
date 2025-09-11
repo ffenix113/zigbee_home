@@ -14,7 +14,7 @@ namespace zbhome
     {
         void PowerConfig::onLoop()
         {
-            uint16_t batt_mv;
+            int32_t batt_mv;
             int err = zbhome::sensors::read_adc_mv(&m_adc_spec, &batt_mv);
             if (err < 0)
             {

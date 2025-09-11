@@ -5,21 +5,24 @@
 #include "types.hpp"
 #include "clusters.hpp"
 
-namespace zbhome {
-    namespace sensors {
-        uint8_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId);
-        int updateFetchedSamples(const struct device * sensor, int endpoint);
-        int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp);
+namespace zbhome
+{
+    namespace sensors
+    {
+        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint8_t valueId);
+        int updateFetchedSamples(const struct device *sensor, int endpoint);
+        int read_adc_mv(const struct adc_dt_spec *spec, int32_t *valp);
 
-        struct sensorTypeConfig {
+        struct sensorTypeConfig
+        {
             sensor_channel channel;
-            const char * channelName;
+            const char *channelName;
             uint16_t clusterId;
             uint8_t attrValueId;
-            uint8_t multiplier;
+            float multiplier;
         };
 
-        // Maybe having full struct is not ideal here. 
+        // Maybe having full struct is not ideal here.
         // Reference or pointer may be better/cheaper?
         //
         // Names for channels are copied from Zephyr sensor shell code.
@@ -46,8 +49,8 @@ namespace zbhome {
                 .attrValueId = ZB_ZCL_ATTR_PRESSURE_MEASUREMENT_VALUE_ID,
                 .multiplier = ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER,
             },
-            // It is not always defined, so check before including.
-            #if ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
+// It is not always defined, so check before including.
+#if ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
             {
                 .channel = SENSOR_CHAN_CO2,
                 .channelName = "co2",
@@ -55,7 +58,7 @@ namespace zbhome {
                 .attrValueId = ZB_ZCL_ATTR_CARBON_DIOXIDE_VALUE_ID,
                 .multiplier = ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER,
             },
-            #endif
+#endif
         };
     }
 }
