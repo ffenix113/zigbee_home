@@ -6,7 +6,7 @@
 #include "types_basic_sensor.hpp"
 #include "zbhome_sensor.hpp"
 
-LOG_MODULE_REGISTER(basic_sensor, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(basic_sensor, LOG_LEVEL_DBG);
 
 namespace zbhome
 {

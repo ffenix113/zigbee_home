@@ -19,7 +19,7 @@ extern "C"
 
 #include "types.hpp"
 
-LOG_MODULE_REGISTER(types, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(types, LOG_LEVEL_DBG);
 
 namespace zbhome
 {

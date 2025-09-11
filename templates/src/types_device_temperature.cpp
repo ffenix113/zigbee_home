@@ -4,7 +4,7 @@
 
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(device_temperature, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(device_temperature, LOG_LEVEL_DBG);
 
 namespace zbhome
 {

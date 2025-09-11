@@ -6,7 +6,7 @@
 #include "zbhome_sensor.hpp"
 #include "types_soil_moisture_adc.hpp"
 
-LOG_MODULE_REGISTER(soil_moisture_adc, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(soil_moisture_adc, LOG_LEVEL_DBG);
 
 namespace zbhome
 {

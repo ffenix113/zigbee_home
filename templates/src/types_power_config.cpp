@@ -6,7 +6,7 @@
 #include "zbhome_sensor.hpp"
 #include "types_power_config.hpp"
 
-LOG_MODULE_REGISTER(power_config, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(power_config, LOG_LEVEL_DBG);
 
 namespace zbhome
 {
