@@ -6,11 +6,14 @@
 #include "zbhome_sensor.hpp"
 #include "clusters.hpp"
 
-LOG_MODULE_REGISTER(zbhome_sensor, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(zbhome_sensor, LOG_LEVEL_DBG);
 
-namespace zbhome {
-    namespace sensors {
-        uint8_t setAttrValue(int endpoint, uint8_t * data_ptr, uint16_t clusterId, uint8_t valueId) {
+namespace zbhome
+{
+    namespace sensors
+    {
+        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint8_t valueId)
+        {
             return (uint8_t)zb_zcl_set_attr_val(
                 endpoint,
                 clusterId,
@@ -19,19 +22,24 @@ namespace zbhome {
                 data_ptr,
                 ZB_FALSE);
         }
-        
-        uint8_t convertSensorValue(struct sensor_value * value, uint8_t multiplier) {
+
+        uint8_t convertSensorValue(struct sensor_value *value, uint8_t multiplier)
+        {
             float measured_value = sensor_value_to_float(value);
             return (uint8_t)(measured_value * multiplier);
         }
-        
-        int updateFetchedSamples(const struct device * sensor, int endpoint) {
-            for (auto& config : sensorTypes) {
+
+        int updateFetchedSamples(const struct device *sensor, int endpoint)
+        {
+            for (auto &config : sensorTypes)
+            {
                 struct sensor_value value;
                 int err = sensor_channel_get(sensor, config.channel, &value);
-                if (err) {
+                if (err)
+                {
                     // If not supported - it is okay. We may try more channels that sensor defines.
-                    if (err == -ENOTSUP) {
+                    if (err == -ENOTSUP)
+                    {
                         continue;
                     }
 
@@ -42,8 +50,9 @@ namespace zbhome {
 
                 auto convertedValue = convertSensorValue(&value, config.multiplier);
 
-                err = setAttrValue(endpoint, (zb_uint8_t*)&convertedValue, config.clusterId, config.attrValueId);
-                if (err) {
+                err = setAttrValue(endpoint, (zb_uint8_t *)&convertedValue, config.clusterId, config.attrValueId);
+                if (err)
+                {
                     LOG_ERR("Failed to set ZCL attribute for sensor %s, cluster %s: %d", sensor->name, config.channelName, err);
                     return err;
                 }
@@ -55,11 +64,12 @@ namespace zbhome {
         int read_adc_mv(const struct adc_dt_spec *spec, uint16_t *valp)
         {
             int err;
-            int32_t val_mv;
+            int16_t buf;
             struct adc_sequence sequence = {
-                .buffer = &val_mv,
+                .buffer = &buf,
                 /* buffer size in bytes, not number of samples */
-                .buffer_size = sizeof(val_mv),
+                .buffer_size = sizeof(buf),
+                .resolution = spec->resolution,
             };
 
             (void)adc_sequence_init_dt(spec, &sequence);
@@ -68,6 +78,21 @@ namespace zbhome {
             {
                 LOG_ERR("ADC %s@%d: Could not read (%d)\n", spec->dev->name, spec->channel_id, err);
                 return err;
+            }
+
+            /*
+             * If using differential mode, the 16 bit value
+             * in the ADC sample buffer should be a signed 2's
+             * complement value.
+             */
+            int32_t val_mv;
+            if (spec->channel_cfg.differential)
+            {
+                val_mv = (int32_t)((int16_t)buf);
+            }
+            else
+            {
+                val_mv = (int32_t)buf;
             }
 
             LOG_DBG("ADC %s/%d raw value: %d", spec->dev->name, spec->channel_id, val_mv);
