@@ -140,7 +140,9 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		"build",
 		"--pristine", // For now let's always build Pristine.
 		"--board", device.General.Board,
-		"--no-sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
+		// Enable sysbuild, as it is required for newer nRF Connect SDK
+		// and it will allow to build MCUBoot image as well.
+		"--sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
 		"--build-dir", workDir+"/build",
 		workDir,
 		"--",
