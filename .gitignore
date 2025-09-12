@@ -8,3 +8,6 @@
 /.venv
 /vendor
 /test
+
+# Test builds
+/_*
