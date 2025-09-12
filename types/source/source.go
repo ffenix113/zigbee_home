@@ -11,9 +11,9 @@ type Source struct {
 	templates *templates.Templates
 }
 
-func NewSource(ncsVersion types.Semver) *Source {
+func NewSource(ncsVersion types.Semver, templatesPath string) *Source {
 	return &Source{
-		templates: templates.NewTemplates(templates.TemplateFS, ncsVersion),
+		templates: templates.NewTemplates(templates.TemplateFS(templatesPath), ncsVersion),
 	}
 }
 

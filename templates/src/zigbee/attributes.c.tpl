@@ -12,11 +12,16 @@ typedef struct {
 	zb_uint16_t tolerance;
 } zb_zcl_pressure_measurement_attrs_t;
 
+// This type is defined in zigbee r23, but not in r22
+#if !defined zb_single_t
+typedef float zb_single_t;
+#endif
+
 typedef struct {
-	zb_uint32_t measure_value;
-	zb_uint32_t min_measure_value;
-	zb_uint32_t max_measure_value;
-	zb_uint32_t tolerance;
+	zb_single_t measure_value;
+	zb_single_t min_measure_value;
+	zb_single_t max_measure_value;
+	zb_single_t tolerance;
 } zb_zcl_measurement_type_single_attrs_t;
 
 typedef struct {

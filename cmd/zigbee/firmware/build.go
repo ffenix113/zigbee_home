@@ -73,6 +73,19 @@ func BuildFirmware(ctx context.Context, buildConfig BuildConfig) error {
 		return fmt.Errorf("board name cannot be empty")
 	}
 
+	if _, err = os.Stat(buildConfig.WorkDir); err != nil {
+		switch {
+		case errors.Is(err, os.ErrNotExist):
+			if err := os.Mkdir(buildConfig.WorkDir, os.ModeDir|0o755); err != nil {
+				return fmt.Errorf("create workdir: %w", err)
+			}
+		case errors.Is(err, os.ErrPermission):
+			return fmt.Errorf("access workdir permission error: %w", err)
+		default:
+			return fmt.Errorf("stat workdir: %w", err)
+		}
+	}
+
 	if err := GenerateFirmwareFiles(ctx, buildConfig.WorkDir, buildConfig.ClearWorkDir, cfg); err != nil {
 		return fmt.Errorf("generate firmware files: %w", err)
 	}
@@ -127,7 +140,9 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		"build",
 		"--pristine", // For now let's always build Pristine.
 		"--board", device.General.Board,
-		"--no-sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
+		// Enable sysbuild, as it is required for newer nRF Connect SDK
+		// and it will allow to build MCUBoot image as well.
+		"--sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
 		"--build-dir", workDir+"/build",
 		workDir,
 		"--",

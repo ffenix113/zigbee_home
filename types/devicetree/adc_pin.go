@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/ffenix113/zigbee_home/types"
@@ -12,15 +13,16 @@ import (
 )
 
 var resolutions = []uint8{8, 10, 12, 14}
-var pinConversionMap = map[uint8]string{
-	2:  "AIN0",
-	3:  "AIN1",
-	4:  "AIN2",
-	5:  "AIN3",
-	28: "AIN4",
-	29: "AIN5",
-	30: "AIN6",
-	31: "AIN7",
+
+var pinToADCChannel = map[uint8]int{
+	2:  0,
+	3:  1,
+	4:  2,
+	5:  3,
+	28: 4,
+	29: 5,
+	30: 6,
+	31: 7,
 }
 
 var references = map[string]string{
@@ -97,6 +99,7 @@ func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 			Properties: []Property{
 				NewProperty("#address-cells", FromValue(1)),
 				NewProperty("#size-cells", FromValue(0)),
+				NewProperty(PropertyNameStatus, StatusOkay),
 			},
 		}
 
@@ -104,9 +107,10 @@ func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 	}
 	// We can safely do this because we check
 	// if the pin is correct one on validation step.
-	positivePinName, _ := pinConversionMap[p.Pin.Pin.Value()]
+	pinADCChannel, _ := pinToADCChannel[p.Pin.Pin.Value()]
 
-	numericLabel := p.Pin.NumericLabel()
+	numericLabel := strconv.FormatInt(int64(pinADCChannel), 10)
+
 	adcNode.AddNodes(&Node{
 		Name:        pinName,
 		UnitAddress: numericLabel,
@@ -115,7 +119,7 @@ func (p ADCPin) AttachSelf(dt *DeviceTree) error {
 			NewProperty("zephyr,gain", Quoted("ADC_GAIN_"+p.Gain)),
 			NewProperty("zephyr,reference", Quoted("ADC_REF_"+references[p.Reference])),
 			NewProperty("zephyr,acquisition-time", Angled(String(p.AcquisitionTime.String()))),
-			NewProperty("zephyr,input-positive", Angled(String("NRF_SAADC_"+positivePinName))),
+			NewProperty("zephyr,input-positive", Angled(String("NRF_SAADC_AIN"+numericLabel))),
 			NewProperty("zephyr,oversampling", FromValue(p.Oversampling)),
 			NewProperty("zephyr,resolution", FromValue(p.Resolution)),
 		},
@@ -167,7 +171,7 @@ func (p ADCPin) validate() error {
 		return errors.New("port must always be 0")
 	}
 
-	if _, ok := pinConversionMap[p.Pin.Pin.Value()]; !ok {
+	if _, ok := pinToADCChannel[p.Pin.Pin.Value()]; !ok {
 		return fmt.Errorf("pin %d cannot be used as ADC pin", p.Pin.Pin.Value())
 	}
 
