@@ -34,6 +34,12 @@ type Sensor interface {
 	// intstead it will be defined in embedded `*base.Base`
 	Label() string
 	Template() string
+
+	// Some additional functions to complement code generation
+	// and setup for C code.
+	NeedsDevice() bool
+	CPPComponentType() string
+
 	cluster.Provider
 	appconfig.Provider
 	devicetree.Applier

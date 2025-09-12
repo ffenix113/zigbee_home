@@ -6,7 +6,9 @@ package appconfig
 // but mostly the ones that work for this project.
 var (
 	// Zephyr config
-	CONFIG_CPP = NewValue("CONFIG_CPP").Default(Yes)
+	CONFIG_CPP                  = NewValue("CONFIG_CPP").Default(Yes)
+	CONFIG_REQUIRES_FULL_LIBCPP = NewValue("CONFIG_REQUIRES_FULL_LIBCPP").Default(Yes)
+	CONFIG_STD_CPP17            = NewValue("CONFIG_STD_CPP17").Default(Yes)
 
 	// Logging
 	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(No)

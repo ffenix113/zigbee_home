@@ -22,9 +22,33 @@ func (*OnOff) Template() string {
 	return "sensors/on_off"
 }
 
+func (*OnOff) CPPComponentType() string {
+	return "OnOff"
+}
+
 func (o *OnOff) Clusters() cluster.Clusters {
 	return []cluster.Cluster{
 		cluster.OnOff{PinLabel: o.Pin.Label()},
+	}
+}
+
+func (*OnOff) WriteFiles() []generator.WriteFile {
+	return []generator.WriteFile{
+		{
+			FileName:     "types_on_off.hpp",
+			TemplateName: "types_on_off.hpp",
+		},
+		{
+			FileName:     "types_on_off.cpp",
+			TemplateName: "types_on_off.cpp",
+		},
+	}
+}
+
+func (*OnOff) Includes() []string {
+	return []string{
+		"zephyr/drivers/gpio.h",
+		"types_on_off.hpp",
 	}
 }
 

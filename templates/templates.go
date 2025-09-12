@@ -23,9 +23,24 @@ import (
 // TemplateFS is for sensor templates.
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
-//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
+//go:embed src/*.hpp src/*.cpp src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
-var TemplateFS embed.FS
+var embTemplateFS embed.FS
+
+var TemplateFS = func(templatesPath string) fs.FS {
+	if templatesPath == "" {
+		return embTemplateFS
+	}
+
+	// return embTemplateFS
+	// FIXME: This is for debug, so should be at least put behind some option.
+	expanded, err := filepath.Abs(os.ExpandEnv(templatesPath))
+	if err != nil {
+		panic(err)
+	}
+
+	return os.DirFS(expanded)
+}
 
 // This map can be removed in favor of cluster telling
 // which template it want's to use, or try
@@ -49,6 +64,10 @@ var sourceFiles = [][2]string{
 	{"main.cpp", "main.cpp.tpl"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
+	{"types.hpp", "types.hpp"},
+	{"types.cpp", "types.cpp"},
+	{"types_button_handler.hpp", "types_button_handler.hpp"},
+	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
 
 var knownExtenders = [...]string{
@@ -91,6 +110,7 @@ type Context struct {
 type ContextWithAdditional struct {
 	Context
 	Extender          generator.Extender
+	Sensor            sensor.Sensor
 	AdditionalContext any
 }
 
@@ -103,6 +123,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	}
 
 	t.templates.Funcs(template.FuncMap{
+		"typeFromSensor":      typeFromSensor,
 		"clusterTpl":          t.clusterTpl,
 		"render":              t.render,
 		"maybeRender":         t.maybeRender,
@@ -125,32 +146,37 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
 	})
 
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*.tpl"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*.tpl"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*", "*.tpl"), nil))
-	// Modules
-	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "dts", "bindings", "sensor", "*"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "zephyr", "*"), nil))
+	must(t.parseByDir(templateFS, nil))
 
-	t.templates = template.Must(t.templates.ParseFS(templateFS, path.Join("src", "*.tpl"), path.Join("src", "zigbee", "*.tpl")))
+	t.templates = template.Must(t.templates.ParseFS(templateFS,
+		path.Join("src", "*.tpl"),
+
+		path.Join("src", "*.cpp"),
+		path.Join("src", "*.hpp"),
+
+		path.Join("src", "zigbee", "*.tpl")),
+	)
 
 	return t
 }
 
-func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *template.Template) error) error {
-	files, err := fs.Glob(tplFS, pattern)
-	if err != nil {
-		return fmt.Errorf("glob template fs: %w", err)
-	}
+func (t *Templates) parseByDir(tplFS fs.FS, validateTpl func(t *template.Template) error) error {
+	// FIXME: it
 
-	for _, tplFile := range files {
+	err := fs.WalkDir(tplFS, "src", func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		tplFile := path
+
 		openTpl, err := tplFS.Open(tplFile)
 		if err != nil {
 			return fmt.Errorf("open template %q: %w", tplFile, err)
 		}
 		defer openTpl.Close()
 
-		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src"+"/"))
+		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src/"))
 
 		tplText, err := io.ReadAll(openTpl)
 		if err != nil {
@@ -166,6 +192,11 @@ func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *
 				return fmt.Errorf("validate template %q: %w", tplFile, err)
 			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("parse template fs: %w", err)
 	}
 
 	return nil
@@ -194,6 +225,7 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 	}
 
 	templateName := pathParts[len(pathParts)-1]
+	// FIXME: Removing the suffix results in inconsistent template names.
 	pathPart, _ := strings.CutSuffix(templateName, templateExtention)
 
 	subTree, ok := tree.tree[pathPart]
@@ -223,6 +255,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		Extenders: extenders,
 	}
 
+	// It is possible that sensors or extenders would write duplicate files.
+	// Currently it should be okay, but it should be looked out for.
+	// Maybe one of those files will contain templated values that would be overwritten..
+
 	for _, sourceDefinition := range sourceFiles {
 		template := t.templates.Lookup(sourceDefinition[1])
 		if template == nil {
@@ -241,7 +277,11 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 		// Files required by extender. Could be some implementation or helper functions.
 		for _, fileToWrite := range extender.WriteFiles() {
-			template := t.findExtendedTemplate(fileToWrite.TemplateName)
+			if fileToWrite.FileName == "" {
+				fileToWrite.FileName = fileToWrite.TemplateName
+			}
+
+			template := t.findTemplate(fileToWrite.TemplateName)
 			if err := writeTemplate(
 				template,
 				filepath.Join(srcDir, fileToWrite.FileName),
@@ -262,6 +302,31 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 		}
 	}
 
+	for _, sensor := range device.Sensors {
+		fileWriter, ok := sensor.(interface {
+			WriteFiles() []generator.WriteFile
+		})
+		if !ok {
+			continue
+		}
+
+		filesToWrite := fileWriter.WriteFiles()
+
+		for _, fileToWrite := range filesToWrite {
+			if fileToWrite.FileName == "" {
+				fileToWrite.FileName = fileToWrite.TemplateName
+			}
+
+			template := t.findTemplate(fileToWrite.TemplateName)
+			if err := writeTemplate(
+				template,
+				filepath.Join(srcDir, fileToWrite.FileName),
+				ContextWithAdditional{Context: ctx, Sensor: sensor, AdditionalContext: fileToWrite.AdditionalContext}); err != nil {
+				return fmt.Errorf("write sensor file %q: %w", fileToWrite.FileName, err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -270,7 +335,7 @@ func (t *Templates) verifyExtender(extender generator.Extender) error {
 		return nil
 	}
 
-	tpl := t.findExtendedTemplate(extender.Template())
+	tpl := t.findTemplate(extender.Template())
 	if tpl == nil {
 		return fmt.Errorf("required extention template not found: %q", extender.Template())
 	}
@@ -315,19 +380,35 @@ func writeTemplate(template *template.Template, filePath string, ctx any) error 
 	return nil
 }
 
-func (t *Templates) findExtendedTemplate(templateName string) *template.Template {
-
-	nameParts := append([]string{"extenders"}, strings.Split(templateName, "/")...) // because we always need to use "/" when using embed.FS
-
-	tree := &t.templateTree
-	for _, namePart := range nameParts {
-		tree = tree.tree[namePart]
-		if tree == nil {
-			return nil
-		}
+func (t *Templates) findTemplate(templateName string) *template.Template {
+	tpl := t.templates.Lookup(templateName)
+	if tpl != nil {
+		return tpl
 	}
 
-	return tree.tpl
+	possiblePaths := [][]string{
+		strings.Split(templateName, "/"),
+		append([]string{"extenders"}, strings.Split(templateName, "/")...), // because we always need to use "/" when using embed.FS
+	}
+
+	for _, possiblePath := range possiblePaths {
+		tree := &t.templateTree
+
+		for _, namePart := range possiblePath {
+			tree = tree.tree[namePart]
+			if tree == nil {
+				break
+			}
+		}
+
+		if tree == nil || tree.tpl == nil {
+			continue
+		}
+
+		return tree.tpl
+	}
+
+	return nil
 }
 
 func (t *Templates) clusterTpl(clusterID cluster.ID, tplSuffix string) (string, error) {
@@ -374,7 +455,7 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 		return "", nil
 	}
 
-	tpl := t.findExtendedTemplate(tplPath)
+	tpl := t.findTemplate(tplPath)
 	if tpl == nil {
 		return "", fmt.Errorf("extender template %q is not defined", tplPath)
 	}
@@ -390,6 +471,10 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 	}
 
 	return buf.String(), nil
+}
+
+func typeFromSensor(sensor SensorCtx) string {
+	return sensor.Sensor.CPPComponentType()
 }
 
 // toButtonIdx is a helper to get the index of the requested button from the Devicetree.
@@ -455,7 +540,15 @@ func ncsVersionIs(current, another types.Semver) func() bool {
 }
 
 func must(err error) {
-	if err != nil {
-		panic(err)
+	if err == nil {
+		return
 	}
+
+	errText := err.Error()
+
+	if strings.Contains(errText, "template: pattern matches no") {
+		return
+	}
+
+	panic(err)
 }

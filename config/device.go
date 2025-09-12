@@ -29,6 +29,9 @@ type General struct {
 	NCSToolChainBase string `yaml:"ncs_toolchain_base"`
 	NCSVersion       string `yaml:"ncs_version"`
 	ZephyrBase       string `yaml:"zephyr_base"`
+	// TemplatesPath allows to override default templates path.
+	// This would allow to use custom templates while developing, for example.
+	TemplatesPath string `yaml:"templates_path"`
 
 	Manufacturer string `yaml:"manufacturer"`
 	DeviceName   string `yaml:"device_name"`

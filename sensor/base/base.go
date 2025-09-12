@@ -31,12 +31,25 @@ func (b *Base) SetLabel(label string) {
 	b.label = label
 }
 
+// Includes is an optional include statements that will be written in main.cpp.
+func (*Base) Includes() []string {
+	return nil
+}
+
 func (*Base) Template() string {
 	return ""
 }
 
 func (*Base) Clusters() cluster.Clusters {
 	return nil
+}
+
+func (*Base) NeedsDevice() bool {
+	return false
+}
+
+func (*Base) CPPComponentType() string {
+	return ""
 }
 
 func (*Base) AppConfig() []appconfig.ConfigValue {

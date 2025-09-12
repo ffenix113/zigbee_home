@@ -1,6 +1,7 @@
 package base
 
 import (
+	"github.com/ffenix113/zigbee_home/types/generator"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
 )
 
@@ -22,6 +23,29 @@ func (*IASZone) String() string {
 
 func (*IASZone) Template() string {
 	return "sensors/ias_zone"
+}
+
+func (*IASZone) CPPComponentType() string {
+	return "IASZone"
+}
+
+func (*IASZone) Includes() []string {
+	return []string{
+		"types_ias_zone.hpp",
+	}
+}
+
+func (*IASZone) WriteFiles() []generator.WriteFile {
+	return []generator.WriteFile{
+		{
+			FileName:     "types_ias_zone.hpp",
+			TemplateName: "types_ias_zone.hpp",
+		},
+		{
+			FileName:     "types_ias_zone.cpp",
+			TemplateName: "types_ias_zone.cpp",
+		},
+	}
 }
 
 func (z *IASZone) Clusters() cluster.Clusters {

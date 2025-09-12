@@ -20,6 +20,14 @@ func (SCD4X) String() string {
 	return "Sensirion SCD4X (SCD41)"
 }
 
+func (SCD4X) NeedsDevice() bool {
+	return true
+}
+
+func (SCD4X) CPPComponentType() string {
+	return "BasicSensor"
+}
+
 func (SCD4X) Clusters() cluster.Clusters {
 	// https://sensirion.com/media/documents/E0F04247/631EF271/CD_DS_SCD40_SCD41_Datasheet_D1.pdf
 	return []cluster.Cluster{
@@ -63,7 +71,7 @@ func (s SCD4X) ApplyOverlay(tree *dt.DeviceTree) error {
 			dt.NewProperty("reg", dt.Angled(dt.String(s.I2C.Reg()))),
 			// Only single-shot for now.
 			// Would need some changes in templates for changing
-			dt.NewProperty("measure-mode", dt.FromValue("single-shot")),
+			dt.NewProperty("measure-mode", dt.FromValue("low-power")),
 			dt.NewProperty("model", dt.FromValue("scd41")),
 			dt.NewProperty("temperature-offset", dt.FromValue(s.TemperatureOffset)),
 		},

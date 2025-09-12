@@ -41,7 +41,7 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 	return &Generator{
 		AppConfig:  appConfig,
 		DeviceTree: devicetree.NewDeviceTree(),
-		Source:     source.NewSource(ncsVersion),
+		Source:     source.NewSource(ncsVersion, device.General.TemplatesPath),
 	}, nil
 }
 

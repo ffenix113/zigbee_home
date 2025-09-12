@@ -15,7 +15,7 @@ func RootCmd() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:  "workdir",
-				Usage: "change the working directory for the build process (currently does not do anything)",
+				Usage: "Change the working directory for the generation/build process. If this directory does not exist - it will be created.",
 			},
 		},
 	}
