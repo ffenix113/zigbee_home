@@ -23,19 +23,24 @@ import (
 // TemplateFS is for sensor templates.
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
-//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
+//go:embed src/*.hpp src/*.cpp src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var embTemplateFS embed.FS
 
-var TemplateFS = func() fs.FS {
+var TemplateFS = func(templatesPath string) fs.FS {
+	if templatesPath == "" {
+		return embTemplateFS
+	}
+
+	// return embTemplateFS
 	// FIXME: This is for debug, so should be at least put behind some option.
-	expanded, err := filepath.Abs("./templates")
+	expanded, err := filepath.Abs(os.ExpandEnv(templatesPath))
 	if err != nil {
 		panic(err)
 	}
 
 	return os.DirFS(expanded)
-}()
+}
 
 // This map can be removed in favor of cluster telling
 // which template it want's to use, or try
@@ -141,12 +146,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
 	})
 
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*.tpl"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*.tpl"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "extenders", "*", "*", "*.tpl"), nil))
-	// Modules
-	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "dts", "bindings", "sensor", "*"), nil))
-	must(t.parseByDir(templateFS, path.Join("src", "modules", "*", "zephyr", "*"), nil))
+	must(t.parseByDir(templateFS, nil))
 
 	t.templates = template.Must(t.templates.ParseFS(templateFS,
 		path.Join("src", "*.tpl"),
@@ -160,22 +160,23 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	return t
 }
 
-func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *template.Template) error) error {
+func (t *Templates) parseByDir(tplFS fs.FS, validateTpl func(t *template.Template) error) error {
 	// FIXME: it
 
-	files, err := fs.Glob(tplFS, pattern)
-	if err != nil {
-		return fmt.Errorf("glob template fs: %w", err)
-	}
+	err := fs.WalkDir(tplFS, "src", func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
 
-	for _, tplFile := range files {
+		tplFile := path
+
 		openTpl, err := tplFS.Open(tplFile)
 		if err != nil {
 			return fmt.Errorf("open template %q: %w", tplFile, err)
 		}
 		defer openTpl.Close()
 
-		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src"+"/"))
+		newTpl := templateFromPath(&t.templateTree, t.templates, strings.TrimPrefix(tplFile, "src/"))
 
 		tplText, err := io.ReadAll(openTpl)
 		if err != nil {
@@ -191,6 +192,11 @@ func (t *Templates) parseByDir(tplFS fs.FS, pattern string, validateTpl func(t *
 				return fmt.Errorf("validate template %q: %w", tplFile, err)
 			}
 		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("parse template fs: %w", err)
 	}
 
 	return nil
