@@ -72,6 +72,8 @@ std::vector<std::shared_ptr<zbhome::types::Component>> components;
 std::vector<std::shared_ptr<zbhome::types::Sensor>> sensors;
 std::vector<std::shared_ptr<zbhome::types::ZCLCommandHandler>> zclCommandHandlers;
 
+static const uint32_t loop_sleep_milis = {{.Device.General.RunEvery.Milliseconds}};
+
 {{/* This check should be a helper really */}}
 {{- if not (eq .Device.Board.NetworkStateLED "") }}
 static void toggle_identify_led(uint16_t led_data)
@@ -219,6 +221,10 @@ static void zcl_device_cb(zb_bufid_t bufid)
 
 			handlerFound = true;
 			handler->zclSetAttrValue(&device_cb_param->cb_param.set_attr_value_param);
+
+			// One endpoint will have only one sensor/device,
+			// which means that this sensor/device can modify 
+			// its clusters as needed based on this command.
 			break;
 		}
 
@@ -277,7 +283,7 @@ static void loop(zb_bufid_t bufid)
 
 	zb_ret_t zb_err = ZB_SCHEDULE_APP_ALARM(loop,
 					0,
-					ZB_MILLISECONDS_TO_BEACON_INTERVAL({{.Device.General.RunEvery.Milliseconds}}));
+					ZB_MILLISECONDS_TO_BEACON_INTERVAL(loop_sleep_milis));
 	if (zb_err) {
 		LOG_ERR("Failed to schedule app alarm: %d", zb_err);
 	}
@@ -396,14 +402,23 @@ void zboss_signal_handler(zb_bufid_t bufid)
 			return;
 		}
 
-		/* ZBOSS framework has started - schedule first loop iteration */
-		err = ZB_SCHEDULE_APP_ALARM(loop,
-					    0,
-					    ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-						    DEVICE_INITIAL_DELAY_MSEC));
-		if (err) {
-			LOG_ERR("Failed to schedule app alarm: %d", err);
+		// ZBOSS framework has started - schedule first loop iteration
+		// Though if there are no sensors - no need to loop.
+		//
+		// As a special case - we also will not loop if user requested
+		// 'general.runevery' of 0s.
+		if (loop_sleep_milis == 0 || sensors.size() != 0) {
+			err = ZB_SCHEDULE_APP_ALARM(loop,
+							0,
+							ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+								DEVICE_INITIAL_DELAY_MSEC));
+			if (err) {
+				LOG_ERR("Failed to schedule app alarm: %d", err);
+			}
+		} else {
+			LOG_WRN("No sensors - not starting looping. Button and command handlers are still active");
 		}
+
 		LOG_DBG("zbhome is initiated");
 		break;
 	{{ if not (eq .Device.Board.NetworkStateLED "") }}
