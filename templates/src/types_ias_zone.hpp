@@ -20,10 +20,13 @@ namespace zbhome
         class IASZone : public zbhome::types::Component
         {
         public:
-            IASZone(const struct gpio_dt_spec pin);
+            IASZone(uint32_t button_bit);
+            bool setup();
 
         private:
             static void update_zone_status(zb_bufid_t bufid, zb_uint16_t cb_data);
+
+            uint32_t m_button_bit = 0;
         };
     }
 }

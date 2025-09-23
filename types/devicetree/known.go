@@ -131,9 +131,9 @@ func (p pin) AttachSelf(dt *DeviceTree) error {
 		dt.FindSpecificNode(SearchByName(NodeNameRoot)).AddNodes(pinsNode)
 	}
 
-	activeState := "GPIO_ACTIVE_HIGH"
+	activeState := "(GPIO_ACTIVE_LOW | GPIO_PULL_UP)"
 	if p.Pin.Inverted {
-		activeState = "GPIO_ACTIVE_LOW"
+		activeState = "(GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)"
 	}
 
 	pinsNode.AddNodes(&Node{

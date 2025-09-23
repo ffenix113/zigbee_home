@@ -128,10 +128,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"render":              t.render,
 		"maybeRender":         t.maybeRender,
 		"maybeRenderExtender": t.maybeRenderExtender,
-		"toButtonIdx":         toButtonIdx,
 		"toButtonBit":         toButtonBit,
-		"toButtonName":        toButtonName,
-		"toButtonBitName":     toButtonBitName,
 		"sensorCtx":           sensorCtx,
 		"clusterCtx":          clusterCtx,
 		"isLast":              isLast,
@@ -477,24 +474,8 @@ func typeFromSensor(sensor SensorCtx) string {
 	return sensor.Sensor.CPPComponentType()
 }
 
-// toButtonIdx is a helper to get the index of the requested button from the Devicetree.
-//
-// This is mostly useful for DK functions, as they work with the index of the button,
-// and not any other definition(like port & pin).
-func toButtonIdx(btnID string) string {
-	return "DT_NODE_CHILD_IDX(DT_NODELABEL(" + btnID + "))"
-}
-
 func toButtonBit(btnID string) string {
-	return "BIT(" + toButtonIdx(btnID) + ")"
-}
-
-func toButtonName(buttonID string) string {
-	return "BTN_" + strings.ToUpper(buttonID)
-}
-
-func toButtonBitName(buttonID string) string {
-	return toButtonName(buttonID) + "_BIT"
+	return "BUTTON_BIT(" + btnID + ")"
 }
 
 func sensorCtx(endpoint int, device *config.Device, sensor sensor.Sensor, extender generator.Extender) SensorCtx {

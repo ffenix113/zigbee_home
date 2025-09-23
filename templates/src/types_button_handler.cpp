@@ -1,40 +1,91 @@
 #include <vector>
 #include <functional>
 
-#include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>
 
-#include <zboss_api.h>
+#include <dk_buttons_and_leds.h>
+#include <zigbee/zigbee_app_utils.h>
 
-#include "types.hpp"
 #include "types_button_handler.hpp"
+
+LOG_MODULE_REGISTER(button_handler, LOG_LEVEL_DBG);
 
 namespace zbhome
 {
-    void buttonHandler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins)
+    std::vector<struct buttonHandlerConfiguration> attached_handlers;
+    uint32_t m_identify_mode_button_bit = 0;
+
+    // Having this setup, as shown by example Nordic Zigbee devide simplifies
+    // handling a bit, and saves some memory as well.
+    //
+    // Additional benefit that it is by-default "wired" for zigbee factory reset
+    // and other helpful things.
+    void button_changed(uint32_t button_state, uint32_t has_changed)
     {
-        // printf("button handler called. port %s, pins %d\n", port->name, pins);
-        for (const auto &handlerCfg : attachedHandlers.handlers)
+        LOG_DBG("button_changed: 0x%08u, 0x%08u", button_state, has_changed);
+
+#if CONFIG_ZIGBEE_ROLE_END_DEVICE
+        /* Inform default signal handler about user input at the device */
+        user_input_indicate();
+#endif
+
+        if (m_identify_mode_button_bit & has_changed)
         {
-            // printf("iter btn: %s/%d\n", handlerCfg.button.port->name, BIT(handlerCfg.button.pin));
-            if (handlerCfg.button.port == port && (pins & BIT(handlerCfg.button.pin)) != 0)
+            if (m_identify_mode_button_bit & button_state)
             {
-                handlerCfg.buttonHandler(&handlerCfg.button, gpio_pin_get_dt(&handlerCfg.button) != 0);
+                /* Button changed its state to pressed */
+            }
+            else
+            {
+                /* Button changed its state to released */
+                if (was_factory_reset_done())
+                {
+                    /* The long press was for Factory Reset */
+                    // LOG_DBG("After Factory Reset - ignore button release");
+                }
+                else
+                {
+                    /* Button released before Factory Reset */
+
+                    /* Start identification mode */
+                    // ZB_SCHEDULE_APP_CALLBACK(start_identifying, 0);
+                }
             }
         }
+
+        for (const auto &handlerCfg : attached_handlers)
+        {
+            if (handlerCfg.button_bit & has_changed)
+            {
+                handlerCfg.buttonHandler(handlerCfg.button_bit, handlerCfg.button_bit & button_state);
+            }
+        }
+
+        check_factory_reset_button(button_state, has_changed);
     }
 
-    void setupButtonHandler()
+    bool setupButtonHandler(uint32_t factory_reset_button_bit, uint32_t identify_mode_button_bit)
     {
-        gpio_init_callback(&attachedHandlers.cb, buttonHandler, -1);
+
+        int err = 0;
+        err = dk_buttons_init(button_changed);
+        if (err)
+        {
+            LOG_ERR("Cannot init buttons (err: %d)", err);
+            return false;
+        }
+
+        register_factory_reset_button(factory_reset_button_bit);
+        m_identify_mode_button_bit = identify_mode_button_bit;
+
+        return true;
     };
 
-    void addButtonHandler(const struct gpio_dt_spec button, buttonHandlerFn handler)
+    void addButtonHandler(uint32_t button_bit, buttonHandlerFn handler)
     {
-        attachedHandlers.handlers.push_back(buttonHandlerConfiguration{
-            .button = button,
+        attached_handlers.push_back(buttonHandlerConfiguration{
+            .button_bit = button_bit,
             .buttonHandler = handler,
         });
-
-        gpio_add_callback_dt(&button, &attachedHandlers.cb);
     }
 }

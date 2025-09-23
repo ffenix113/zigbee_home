@@ -66,6 +66,8 @@ extern "C" {
 {{- end}}
 // Sensor templates top end
 
+#define BUTTON_BIT(btn) BIT(DT_NODE_CHILD_IDX(DT_NODELABEL(btn)))
+
 #define DEVICE_INITIAL_DELAY_MSEC 2000
 
 std::vector<std::shared_ptr<zbhome::types::Component>> components;
@@ -94,62 +96,14 @@ static void toggle_identify_led(uint16_t led_data)
 }
 {{- end }}
 
-static void button_changed(uint32_t button_state, uint32_t has_changed)
+static void gpio_init(uint32_t factory_reset_button_bit, uint32_t identify_mode_button_bit)
 {
-	if (IDENTIFY_MODE_BUTTON & has_changed) {
-		if (IDENTIFY_MODE_BUTTON & button_state) {
-			/* Button changed its state to pressed */
-		} else {
-			/* Button changed its state to released */
-			if (was_factory_reset_done()) {
-				/* The long press was for Factory Reset */
-				LOG_DBG("After Factory Reset - ignore button release");
-			} else   {
-				/* Button released before Factory Reset */
-
-				#if CONFIG_ZIGBEE_ROLE_END_DEVICE
-				/* Inform default signal handler about user input at the device */
-				user_input_indicate();
-				#endif
-			}
-		}
-	}
-
-	// Extender button change
-	{{- range .Extenders}}
-	{{- with maybeRenderExtender .Template "button_changed" (sensorCtx 0 $.Device nil .)}}
+	if (!zbhome::setupButtonHandler(factory_reset_button_bit, identify_mode_button_bit))
 	{
-		{{.}}
-	}
-	{{end}}
-	{{- end}}
-	// Extender button change end
-
-	// Sensor templates button change
-	{{- range $i, $sensor := .Device.Sensors}}
-	{{- $endpoint := (sum $i 1)}}
-	{{- with maybeRenderExtender $sensor.Template "button_changed" (sensorCtx $endpoint $.Device $sensor nil)}}
-	{
-		// -- {{$sensor}}, for endpoint {{$i}}
-		{{.}}
-		// -- {{$sensor}}, for endpoint {{$i}} end
-	}
-	{{end}}
-	{{- end}}
-	// Sensor templates button change end
-
-	check_factory_reset_button(button_state, has_changed);
-}
-
-static void gpio_init(void)
-{
-	int err = dk_buttons_init(button_changed);
-
-	if (err) {
-		LOG_ERR("Cannot init buttons (err: %d)", err);
+		LOG_ERR("Cannot init buttons");
 	}
 
-	err = dk_leds_init();
+	int err = dk_leds_init();
 	if (err) {
 		LOG_ERR("Cannot init LEDs (err: %d)", err);
 	}
@@ -378,6 +332,46 @@ bool setup_components() {
 	return true;
 }
 
+bool init_zbhome()
+{
+	gpio_init(FACTORY_RESET_BUTTON, IDENTIFY_MODE_BUTTON);
+	// This part is done in Zigbee thread as I had exceptions
+	// while trying to run it from main().
+	// It should be okay anyway, as without Zigbee init we
+	// can't use these anyway..
+	if (!setup_components())
+	{
+		LOG_ERR("could not add some component");
+		return false;
+	}
+
+	// ZBOSS framework has started - schedule first loop iteration
+	// Though if there are no sensors - no need to loop.
+	//
+	// As a special case - we also will not loop if user requested
+	// 'general.runevery' of 0s.
+	if (loop_sleep_milis != 0 && sensors.size() != 0)
+	{
+		int err = ZB_SCHEDULE_APP_ALARM(loop,
+										0,
+										ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+											DEVICE_INITIAL_DELAY_MSEC));
+		if (err)
+		{
+			LOG_ERR("Failed to schedule app alarm: %d", err);
+			return false;
+		}
+	}
+	else
+	{
+		LOG_WRN("No sensors or zero loop sleep - not starting looping. Button and command handlers are still active");
+	}
+
+	LOG_DBG("zbhome is initiated");
+
+	return true;
+};
+
 void zboss_signal_handler(zb_bufid_t bufid)
 {
 	zb_zdo_app_signal_hdr_t *signal_header = NULL;
@@ -392,34 +386,10 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
-		zbhome::setupButtonHandler();
-		// This part is done in Zigbee thread as I had exceptions
-		// while trying to run it from main().
-		// It should be okay anyway, as without Zigbee init we
-		// can't use these anyway..
-		if (!setup_components()) {
-			LOG_ERR("could not add some component");
-			return;
+		if (!init_zbhome())
+		{
+			LOG_ERR("cannot initiate zbhome");
 		}
-
-		// ZBOSS framework has started - schedule first loop iteration
-		// Though if there are no sensors - no need to loop.
-		//
-		// As a special case - we also will not loop if user requested
-		// 'general.runevery' of 0s.
-		if (loop_sleep_milis == 0 || sensors.size() != 0) {
-			err = ZB_SCHEDULE_APP_ALARM(loop,
-							0,
-							ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-								DEVICE_INITIAL_DELAY_MSEC));
-			if (err) {
-				LOG_ERR("Failed to schedule app alarm: %d", err);
-			}
-		} else {
-			LOG_WRN("No sensors - not starting looping. Button and command handlers are still active");
-		}
-
-		LOG_DBG("zbhome is initiated");
 		break;
 	{{ if not (eq .Device.Board.NetworkStateLED "") }}
 	case ZB_ZDO_SIGNAL_LEAVE:
@@ -460,9 +430,6 @@ int main(void)
 	#ifdef CONFIG_USB_DEVICE_STACK
 	wait_for_console();
 	#endif /* CONFIG_USB_DEVICE_STACK */
-
-	register_factory_reset_button(FACTORY_RESET_BUTTON);
-	gpio_init();
 
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);

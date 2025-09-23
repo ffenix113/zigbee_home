@@ -4,4 +4,4 @@
 {{ define "main"}} {{ end}}
 
 {{ define "component_constructor_arguments" }} {{end}}
-{{ define "component_constructor_argument_names" }} {{.Sensor.Button}} {{end}}
+{{ define "component_constructor_argument_names" }} {{ toButtonBit .Sensor.Button}} {{end}}
