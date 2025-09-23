@@ -16,10 +16,12 @@ extern "C"
 #include "types_ias_zone.hpp"
 #include "types_button_handler.hpp"
 
+#include <dk_buttons_and_leds.h>
+
 // For some reason ZB_SCHEDULE_CALLBACK is not defined with current setup,
 // and I can't find a necessary include/config to enable it.
 // So for now - re-define the callback as another callback.
-#define ZB_SCHEDULE_CALLBACK ZB_SCHEDULE_APP_CALLBACK
+// #define ZB_SCHEDULE_CALLBACK ZB_SCHEDULE_APP_CALLBACK
 
 // LOG_MODULE_DECLARE(app, LOG_LEVEL_INF);
 LOG_MODULE_REGISTER(ias_zone, LOG_LEVEL_DBG);
@@ -28,14 +30,18 @@ namespace zbhome
 {
     namespace components
     {
-        IASZone::IASZone(const struct gpio_dt_spec pin)
-        {
-            gpio_pin_configure_dt(&pin, GPIO_INPUT);
-            gpio_pin_interrupt_configure_dt(&pin, GPIO_INT_EDGE_BOTH);
+        IASZone::IASZone(uint32_t button_bit) : m_button_bit(button_bit) {
+                                                };
 
+        bool IASZone::setup()
+        {
+            // This code is not in constructor because endpoint is not yet set at that point.
             const uint8_t endpoint = getEndpoint();
-            const auto handler = [endpoint](const struct gpio_dt_spec *btn, bool newStatus)
+            const auto handler = [endpoint](uint32_t button_bit, bool newStatus)
             {
+                // A debug led to show that handler is triggered correctly.
+                // dk_set_led(1, newStatus);
+
                 // Pack data.
                 // Endpoint can be >127, so we can't pack it and state into single uint8.
                 //
@@ -49,8 +55,10 @@ namespace zbhome
                 ZB_ERROR_CHECK(zb_err_code);
             };
 
-            addButtonHandler(pin, handler);
-        };
+            addButtonHandler(m_button_bit, handler);
+
+            return zbhome::types::Component::setup();
+        }
 
         void IASZone::update_zone_status(zb_bufid_t bufid, zb_uint16_t cb_data)
         {
@@ -70,6 +78,11 @@ namespace zbhome
             case false:
                 ZB_ZCL_IAS_ZONE_CLEAR_BITS(bufid, endpoint, ZB_ZCL_IAS_ZONE_ZONE_STATUS_ALARM1);
                 break;
+            }
+
+            if (bufid)
+            {
+                zb_buf_free(bufid);
             }
         };
     }
