@@ -100,8 +100,8 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_ZIGBEE_APP_UTILS,
 		CONFIG_ZIGBEE_CHANNEL_MASK,
 		CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI,
-		CONFIG_CRYPTO,
-		CONFIG_CRYPTO_NRF_ECB,
+		// Crypto setup is done through Kconfig definition CONFIG_ZBHOME_ZIGBEE_CRYPTO
+		// It is done through Kconfig as it tailored to SoC. This may be moved back here in the future.
 		CONFIG_CRYPTO_INIT_PRIORITY,
 		CONFIG_RAM_POWER_DOWN_LIBRARY,
 		CONFIG_NET_IPV6,
