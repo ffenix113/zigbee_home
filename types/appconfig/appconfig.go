@@ -103,7 +103,8 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		// Crypto setup is done through Kconfig definition CONFIG_ZBHOME_ZIGBEE_CRYPTO
 		// It is done through Kconfig as it tailored to SoC. This may be moved back here in the future.
 		CONFIG_CRYPTO_INIT_PRIORITY,
-		CONFIG_RAM_POWER_DOWN_LIBRARY,
+		// RAM power down library is currently not included
+		// as we don't shut RAM down because of allocations.
 		CONFIG_NET_IPV6,
 		CONFIG_NET_IP_ADDR_CHECK,
 		CONFIG_NET_UDP,

@@ -17,17 +17,19 @@ config ZBHOME_DEBUG_CONSOLE
 	help
 		Specifies which backend to use for logging
 
-config ZBHOME_ZIGBEE_CRYPTO
-	bool
-	default y
-	# For nRF5340
-	imply NRF_SECURITY if SOC_SERIES_NRF53X
-	imply ZIGBEE_USE_SOFTWARE_AES if SOC_SERIES_NRF53X
-	# For nRF52840
-	imply CONFIG_CRYPTO if SOC_SERIES_NRF52X
-	imply CONFIG_CRYPTO_NRF_ECB if SOC_SERIES_NRF52X
-	help
-	  "Set correct crypto configuration for specific chip"
+# Configurations below should provide required configuraiton options for specific soc series.
+
+config ZBHOME_NRF53X
+	def_bool y
+	imply NRF_SECURITY
+	imply ZIGBEE_USE_SOFTWARE_AES
+	depends on SOC_SERIES_NRF53X
+
+config ZBHOME_NRF52X
+	def_bool y
+	imply CRYPTO
+	imply CRYPTO_NRF_ECB
+	depends on SOC_SERIES_NRF52X
 
 source "Kconfig.zephyr"
 
