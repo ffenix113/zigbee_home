@@ -61,6 +61,7 @@ var knownClusterTemplates = map[cluster.ID]string{
 var sourceFiles = [][2]string{
 	{path.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
 	{path.Join("..", "Kconfig"), "Kconfig.tpl"},
+	{path.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
 	{"main.cpp", "main.cpp.tpl"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},

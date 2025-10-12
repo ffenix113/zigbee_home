@@ -142,11 +142,13 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		"--board", device.General.Board,
 		// Enable sysbuild, as it is required for newer nRF Connect SDK
 		// and it will allow to build MCUBoot image as well.
+		// It is also used to build network image for nRF53 series.
 		"--sysbuild", // https://docs.zephyrproject.org/latest/build/sysbuild/index.html
 		"--build-dir", workDir+"/build",
 		workDir,
 		"--",
 		"-DNCS_TOOLCHAIN_VERSION=NONE",
+		// FIXME: concat path in a os-appropriate way.
 		fmt.Sprintf("-DCONF_FILE=%s/prj.conf", workDir),
 		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
 	)

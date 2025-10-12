@@ -90,6 +90,10 @@ type DefaultAppConfigOptions struct {
 	ZigbeeChannels []int
 }
 
+type DefaultSysbuildConfigOptions struct {
+	MCUBoot bool
+}
+
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
 		CONFIG_CPP,
@@ -131,6 +135,19 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		}
 
 		appConfig = appConfig.AddValue(CONFIG_ZIGBEE_CHANNEL_MASK.Required("0x" + strconv.FormatInt(int64(channel), 16)))
+	}
+
+	return appConfig, nil
+}
+
+func NewDefaultSysbuildConfig(opts DefaultSysbuildConfigOptions) (*AppConfig, error) {
+	appConfig := NewEmptyAppConfig().AddValue(
+		SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE,
+		SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY,
+	)
+
+	if opts.MCUBoot {
+		appConfig.AddValue(SB_CONFIG_BOOTLOADER_MCUBOOT)
 	}
 
 	return appConfig, nil

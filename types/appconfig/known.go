@@ -56,6 +56,14 @@ var (
 	CONFIG_DHT = NewValue("CONFIG_DHT").Default(Yes)
 )
 
+// Sysbuild configuration options
+var (
+	// MCUBoot
+	SB_CONFIG_BOOTLOADER_MCUBOOT          = NewValue("SB_CONFIG_BOOTLOADER_MCUBOOT").Default(No)
+	SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY = NewValue("SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY").Default(Yes)
+	SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE    = NewValue("SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE").Default(Yes)
+)
+
 const (
 	Yes = "y"
 	No  = "n"
