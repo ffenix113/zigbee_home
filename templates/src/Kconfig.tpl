@@ -17,6 +17,20 @@ config ZBHOME_DEBUG_CONSOLE
 	help
 		Specifies which backend to use for logging
 
+# Configurations below should provide required configuraiton options for specific soc series.
+
+config ZBHOME_NRF53X
+	def_bool y
+	imply NRF_SECURITY
+	imply ZIGBEE_USE_SOFTWARE_AES
+	depends on SOC_SERIES_NRF53X
+
+config ZBHOME_NRF52X
+	def_bool y
+	imply CRYPTO
+	imply CRYPTO_NRF_ECB
+	depends on SOC_SERIES_NRF52X
+
 source "Kconfig.zephyr"
 
 module = ZIGBEE_DEVICE

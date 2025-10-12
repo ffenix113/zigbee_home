@@ -17,9 +17,10 @@ import (
 )
 
 type Generator struct {
-	AppConfig  *appconfig.AppConfig
-	DeviceTree *devicetree.DeviceTree
-	Source     *source.Source
+	AppConfig      *appconfig.AppConfig
+	SysbuildConfig *appconfig.AppConfig
+	DeviceTree     *devicetree.DeviceTree
+	Source         *source.Source
 }
 
 func NewGenerator(device *config.Device) (*Generator, error) {
@@ -33,15 +34,26 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 		return nil, fmt.Errorf("default app config: %w", err)
 	}
 
+	sysbuildConfig, err := appconfig.NewDefaultSysbuildConfig(
+		appconfig.DefaultSysbuildConfigOptions{
+			// "mcuboot" should not be hardcoded.
+			// TODO: Bootloader type should not be a string.
+			MCUBoot: device.Board.Bootloader != nil && *device.Board.Bootloader == "mcuboot",
+		})
+	if err != nil {
+		return nil, fmt.Errorf("default sysbuild config: %w", err)
+	}
+
 	ncsVersion, err := types.ParseSemver(device.General.NCSVersion)
 	if err != nil {
 		return nil, fmt.Errorf("parse provided ncs version: %w", err)
 	}
 
 	return &Generator{
-		AppConfig:  appConfig,
-		DeviceTree: devicetree.NewDeviceTree(),
-		Source:     source.NewSource(ncsVersion, device.General.TemplatesPath),
+		AppConfig:      appConfig,
+		SysbuildConfig: sysbuildConfig,
+		DeviceTree:     devicetree.NewDeviceTree(),
+		Source:         source.NewSource(ncsVersion, device.General.TemplatesPath),
 	}, nil
 }
 
@@ -81,6 +93,18 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 
 	if err := g.AppConfig.WriteTo(appConfigFile); err != nil {
 		return fmt.Errorf("write app config: %w", err)
+	}
+
+	// Write sysbuild.conf
+	sysbuildConfigFile, err := os.Create(workDir + "/sysbuild.conf")
+	if err != nil {
+		return fmt.Errorf("create sysbuild config file: %w", err)
+	}
+
+	defer sysbuildConfigFile.Close()
+
+	if err := g.SysbuildConfig.WriteTo(sysbuildConfigFile); err != nil {
+		return fmt.Errorf("write sysbuild config: %w", err)
 	}
 
 	// Write app source

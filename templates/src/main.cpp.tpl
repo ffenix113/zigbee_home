@@ -6,7 +6,11 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
+
+#if CONFIG_RAM_POWER_DOWN_LIBRARY
 #include <ram_pwrdn.h>
+#endif
+
 #include <dk_buttons_and_leds.h>
 
 #include "zephyr/logging/log.h"

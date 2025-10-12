@@ -90,6 +90,10 @@ type DefaultAppConfigOptions struct {
 	ZigbeeChannels []int
 }
 
+type DefaultSysbuildConfigOptions struct {
+	MCUBoot bool
+}
+
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
 		CONFIG_CPP,
@@ -100,10 +104,11 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_ZIGBEE_APP_UTILS,
 		CONFIG_ZIGBEE_CHANNEL_MASK,
 		CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI,
-		CONFIG_CRYPTO,
-		CONFIG_CRYPTO_NRF_ECB,
+		// Crypto setup is done through Kconfig definitions ZBHOME_NRF52X && ZBHOME_NRF53X
+		// It is done through Kconfig as it tailored to SoC. This may be moved back here in the future.
 		CONFIG_CRYPTO_INIT_PRIORITY,
-		CONFIG_RAM_POWER_DOWN_LIBRARY,
+		// RAM power down library is currently not included
+		// as we don't shut RAM down because of allocations.
 		CONFIG_NET_IPV6,
 		CONFIG_NET_IP_ADDR_CHECK,
 		CONFIG_NET_UDP,
@@ -130,6 +135,19 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		}
 
 		appConfig = appConfig.AddValue(CONFIG_ZIGBEE_CHANNEL_MASK.Required("0x" + strconv.FormatInt(int64(channel), 16)))
+	}
+
+	return appConfig, nil
+}
+
+func NewDefaultSysbuildConfig(opts DefaultSysbuildConfigOptions) (*AppConfig, error) {
+	appConfig := NewEmptyAppConfig().AddValue(
+		SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE,
+		SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY,
+	)
+
+	if opts.MCUBoot {
+		appConfig.AddValue(SB_CONFIG_BOOTLOADER_MCUBOOT)
 	}
 
 	return appConfig, nil

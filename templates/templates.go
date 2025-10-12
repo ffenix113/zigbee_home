@@ -24,6 +24,7 @@ import (
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
 //go:embed src/*.hpp src/*.cpp src/*.tpl src/*/*.tpl src/*/*/*.tpl
+//go:embed src/sysbuild/*
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var embTemplateFS embed.FS
 
@@ -61,6 +62,9 @@ var knownClusterTemplates = map[cluster.ID]string{
 var sourceFiles = [][2]string{
 	{path.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
 	{path.Join("..", "Kconfig"), "Kconfig.tpl"},
+	{path.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
+	{path.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
+	{path.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
 	{"main.cpp", "main.cpp.tpl"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
@@ -258,6 +262,10 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 
 	for _, sourceDefinition := range sourceFiles {
 		template := t.templates.Lookup(sourceDefinition[1])
+		if template == nil {
+			template = t.findTemplate(sourceDefinition[1])
+		}
+
 		if template == nil {
 			return fmt.Errorf("tried to write unknown template: %q", sourceDefinition[1])
 		}

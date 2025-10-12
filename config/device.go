@@ -13,6 +13,7 @@ import (
 	"github.com/ffenix113/zigbee_home/sensor/base"
 	"github.com/ffenix113/zigbee_home/templates/extenders"
 	"github.com/ffenix113/zigbee_home/types"
+	"github.com/ffenix113/zigbee_home/types/board"
 	"github.com/ffenix113/zigbee_home/types/sensor"
 	"github.com/ffenix113/zigbee_home/types/yamlstrict"
 	"gopkg.in/yaml.v3"
@@ -36,7 +37,9 @@ type General struct {
 	Manufacturer string `yaml:"manufacturer"`
 	DeviceName   string `yaml:"device_name"`
 	// Zephyr name for the board
-	Board    string
+	Board string
+	SoC   string
+
 	RunEvery time.Duration
 	// ZigbeeChannels will define which endpoints device should try to use.
 	// By default device will try all available channels.
@@ -91,6 +94,13 @@ func ParseFromFile(configPath string) (*Device, error) {
 		return nil, fmt.Errorf("unmarshal config file: %w", err)
 	}
 
+	if cfg.General.SoC == "" {
+		cfg.General.SoC, err = ResolveBoardSoC(cfg)
+		if err != nil {
+			return nil, fmt.Errorf("resolve board soc: %w", err)
+		}
+	}
+
 	selectedNCSVersion, err := types.ParseSemver(cfg.General.NCSVersion)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse selected NCS version: %w", err)
@@ -120,6 +130,28 @@ func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
 	defConfig.PrependCommonClusters()
 
 	return defConfig, nil
+}
+
+func ResolveBoardSoC(conf *Device) (string, error) {
+	boardNameParts := strings.Split(conf.General.Board, "/")
+
+	for _, namePart := range boardNameParts {
+		if board.IsKnownSoC(namePart) {
+			return namePart, nil
+		}
+	}
+
+	// Resolve board soc through Zephyr board index(hopefully board will have only one supported soc):
+	// boardDir := cmd.Exec(`west boards --board {boardNameParts[0]} -f "{dir}"`)
+	// boardDefinitionPath := boardDir + "/board.yml"
+	// boardDefinition := yaml.Parse(boardDefinitionPart)
+	// for _, socDef := range boardDefition.["board"]["socs"] {
+	// 	if board.IsKnownSoC(socDef["name"]) {
+	// 		return soc, nil
+	// 	}
+	// }
+
+	return "", nil
 }
 
 // UnamrshalYAML is implemented to intercept the original
