@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -127,17 +128,18 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 	}
 
 	t.templates.Funcs(template.FuncMap{
-		"typeFromSensor":      typeFromSensor,
-		"clusterTpl":          t.clusterTpl,
-		"render":              t.render,
-		"maybeRender":         t.maybeRender,
-		"maybeRenderExtender": t.maybeRenderExtender,
-		"toButtonBit":         toButtonBit,
-		"sensorCtx":           sensorCtx,
-		"clusterCtx":          clusterCtx,
-		"isLast":              isLast,
-		"sum":                 sum,
-		"formatHex":           formatHex,
+		"typeFromSensor":        typeFromSensor,
+		"clusterTpl":            t.clusterTpl,
+		"render":                t.render,
+		"maybeRender":           t.maybeRender,
+		"maybeRenderExtender":   t.maybeRenderExtender,
+		"toButtonBit":           toButtonBit,
+		"sensorCtx":             sensorCtx,
+		"clusterCtx":            clusterCtx,
+		"isLast":                isLast,
+		"sum":                   sum,
+		"formatHex":             formatHex,
+		"trustCenterKeyToArray": trustCenterKeyToArray,
 		"joinPath": func(strs ...string) string {
 			return path.Join(strs...)
 		},
@@ -518,6 +520,30 @@ func formatHex(val any) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown type to format: %T", val)
 	}
+}
+
+// trustCenterKeyToArray will return trust key as C array item values.
+func trustCenterKeyToArray(key string) (string, error) {
+	key = strings.ReplaceAll(key, ":", "")
+
+	var sb strings.Builder
+
+	for i := 0; i < 16; i++ {
+		bytePart := key[i*2 : i*2+2]
+
+		_, err := strconv.ParseUint(bytePart, 16, 16)
+		if err != nil {
+			return "", fmt.Errorf("parse trust center key part %q: %w", bytePart, err)
+		}
+
+		if i != 0 {
+			sb.WriteString(", ")
+		}
+
+		sb.WriteString("0x" + bytePart)
+	}
+
+	return sb.String(), nil
 }
 
 func ncsVersionIs(current, another types.Semver) func() bool {

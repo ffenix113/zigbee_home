@@ -85,8 +85,8 @@ func (r *tagsResolver) getIncludedNode(includePath string) (*yaml.Node, error) {
 }
 
 func (r *tagsResolver) getEnvNode(env string) (*yaml.Node, error) {
-	envValue, ok := os.LookupEnv(env)
-	if !ok || envValue == "" {
+	envValue := os.ExpandEnv(env)
+	if envValue == "" {
 		return nil, nil
 	}
 

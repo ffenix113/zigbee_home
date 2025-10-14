@@ -1,0 +1,15 @@
+general:
+  runevery: 2m
+  board: xiao_ble
+  # If it is required to connect to specific hub (i.e. Philips Hue Bridge)
+  # it may be necessary to specify this value.
+  #
+  # Please use Google to find how to get this key for your hub, if necessary.
+  #
+  # Value in this example is the default key from Zigbee specification.
+  trust_center_key: 5A:69:67:42:65:65:41:6C:6C:69:61:6E:63:65:30:39
+
+board:
+  # is_router option is mandatory when setting Trust center key.
+  # If it is not set - an error will be returned telling to set it.
+  is_router: true

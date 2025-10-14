@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -44,6 +45,15 @@ type General struct {
 	// ZigbeeChannels will define which endpoints device should try to use.
 	// By default device will try all available channels.
 	ZigbeeChannels []int `yaml:"zigbee_channels"`
+	// TrustCenterKey is an optional configuration that will allow to
+	// set trust center key, which in turn would allow connecting to
+	// specific Zigbee hubs, like Philips Hue Bridge.
+	//
+	// This configuration option requires device to be set up
+	// as router or coordinator. End device does not support this option.
+	//
+	// Note: This option is EXPERIMENTAL
+	TrustCenterKey string `yaml:"trust_center_key"`
 	// Flasher defines the way the board should be flashed.
 	Flasher        string
 	FlasherOptions map[string]any
@@ -108,6 +118,10 @@ func ParseFromFile(configPath string) (*Device, error) {
 
 	if minimumNCSVersion.Compare(selectedNCSVersion) == 1 {
 		return nil, fmt.Errorf("selected NCS version is lower than minimum supported version: selected %q, minimum supported %q", cfg.General.NCSVersion, minimumNCSVersion)
+	}
+
+	if err := ValidateConfiguration(cfg); err != nil {
+		return nil, fmt.Errorf("validate configuration: %w", err)
 	}
 
 	return cfg, nil
@@ -224,15 +238,32 @@ func (g General) GetToochainsPath() NCSLocation {
 	}
 }
 
-func resolveStringEnv(input string) string {
-	if strings.HasPrefix(input, "~/") {
-		userHome, err := os.UserHomeDir()
-		if err != nil {
-			panic("could not resolve user home dir: " + err.Error())
+// ValidateConfiuration checks device configuration as much as it can
+// to provide meaningful information about errors in configuration.
+func ValidateConfiguration(cfg *Device) error {
+	if cfg.General.TrustCenterKey != "" {
+		log.Println("EXPERIMENTAL: Trust center key configuration is experimental and may not work as expected")
+
+		// Verify that key is of correct length.
+		// 32 chars + 15 colons
+		const keyLength = 32 + 15
+		if providedKeyLen := len(cfg.General.TrustCenterKey); providedKeyLen != keyLength {
+			return fmt.Errorf("trust center key has wrong length: want %d, have %d", keyLength, providedKeyLen)
 		}
 
-		input = strings.Replace(input, "~/", userHome+"/", 1)
+		if colonsCount := strings.Count(cfg.General.TrustCenterKey, ":"); colonsCount != 15 {
+			return fmt.Errorf("trust center key bytes shold be separated by colon: has %d colons, want 15", colonsCount)
+		}
+
+		// Trust center key is supported only for router & coordinator roles.
+		if !cfg.Board.IsRouter {
+			return errors.New("trust center key is provided, but board is not configured to be router")
+		}
 	}
 
+	return nil
+}
+
+func resolveStringEnv(input string) string {
 	return os.ExpandEnv(input)
 }
