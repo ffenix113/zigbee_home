@@ -251,6 +251,16 @@ static void loop(zb_bufid_t bufid)
 	}
 }
 
+void setup_trust_center_key() {
+	{{/* A quick hack to setup trust key if it was provided */}}
+	{{ if not (eq .Device.General.TrustCenterKey "")}}
+	zb_enable_distributed();
+	
+	uint8_t secret_zll_trust_center_key[16] = { {{ trustCenterKeyToArray .Device.General.TrustCenterKey }} };
+	zb_zdo_set_tc_standard_distributed_key(secret_zll_trust_center_key);
+	{{ end }}
+}
+
 int init_templates() {
 	// --- Extenders start
 	{{- range .Extenders}}
@@ -455,6 +465,10 @@ int main(void)
 
 	/* Register callback to identify notifications */
 	// ZB_AF_SET_IDENTIFY_NOTIFICATION_HANDLER(DEVICE_ENDPOINT_NB, identify_callback);
+
+	// While the call to set up trust center key is always present
+	// its implemenentation will depend if it was provided or not.
+	setup_trust_center_key();
 
 	#if CONFIG_ZIGBEE_ROLE_END_DEVICE
 	/* Enable Sleepy End Device behavior */
