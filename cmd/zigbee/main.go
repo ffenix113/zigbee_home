@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"runtime/debug"
-	"slices"
 
 	"github.com/ffenix113/zigbee_home/cmd/zigbee/firmware"
 	"github.com/urfave/cli/v2"
@@ -54,29 +53,9 @@ func printVersion() error {
 		return errors.New("could not read build information")
 	}
 
-	vcsProps := make([]debug.BuildSetting, 0, 2)
-
-	for _, setting := range buildInfo.Settings {
-		if !slices.Contains([]string{"vcs.revision", "vcs.modified"}, setting.Key) {
-			continue
-		}
-
-		vcsProps = append(vcsProps, setting)
-		if len(vcsProps) == cap(vcsProps) {
-			break
-		}
-	}
-
-	slices.SortFunc(vcsProps, func(a, b debug.BuildSetting) int {
-		if a.Key > b.Key {
-			return 1
-		}
-
-		return -1
-	})
-
-	// Information that will help with investigation of
-	log.Printf("%s, tag:%s, version:%s", buildInfo.GoVersion, buildInfo.Main.Version, vcsProps)
+	// Information that will help with investigation of issues,
+	// or just an information to know if update is needed or not.
+	log.Printf("%s, version:%s", buildInfo.GoVersion, buildInfo.Main.Version)
 
 	return nil
 }

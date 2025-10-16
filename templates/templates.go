@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
@@ -250,9 +251,16 @@ func templateFromPath(root *templateTree, baseTpl *template.Template, tplPath st
 }
 
 func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []generator.Extender) error {
+	appVersion := "no-version"
+
+	dbgInfo, ok := debug.ReadBuildInfo()
+	if ok {
+		appVersion = dbgInfo.Main.Version
+	}
+
 	ctx := Context{
 		GeneratedOn: time.Now().UTC(),
-		Version:     "0.0.0-dev",
+		Version:     appVersion,
 		Device:      device,
 
 		Extenders: extenders,
