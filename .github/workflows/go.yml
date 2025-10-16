@@ -14,11 +14,41 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.21'
-        cache-dependency-path: go.sum
-    - name: Test
-      run: go test ./...
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+      - name: Test
+        run: go test ./...
+
+  build:
+    runs-on: ubuntu-latest
+    # Do not do builds on pull requests.
+    # Maybe this will be lifted in the future,
+    # if MR builds would be useful for users
+    # before they are merged.
+    if: ${{ github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+      - name: Install dependencies
+        run: go mod download
+      - name: Build executables
+        # Yes, build matrix can be used, but I don't want to create multiple jobs
+        # for something that can be done in one step.
+        run: |
+          export GOOS=windows; export GOARCH=amd64; go build -o builds/zigbee_home_${GOOS}_${GOARCH}.exe ./cmd/zigbee/
+          export GOOS=linux; export GOARCH=amd64; go build -o builds/zigbee_home_${GOOS}_${GOARCH} ./cmd/zigbee/
+          export GOOS=darwin; export GOARCH=arm64; go build -o builds/zigbee_home_${GOOS}_${GOARCH} ./cmd/zigbee/
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zigbee_home_executables
+          if-no-files-found: error
+          path: builds/*
