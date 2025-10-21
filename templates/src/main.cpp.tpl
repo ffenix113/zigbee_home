@@ -400,6 +400,20 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
+	// Enable watchdog only on "production" configuration.
+	// On debugging it will be just annoying to constantly reset SoC
+	// while trying to read logs or debug.
+#if !CONFIG_ZBHOME_DEBUG_ENABLE
+		if (int err = setup_watchdog(); err != 0)
+		{
+			LOG_ERR("setup watchdog err: %d", err);
+		}
+		else
+		{
+			LOG_INF("watchdog was set");
+		}
+#endif
+
 		if (!init_zbhome())
 		{
 			LOG_ERR("cannot initiate zbhome");

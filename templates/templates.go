@@ -68,6 +68,7 @@ var sourceFiles = [][2]string{
 	{path.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
 	{path.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
 	{"main.cpp", "main.cpp.tpl"},
+	{"watchdog.hpp", "watchdog.hpp"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
