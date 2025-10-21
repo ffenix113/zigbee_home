@@ -9,5 +9,14 @@
 /vendor
 /test
 
+# Dot files are not necessary, unless forced
+# Especially on MacOS..
+.*
+
 # Test builds
 /_*
+
+# Test configurations
+zigbee_*.yaml
+# Test build environment (for now)
+compose.yml
