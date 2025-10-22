@@ -1,0 +1,5 @@
+general:
+  board: nrf52840dongle_nrf52840
+
+board:
+  enable_watchdog: false

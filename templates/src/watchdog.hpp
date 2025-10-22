@@ -22,14 +22,14 @@
 
 // This check is present as we don't
 // force watchdog on in the devicetree.
-#if DT_HAS_COMPAT_STATUS_OKAY(nordic_nrf_wdt)
+#if CONFIG_ZBHOME_WATCHDOG_ENABLE && !CONFIG_ZBHOME_DEBUG_ENABLE && DT_HAS_COMPAT_STATUS_OKAY(nordic_nrf_wdt)
 const struct device *const wdt = DEVICE_DT_GET(DT_ALIAS(watchdog0));
 #else
 const struct device *const wdt = NULL;
 #endif
 
 static struct wdt_window wdt_window_cfg = {
-    .min = WDT_MIN_WINDOW,
+    .min = 0,
     .max = WDT_MAX_WINDOW,
 };
 

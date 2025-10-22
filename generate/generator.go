@@ -26,6 +26,7 @@ type Generator struct {
 func NewGenerator(device *config.Device) (*Generator, error) {
 	appConfig, err := appconfig.NewDefaultAppConfig(
 		appconfig.DefaultAppConfigOptions{
+			EnableWatchdog: device.Board.EnableWatchdog,
 			IsRouter:       device.Board.IsRouter,
 			ZigbeeChannels: device.General.ZigbeeChannels,
 		},

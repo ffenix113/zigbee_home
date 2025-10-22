@@ -60,8 +60,17 @@ type General struct {
 }
 
 type Board struct {
-	Bootloader         *string
-	Debug              *extenders.DebugConfig
+	Bootloader *string
+	Debug      *extenders.DebugConfig
+	// EnableWatchdog will setup watchdog timer that
+	// will reset SoC if it was not "fed" (i.e. pinged)
+	// in some time.
+	//
+	// This option is set to true by default,
+	// and can only be disabled.
+	//
+	// It is always disabled if configuration is set in debug mode.
+	EnableWatchdog     bool   `yaml:"enable_watchdog"`
 	IsRouter           bool   `yaml:"is_router"`
 	FactoryResetButton string `yaml:"factory_reset_button"`
 	NetworkStateLED    string `yaml:"network_state_led"`
@@ -89,6 +98,9 @@ func ParseFromFile(configPath string) (*Device, error) {
 			NCSVersion:   minimumNCSVersion.String(),
 			Manufacturer: "FFexix113",
 			DeviceName:   "dongle",
+		},
+		Board: Board{
+			EnableWatchdog: true,
 		},
 	}
 

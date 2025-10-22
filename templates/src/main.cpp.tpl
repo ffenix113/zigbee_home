@@ -29,6 +29,8 @@ extern "C" {
 #include <zigbee/zigbee_app_utils.h>
 #include <zigbee/zigbee_error_handler.h>
 
+#include "watchdog.hpp"
+
 // Header only, why not?
 #include "device.hpp"
 
@@ -403,7 +405,7 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	// Enable watchdog only on "production" configuration.
 	// On debugging it will be just annoying to constantly reset SoC
 	// while trying to read logs or debug.
-#if !CONFIG_ZBHOME_DEBUG_ENABLE
+#if CONFIG_ZBHOME_WATCHDOG_ENABLE && !CONFIG_ZBHOME_DEBUG_ENABLE
 		if (int err = setup_watchdog(); err != 0)
 		{
 			LOG_ERR("setup watchdog err: %d", err);
