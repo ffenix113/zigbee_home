@@ -38,6 +38,15 @@ func (v ConfigValue) Required(val string) ConfigValue {
 	return v
 }
 
+func (v ConfigValue) RequiredBool(val bool) ConfigValue {
+	v.RequiredValue = Yes
+	if !val {
+		v.RequiredValue = No
+	}
+
+	return v
+}
+
 func (v ConfigValue) Quoted() ConfigValue {
 	v.QuotedValue = true
 	return v
@@ -86,6 +95,7 @@ func NewEmptyAppConfig() *AppConfig {
 }
 
 type DefaultAppConfigOptions struct {
+	EnableWatchdog bool
 	IsRouter       bool
 	ZigbeeChannels []int
 }
@@ -114,6 +124,8 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_NET_UDP,
 		CONFIG_CONSOLE,
 		CONFIG_USB_DEVICE_STACK,
+
+		CONFIG_ZBHOME_WATCHDOG_ENABLE.RequiredBool(opts.EnableWatchdog),
 	)
 
 	deviceRole := CONFIG_ZIGBEE_ROLE_END_DEVICE

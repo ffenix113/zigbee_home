@@ -65,6 +65,15 @@ board:
   # to be selected one, even if the value is empty string.
   #bootloader: nrf52_legacy
 
+  # This option enables watchdog, that will reset the board
+  # in case of lock-up or similar misbehavior.
+  #
+  # It is enabled by default and is present here to only showcase the option.
+  #
+  # User can disable watchdog by setting this options to "false".
+  # It is also always disabled when debug.enabled == true.
+  enable_watchdog: true
+
   # This will make "button0" factory reset button. 
   # Pressing this button for at least 5 seconds 
   # would remove current network configuration,

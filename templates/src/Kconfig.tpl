@@ -1,3 +1,10 @@
+config ZBHOME_WATCHDOG_ENABLE
+	bool "Enable watchdog"
+	default y
+	imply WATCHDOG
+	help
+	  Enable watchdog that will reset SoC (and so the board) in case of a lock up.
+
 config ZBHOME_DEBUG_ENABLE
 	bool "Debug configuration"
 	default n

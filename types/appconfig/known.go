@@ -5,6 +5,9 @@ package appconfig
 // As such they do not represent good/best configurations,
 // but mostly the ones that work for this project.
 var (
+	// ZBHome config
+	CONFIG_ZBHOME_WATCHDOG_ENABLE = NewValue("CONFIG_ZBHOME_WATCHDOG_ENABLE").Default(Yes)
+
 	// Zephyr config
 	CONFIG_CPP                  = NewValue("CONFIG_CPP").Default(Yes)
 	CONFIG_REQUIRES_FULL_LIBCPP = NewValue("CONFIG_REQUIRES_FULL_LIBCPP").Default(Yes)
