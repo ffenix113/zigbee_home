@@ -122,7 +122,6 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_NET_IPV6,
 		CONFIG_NET_IP_ADDR_CHECK,
 		CONFIG_NET_UDP,
-		CONFIG_CONSOLE,
 		CONFIG_USB_DEVICE_STACK,
 
 		CONFIG_ZBHOME_WATCHDOG_ENABLE.RequiredBool(opts.EnableWatchdog),

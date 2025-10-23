@@ -14,13 +14,9 @@ var (
 	CONFIG_STD_CPP17            = NewValue("CONFIG_STD_CPP17").Default(Yes)
 
 	// Logging
-	CONFIG_LOG              = NewValue("CONFIG_LOG").Default(No)
-	CONFIG_SERIAL           = NewValue("CONFIG_SERIAL").Default(No)
-	CONFIG_CONSOLE          = NewValue("CONFIG_CONSOLE").Default(No)
 	CONFIG_UART_CONSOLE     = NewValue("CONFIG_UART_CONSOLE").Default(No)
 	CONFIG_UART_LINE_CTRL   = NewValue("CONFIG_UART_LINE_CTRL").Default(Yes)
 	CONFIG_LOG_BACKEND_UART = NewValue("CONFIG_LOG_BACKEND_UART").Default(Yes)
-	CONFIG_PRINTK           = NewValue("CONFIG_PRINTK").Default(Yes)
 
 	// USB
 	CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT = NewValue("CONFIG_USB_DEVICE_INITIALIZE_AT_BOOT").Default(No)
