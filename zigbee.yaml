@@ -11,26 +11,43 @@ general:
   # Board name, as defined in Zephyr.
   board: nrf52840dongle_nrf52840
 
-  # Defines specific major & minor version that should be used.
-  # Later patch version can be automatically selected by the program, 
-  # if specific version is not found. 
-  # I.e. if requested v2.7.0, but only v2.7.2 is found - v2.7.2 will be used instead.
-  # Higher then minimum supported version can be specified (but may be incompatible),
-  # but lower then minimum version will result in an error.
-  # This is optional configuration.
-  ncs_version: v2.7.0
+  # NCS configuration allows to customize location and used version
+  # of SDK and toolchain that will be used to compile the firmware.
+  #
+  # Generally it will not be necessary to provide this manually,
+  # only if there are specific requirements.
+  #
+  # Updating from old configuration:
+  # ncs_version         -> ncs.sdk_version
+  # zephyr_base         -> ncs.sdk_base
+  # ncs_toolchain_base  -> ncs.toolchain_base
+  ncs:
+    # Defines specific version that should be used.
+    # Later patch version can be automatically selected by the program, 
+    # if specific version is not found. 
+    # I.e. if requested v2.7.0, but only v2.7.2 is found - v2.7.2 will be used instead.
+    # Higher then minimum supported version can be specified (but may be incompatible),
+    # but lower then minimum version will result in an error.
+    #
+    # Toolchain version will be selected to be at least of this version,
+    # or next higher one will be selected if this specific one is not available.
+    #
+    # This is optional configuration.
+    sdk_version: v2.9.2
   
-  # This paths are necessary to build the generated firmware.
-  # If nRF Connect setup was done with VS Code extension -
-  # most probably this can be left empty, but if version changes -
-  # new path would need to be set here.
-  # Paths specified here can start with `~/`, and contain
-  # environmental variables, which will be resolved.
-  # This values have sane defaults and point to ~/ncs/...
-  # Env variables NCS_TOOLCHAIN_BASE & ZEPHYR_BASE have
-  # priority over this fields.
-  #ncs_toolchain_base: ~/toolchains/7795df4459/
-  #zephyr_base: ~/ncs/zephyr
+    # If nRF Connect setup was done with default paths 
+    # from VS Code extension or nrfutil -
+    # most probably this can be left empty.
+    # Paths specified here can start with `~/`, and contain
+    # environmental variables, which will be resolved.
+    #
+    # This values have sane defaults based on nRF Connect documentation
+    # https://docs.nordicsemi.com/bundle/ncs-2.9.2/page/nrf/installation/install_ncs.html#install_the_nrf_connect_sdk_toolchain
+    #
+    # Env variables NCS_TOOLCHAIN_BASE & ZEPHYR_BASE have
+    # priority over this fields.
+    #toolchain_base: ~/toolchains/
+    #sdk_base: ~/ncs/zephyr
 
   # zigbee_channels will provide optional list of channels to use.
   # Note: if not defined device will use all available channels,

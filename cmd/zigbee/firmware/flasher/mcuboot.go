@@ -16,7 +16,7 @@ func (MCUBoot) Flash(ctx context.Context, device *config.Device, workDir string)
 	toolchainsPath := device.General.GetToochainsPath()
 	opts := []runner.CmdOpt{
 		runner.WithWorkDir(workDir),
-		runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr),
+		runner.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath),
 	}
 
 	// 1. Sign the firmware

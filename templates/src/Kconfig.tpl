@@ -61,6 +61,16 @@ config ZBHOME_NRF52X
 	imply CRYPTO_NRF_ECB
 	depends on SOC_SERIES_NRF52X
 
+# Always on configuration to set up always required configs.
+config ZBHOME
+	def_bool y
+	imply ZIGBEE_ADD_ON
+
+if !ZIGBEE_ADD_ON
+config ZIGBEE
+	default y
+endif
+
 source "Kconfig.zephyr"
 source "${ZEPHYR_BASE}/../nrf/subsys/zigbee/Kconfig"
 

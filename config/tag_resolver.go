@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -13,15 +14,17 @@ import (
 // inside configuration file.
 // For example does inclusion of external files.
 type tagsResolver struct {
+	basePath string
 	// maxIncludeDepth tells how deep includes can be
 	// when file includes file, includes file, ...
 	maxIncludeDepth int
 }
 
-func newTagsResolver() *tagsResolver {
+func newTagsResolver(basePath string) *tagsResolver {
 	const defaultMaxIncludeDepth = 3
 
 	return &tagsResolver{
+		basePath:        basePath,
 		maxIncludeDepth: defaultMaxIncludeDepth,
 	}
 }
@@ -30,6 +33,14 @@ func (r *tagsResolver) resolve(node *yaml.Node, depth int) error {
 	var newNode *yaml.Node
 
 	var err error
+
+	if node.Value != "" && strings.Contains(node.Value, "$") {
+		envResolvedNode, err := r.getEnvNode(node.Value)
+		if err != nil {
+			return fmt.Errorf("resolve configuration node env value: %w", err)
+		}
+		*node = *envResolvedNode
+	}
 
 	switch node.Tag {
 	case "!include":
@@ -66,7 +77,7 @@ func (r *tagsResolver) resolve(node *yaml.Node, depth int) error {
 }
 
 func (r *tagsResolver) getIncludedNode(includePath string) (*yaml.Node, error) {
-	includePath, err := filepath.Abs(includePath)
+	includePath, err := filepath.Abs(filepath.Join(r.basePath, includePath))
 	if err != nil {
 		return nil, fmt.Errorf("get absolute include path of %q: %w", includePath, err)
 	}
@@ -86,9 +97,6 @@ func (r *tagsResolver) getIncludedNode(includePath string) (*yaml.Node, error) {
 
 func (r *tagsResolver) getEnvNode(env string) (*yaml.Node, error) {
 	envValue := os.ExpandEnv(env)
-	if envValue == "" {
-		return nil, nil
-	}
 
 	var n yaml.Node
 	if err := yaml.Unmarshal([]byte(envValue), &n); err != nil {

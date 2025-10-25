@@ -23,6 +23,11 @@ func TestGenerateAllExamples(t *testing.T) {
 	examples, err := os.ReadDir(cwdAbsPath)
 	require.NoError(t, err)
 
+	// This will run example file in the root of the repo.
+	t.Run("root_example", func(t *testing.T) {
+		runExample(t, filepath.Join(cwdAbsPath, ".."))
+	})
+
 	for _, example := range examples {
 		if !example.IsDir() {
 			continue

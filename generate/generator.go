@@ -45,7 +45,7 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 		return nil, fmt.Errorf("default sysbuild config: %w", err)
 	}
 
-	ncsVersion, err := types.ParseSemver(device.General.NCSVersion)
+	ncsVersion, err := types.ParseSemver(device.General.NCS.SDKVersion)
 	if err != nil {
 		return nil, fmt.Errorf("parse provided ncs version: %w", err)
 	}

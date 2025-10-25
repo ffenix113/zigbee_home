@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
@@ -21,6 +22,12 @@ import (
 )
 
 type Device struct {
+	// This field is necessary for import resolution step,
+	// if it would be possible to provide it in any other way -
+	// this field should be removed.
+	// An ugly hack, so to speak.
+	configPath string
+
 	General General
 	Board   Board
 
@@ -28,9 +35,11 @@ type Device struct {
 }
 
 type General struct {
-	NCSToolChainBase string `yaml:"ncs_toolchain_base"`
-	NCSVersion       string `yaml:"ncs_version"`
-	ZephyrBase       string `yaml:"zephyr_base"`
+	NCS NCS
+	// NCSToolChainBase string `yaml:"ncs_toolchain_base"`
+	// NCSVersion       string `yaml:"ncs_version"`
+	// ZephyrBase       string `yaml:"zephyr_base"`
+
 	// TemplatesPath allows to override default templates path.
 	// This would allow to use custom templates while developing, for example.
 	TemplatesPath string `yaml:"templates_path"`
@@ -83,21 +92,39 @@ type Board struct {
 	UART    []extenders.UARTInstance
 }
 
+type NCS struct {
+	ToolchainBasePath string `yaml:"toolchain_base_path"`
+	// ToolchainVersion  string `yaml:"toolchain_version"`
+
+	SDKBasePath string `yaml:"sdk_base_path"`
+	SDKVersion  string `yaml:"sdk_version"`
+}
+
 func ParseFromFile(configPath string) (*Device, error) {
-	var minimumNCSVersion = types.NewSemver(2, 6, 0)
+	var minimumSDKVersion = types.NewSemver(2, 6, 0)
 
 	cfg := &Device{
+		configPath: filepath.Dir(configPath),
 		General: General{
 			RunEvery: time.Minute,
-			NCSToolChainBase: func() string {
-				if runtime.GOOS == "windows" {
-					return "C:\\ncs"
-				}
-				return "~/ncs"
-			}(),
-			NCSVersion:   minimumNCSVersion.String(),
-			Manufacturer: "FFexix113",
-			DeviceName:   "dongle",
+			NCS: NCS{
+				SDKVersion: minimumSDKVersion.String(),
+				// ToolchainVersion: minimumNCSVersion.String(),
+				// Toolchain path will be resolved based on SDK base path,
+				// if it is not specifically provided.
+				SDKBasePath: func() string {
+					switch runtime.GOOS {
+					case "windows":
+						return "C:\\ncs"
+					case "darwin":
+						return "/opt/nordic/ncs"
+					default:
+						return "~/ncs"
+					}
+				}(),
+			},
+			Manufacturer: "zigbee_home",
+			DeviceName:   "device",
 		},
 		Board: Board{
 			EnableWatchdog: true,
@@ -123,15 +150,6 @@ func ParseFromFile(configPath string) (*Device, error) {
 		}
 	}
 
-	selectedNCSVersion, err := types.ParseSemver(cfg.General.NCSVersion)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse selected NCS version: %w", err)
-	}
-
-	if minimumNCSVersion.Compare(selectedNCSVersion) == 1 {
-		return nil, fmt.Errorf("selected NCS version is lower than minimum supported version: selected %q, minimum supported %q", cfg.General.NCSVersion, minimumNCSVersion)
-	}
-
 	if err := ValidateConfiguration(cfg); err != nil {
 		return nil, fmt.Errorf("validate configuration: %w", err)
 	}
@@ -146,12 +164,6 @@ func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
 	if err := dec.Decode(defConfig); err != nil {
 		return nil, fmt.Errorf("decode: %w", err)
 	}
-
-	// This may contain environment variables,
-	// so be kind and try to resolve
-	defConfig.General.NCSToolChainBase = resolveStringEnv(defConfig.General.NCSToolChainBase)
-
-	defConfig.General.ZephyrBase = resolveStringEnv(defConfig.General.ZephyrBase)
 
 	defConfig.PrependCommonClusters()
 
@@ -183,7 +195,7 @@ func ResolveBoardSoC(conf *Device) (string, error) {
 // UnamrshalYAML is implemented to intercept the original
 // configuration file and resolve any known tags inside.
 func (d *Device) UnmarshalYAML(node *yaml.Node) error {
-	resolver := newTagsResolver()
+	resolver := newTagsResolver(d.configPath)
 	if err := resolver.resolve(node, 1); err != nil {
 		return fmt.Errorf("resolve tags: %w", err)
 	}
@@ -215,38 +227,39 @@ func (d *Device) PrependCommonClusters() {
 func (g General) GetToochainsPath() NCSLocation {
 	// If env variables are defined - they have higher priority.
 	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
-	ncsVersion := os.Getenv("NCS_VERSION")
-	zephyrPath := os.Getenv("ZEPHYR_BASE")
+	ncsSDKVersion := os.Getenv("NCS_VERSION")
+	zephyrSDKPath := os.Getenv("ZEPHYR_BASE")
 
-	if ncsVersion == "" {
-		ncsVersion = g.NCSVersion
+	if ncsSDKVersion == "" {
+		ncsSDKVersion = g.NCS.SDKVersion
 	}
 
 	var locations NCSLocation
 
-	if ncsToolchainPath == "" || zephyrPath == "" {
+	if ncsToolchainPath == "" || zephyrSDKPath == "" {
 		var err error
-		locations, err = FindNCSLocation(g.NCSToolChainBase, ncsVersion)
+		locations, err = FindNCSLocation(g.NCS.SDKBasePath, ncsSDKVersion)
 
 		if err != nil {
 			log.Fatalf("find ncs location: %s", err.Error())
 		}
 
-		log.Printf("found toolchain version %q, requested version %q", locations.Version, ncsVersion)
+		log.Printf("found toolchain version %q, requested version %q", locations.SDKVersion, ncsSDKVersion)
 	}
 
 	if ncsToolchainPath == "" {
-		ncsToolchainPath = locations.NCS
+		ncsToolchainPath = locations.ToolchainPath
 	}
 
-	if zephyrPath == "" {
-		zephyrPath = locations.Zephyr
+	if zephyrSDKPath == "" {
+		zephyrSDKPath = locations.SDKPath
 	}
 
 	return NCSLocation{
-		Version: locations.Version,
-		NCS:     ncsToolchainPath,
-		Zephyr:  zephyrPath,
+		SDKVersion:       locations.SDKVersion,
+		ToolchainVersion: locations.ToolchainVersion,
+		ToolchainPath:    ncsToolchainPath,
+		SDKPath:          zephyrSDKPath,
 	}
 }
 
