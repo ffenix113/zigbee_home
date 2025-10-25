@@ -110,7 +110,6 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_REQUIRES_FULL_LIBCPP,
 		CONFIG_STD_CPP17,
 		CONFIG_DK_LIBRARY,
-		CONFIG_ZIGBEE,
 		CONFIG_ZIGBEE_APP_UTILS,
 		CONFIG_ZIGBEE_CHANNEL_MASK,
 		CONFIG_ZIGBEE_CHANNEL_SELECTION_MODE_MULTI,
@@ -122,7 +121,6 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_NET_IPV6,
 		CONFIG_NET_IP_ADDR_CHECK,
 		CONFIG_NET_UDP,
-		CONFIG_CONSOLE,
 		CONFIG_USB_DEVICE_STACK,
 
 		CONFIG_ZBHOME_WATCHDOG_ENABLE.RequiredBool(opts.EnableWatchdog),

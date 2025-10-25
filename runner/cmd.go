@@ -78,18 +78,18 @@ func WithWorkDir(workDir string) CmdOpt {
 
 // WithToolchainPath updates environment of command
 // to inlcude necessary variables for building firmware.
-func WithToolchainPath(ncsToolchainBase, zephyrBase string) CmdOpt {
+func WithToolchainPath(ncsToolchainBase, sdkBase string) CmdOpt {
 	// For now check that we don't want to setup env here,
 	// and move it to CLI ASAP.
 	// This could be useful if run inside environment that
 	// is already set up properly.
-	if noSetupEnv() || ncsToolchainBase == "" || zephyrBase == "" {
+	if noSetupEnv() || ncsToolchainBase == "" || sdkBase == "" {
 		log.Println("environment will not be prepared because either one of the paths is empty, or requested not to")
 
 		return func(c *exec.Cmd) {}
 	}
 
-	return WithEnvironment(extendEnv(ncsToolchainBase, zephyrBase)...)
+	return WithEnvironment(extendEnv(ncsToolchainBase, sdkBase)...)
 }
 
 func WithEnvironment(envVals ...string) CmdOpt {
@@ -99,7 +99,7 @@ func WithEnvironment(envVals ...string) CmdOpt {
 	}
 }
 
-func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
+func extendEnv(ncsToolchainPath string, sdkPath string) []string {
 	envFilePath := filepath.Join(ncsToolchainPath, "environment.json")
 	envFile, err := os.Open(envFilePath)
 	if err != nil {
@@ -157,7 +157,7 @@ func extendEnv(ncsToolchainPath string, zephyrPath string) []string {
 
 	return []string{
 		"PATH=" + combinedPath,
-		"ZEPHYR_BASE=" + zephyrPath,
+		"ZEPHYR_BASE=" + sdkPath,
 		"ZEPHYR_SDK_INSTALL_DIR=" + path.Join(ncsToolchainPath, "/opt/zephyr-sdk"),
 		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
 		"LD_LIBRARY_PATH=" + ldLibraryPath,

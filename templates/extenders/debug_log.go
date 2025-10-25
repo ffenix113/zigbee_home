@@ -51,29 +51,16 @@ func NewDebugUARTLog(config DebugConfig) generator.Extender {
 		},
 		Config: []appconfig.ConfigValue{
 			// Logging setup
-			appconfig.CONFIG_LOG.Required(appconfig.Yes),
-			appconfig.CONFIG_CONSOLE.Required(appconfig.Yes),
-			appconfig.CONFIG_SERIAL.Required(appconfig.Yes),
 			appconfig.CONFIG_LOG_BACKEND_UART.Required(appconfig.Yes),
 			appconfig.CONFIG_UART_CONSOLE.Required(appconfig.Yes),
 			appconfig.CONFIG_UART_LINE_CTRL.Required(appconfig.Yes),
-			appconfig.CONFIG_PRINTK.Required(appconfig.Yes),
 
-			appconfig.NewValue("CONFIG_ZBOSS_HALT_ON_ASSERT").Default(appconfig.Yes),
-			appconfig.NewValue("CONFIG_RESET_ON_FATAL_ERROR").Default(appconfig.No),
-			appconfig.NewValue("CONFIG_DEBUG_OPTIMIZATIONS").Default(appconfig.Yes),
-			appconfig.NewValue("CONFIG_DEBUG_THREAD_INFO").Default(appconfig.Yes),
-			appconfig.NewValue("CONFIG_THREAD_NAME").Default(appconfig.Yes),
-
-			// Configurations for (hopefully) generating
-			// good address for addr2line on exception.
-			appconfig.NewValue("CONFIG_DEBUG_COREDUMP").Default(appconfig.Yes),
-			appconfig.NewValue("CONFIG_DEBUG_COREDUMP_BACKEND_LOGGING").Default(appconfig.Yes),
-			appconfig.NewValue("CONFIG_COREDUMP_DEVICE").Default(appconfig.Yes),
-			// appconfig.NewValue("CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE").Default(`2048`),
-			// appconfig.NewValue("CONFIG_HEAP_MEM_POOL_SIZE").Default(`2048`),
+			// Commented out because of Watchdog implementation.
+			// appconfig.NewValue("CONFIG_RESET_ON_FATAL_ERROR").Default(appconfig.No),
 
 			// ZBHome Debug enable
+			//
+			// This will also another a host of other configurations in Kconfig
 			appconfig.NewValue("CONFIG_ZBHOME_DEBUG_ENABLE").Required(appconfig.Yes),
 
 			// Leds

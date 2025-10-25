@@ -154,7 +154,7 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 	)
 
 	toolchainsPath := device.General.GetToochainsPath()
-	if err := build.Run(ctx, runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr)); err != nil {
+	if err := build.Run(ctx, runner.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath)); err != nil {
 		return fmt.Errorf("build firmware: %w", err)
 	}
 

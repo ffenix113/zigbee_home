@@ -25,7 +25,7 @@ func (w West) Flash(ctx context.Context, device *config.Device, workDir string) 
 	return runner.NewCmd("west", opts...).Run(
 		ctx,
 		runner.WithWorkDir(workDir),
-		runner.WithToolchainPath(toolchainsPath.NCS, toolchainsPath.Zephyr),
+		runner.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath),
 	)
 }
 

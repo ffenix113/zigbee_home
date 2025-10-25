@@ -6,16 +6,21 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/ffenix113/zigbee_home/types"
 )
 
+// In the future we want to move to nrfutil doing all this mess.
+
 type NCSLocation struct {
-	Version types.Semver
-	NCS     string
-	Zephyr  string
+	SDKVersion       types.Semver
+	ToolchainVersion types.Semver
+	ToolchainPath    string
+	SDKPath          string
 }
 
 type toolchainItem struct {
@@ -30,7 +35,7 @@ type toolchainTopLevelItem struct {
 	Toolchains       []toolchainItem   `json:"toolchains"`
 }
 
-// FindNCSLocation will return paths for NCS and Zephyr toolchains.
+// FindNCSLocation will return paths for nRF SDK and Zephyr toolchains.
 //
 // If toolchain of required version was not found - it will try to
 // use default version from toolchain file, and if it is not present -
@@ -39,13 +44,14 @@ type toolchainTopLevelItem struct {
 // As such this function can return different toolchain version that
 // was requested, and caller can check it by comparing to version
 // returned in NCSLocation.
-func FindNCSLocation(ncsBase, version string) (NCSLocation, error) {
-	toolchainsJson := toolchainConfigPath(ncsBase)
+func FindNCSLocation(sdkBasePath, sdkVersion string) (NCSLocation, error) {
+	toolchainsJson := toolchainConfigPath(sdkBasePath)
 
 	configFile, err := os.Open(toolchainsJson)
 	if err != nil {
 		return NCSLocation{}, fmt.Errorf("open toolchains.json file at %q: %w", toolchainsJson, err)
 	}
+	defer configFile.Close()
 
 	var toolchainFile []toolchainTopLevelItem
 
@@ -60,11 +66,61 @@ func FindNCSLocation(ncsBase, version string) (NCSLocation, error) {
 
 	first := toolchainFile[0]
 
-	return providePaths(ncsBase, version, first)
+	return providePaths(sdkBasePath, sdkVersion, first)
 }
 
-func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) (NCSLocation, error) {
-	versionToIdentifier := mapVersions(toolchainItem)
+func providePaths(ncsBase, sdkVersion string, toolchainItem toolchainTopLevelItem) (NCSLocation, error) {
+	// Select SDK
+	sdks, err := listSDKs(ncsBase)
+	if err != nil {
+		return NCSLocation{}, fmt.Errorf("list sdks: %w", err)
+	}
+
+	if len(sdks) == 0 {
+		return NCSLocation{}, fmt.Errorf("no sdks found in ncs bas of %q", ncsBase)
+	}
+
+	sort.Slice(sdks, func(i, j int) bool {
+		// Prefer SDKs that are Zigbee add-ons.
+		if sdks[i].IsZigbeeAddOn && !sdks[j].IsZigbeeAddOn {
+			return true
+		}
+
+		return sdks[i].Version.Compare(sdks[j].Version) >= 0
+	})
+
+	var semverSDKVersion types.Semver
+
+	if sdkVersion != "" {
+		semverSDKVersion, err = types.ParseSemver(sdkVersion)
+		if err != nil {
+			return NCSLocation{}, fmt.Errorf("requested sdk version %q is invalid: %w", sdkVersion, err)
+		}
+	}
+
+	var selectedSDK SDKInfo
+	for _, sdk := range sdks {
+		// Versions v3.0.0 and later do not contain Zigbee SDK,
+		// so special SDK should be used.
+		if sdk.Version[0] >= 3 && !sdk.IsZigbeeAddOn {
+			continue
+		}
+
+		if sdk.Version.Compare(semverSDKVersion) >= 0 {
+			selectedSDK = sdk
+			break
+		}
+	}
+
+	if selectedSDK.Path == "" {
+		return NCSLocation{}, fmt.Errorf("sdk with version of at least %s was not found", semverSDKVersion)
+	}
+
+	// Select toolchain
+	versionToIdentifier, err := mapVersions(toolchainItem)
+	if err != nil {
+		return NCSLocation{}, fmt.Errorf("map toolchain items: %w", err)
+	}
 
 	if len(versionToIdentifier) == 0 {
 		return NCSLocation{}, fmt.Errorf("no toolchain versions found in toolchain configuration path %q", toolchainConfigPath(ncsBase))
@@ -72,12 +128,7 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 
 	var availableVersions []types.Semver
 	for version := range versionToIdentifier {
-		parsed, err := types.ParseSemver(version)
-		if err != nil {
-			return NCSLocation{}, fmt.Errorf("parse semver %q: %w", version, err)
-		}
-
-		availableVersions = append(availableVersions, parsed)
+		availableVersions = append(availableVersions, version)
 	}
 
 	// Sort versions in increasing order
@@ -85,62 +136,107 @@ func providePaths(ncsBase, version string, toolchainItem toolchainTopLevelItem) 
 		return availableVersions[i].Compare(availableVersions[j]) == -1
 	})
 
-	log.Printf("requested toolchain version: %q, available versions: %v", version, availableVersions)
+	log.Printf("requested sdk version: %q, available toolchain versions: %v", selectedSDK.Version, availableVersions)
 
-	// If version is not present - use default from the toolchain.
-	// But if it is present - treat it as required.
-	if version == "" {
-		version = toolchainItem.DefaultToolchain["ncs_version"]
-	}
 	// Get directly requested or default version.
-	bundleID := versionToIdentifier[version]
+	selectedToolchainVersion := selectedSDK.Version
+	bundleID := versionToIdentifier[selectedSDK.Version]
 
 	// If directly requested version is not present - try to use latest from the same minor version.
 	if bundleID == "" {
-		requiredVersion, err := types.ParseSemver(version)
-		if err != nil {
-			return NCSLocation{}, fmt.Errorf("parse required version %q: %w", version, err)
-		}
-
-		foundVersion, err := selectVersion(requiredVersion, availableVersions)
+		selectedToolchainVersion, err = selectVersion(selectedSDK.Version, availableVersions)
 		if err != nil {
 			return NCSLocation{}, fmt.Errorf("select version: %w", err)
 		}
 
-		version = foundVersion.String()
-		bundleID = versionToIdentifier[version]
+		bundleID = versionToIdentifier[selectedToolchainVersion]
 	}
 
 	if bundleID == "" {
-		return NCSLocation{}, errors.New("required version was not found and no other suitable version is present")
+		return NCSLocation{}, errors.New("required toolchain version was not found and no other suitable version is present")
 	}
 
-	semver, err := types.ParseSemver(version)
-	if err != nil {
-		return NCSLocation{}, fmt.Errorf("parse found version %q: %w", version, err)
-	}
-
-	return constructPaths(ncsBase, semver, bundleID), nil
+	return NCSLocation{
+		SDKVersion:       selectedSDK.Version,
+		ToolchainVersion: selectedToolchainVersion,
+		ToolchainPath:    filepath.Join(ncsBase, "toolchains", bundleID),
+		SDKPath:          filepath.Join(selectedSDK.Path, "zephyr"),
+	}, nil
 }
 
-func mapVersions(toolchainItem toolchainTopLevelItem) map[string]string {
-	mapped := make(map[string]string, len(toolchainItem.Toolchains))
+type SDKInfo struct {
+	Path          string
+	Version       types.Semver
+	IsZigbeeAddOn bool
+}
+
+func listSDKs(ncsBase string) ([]SDKInfo, error) {
+	entries, err := os.ReadDir(ncsBase)
+	if err != nil {
+		return nil, fmt.Errorf("list ncs base path: %w", err)
+	}
+
+	var sdks []SDKInfo
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		versionFilePath := path.Join(ncsBase, entry.Name(), "nrf", "VERSION")
+		zigbeeAddOnPath := path.Join(ncsBase, entry.Name(), "ncs-zigbee")
+
+		bts, err := os.ReadFile(versionFilePath)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+
+			return nil, fmt.Errorf("read sdk version file %q: %w", versionFilePath, err)
+		}
+
+		sdkVersion, err := types.ParseSemver(strings.TrimSpace(string(bts)))
+		if err != nil {
+			return nil, fmt.Errorf("parse sdk version from %q: %w", versionFilePath, err)
+		}
+
+		_, err = os.Stat(zigbeeAddOnPath)
+		isZigbeeAddOn := err == nil
+
+		sdks = append(sdks, SDKInfo{
+			Path:          path.Join(ncsBase, entry.Name()),
+			Version:       sdkVersion,
+			IsZigbeeAddOn: isZigbeeAddOn,
+		})
+	}
+
+	return sdks, nil
+}
+
+func mapVersions(toolchainItem toolchainTopLevelItem) (map[types.Semver]string, error) {
+	mapped := make(map[types.Semver]string, len(toolchainItem.Toolchains))
 
 	for _, toolchain := range toolchainItem.Toolchains {
 		for _, version := range toolchain.NCSVersions {
-			mapped[version] = toolchain.Identifier.BundleID
+			semver, err := types.ParseSemver(version)
+			if err != nil {
+				return nil, fmt.Errorf("invalid ncs toolchain version %q: %w", version, err)
+			}
+
+			mapped[semver] = toolchain.Identifier.BundleID
 		}
 	}
 
-	return mapped
+	return mapped, nil
 }
 
 func selectVersion(requested types.Semver, available []types.Semver) (types.Semver, error) {
 	foundIdx := -1
 	for i, availableVer := range available {
-		if availableVer.SameMajorMinor(requested) && availableVer.Compare(requested) > 0 {
+		// Find first available version that it not less than what we look foor.
+		if availableVer.Compare(requested) > 0 {
 			foundIdx = i
-			requested = availableVer
+			break
 		}
 	}
 
@@ -149,14 +245,6 @@ func selectVersion(requested types.Semver, available []types.Semver) (types.Semv
 	}
 
 	return available[foundIdx], nil
-}
-
-func constructPaths(ncsBase string, version types.Semver, bundleID string) NCSLocation {
-	return NCSLocation{
-		Version: version,
-		NCS:     filepath.Join(ncsBase, "toolchains", bundleID),
-		Zephyr:  filepath.Join(ncsBase, version.String(), "zephyr"),
-	}
 }
 
 func toolchainConfigPath(ncsBase string) string {
