@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -149,6 +148,7 @@ func extendEnv(ncsToolchainPath string, sdkPath string) []string {
 		combinedPath += string(os.PathListSeparator) + envPath
 	}
 
+	// This is Linux specific, so may not work correctly on Windows.
 	ldLibraryPath := generateEnvArray(ncsToolchainPath, []string{
 		"/usr/lib",
 		"/usr/lib/x86_64-linux-gnu",
@@ -158,7 +158,7 @@ func extendEnv(ncsToolchainPath string, sdkPath string) []string {
 	return []string{
 		"PATH=" + combinedPath,
 		"ZEPHYR_BASE=" + sdkPath,
-		"ZEPHYR_SDK_INSTALL_DIR=" + path.Join(ncsToolchainPath, "/opt/zephyr-sdk"),
+		"ZEPHYR_SDK_INSTALL_DIR=" + filepath.Join(ncsToolchainPath, "opt", "zephyr-sdk"),
 		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
 		"LD_LIBRARY_PATH=" + ldLibraryPath,
 	}

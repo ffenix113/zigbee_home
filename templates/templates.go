@@ -62,11 +62,11 @@ var knownClusterTemplates = map[cluster.ID]string{
 }
 
 var sourceFiles = [][2]string{
-	{path.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
-	{path.Join("..", "Kconfig"), "Kconfig.tpl"},
-	{path.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
-	{path.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
-	{path.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
+	{filepath.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
+	{filepath.Join("..", "Kconfig"), "Kconfig.tpl"},
+	{filepath.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
+	{filepath.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
+	{filepath.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
 	{"main.cpp", "main.cpp.tpl"},
 	{"watchdog.hpp", "watchdog.hpp"},
 	{"device.hpp", "device.hpp.tpl"},
@@ -142,9 +142,6 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"sum":                   sum,
 		"formatHex":             formatHex,
 		"trustCenterKeyToArray": trustCenterKeyToArray,
-		"joinPath": func(strs ...string) string {
-			return path.Join(strs...)
-		},
 		// Specific functions to check exact version
 		// so we would know where each one is used,
 		// and what we can deprecate.
@@ -281,7 +278,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 			return fmt.Errorf("tried to write unknown template: %q", sourceDefinition[1])
 		}
 
-		if err := writeTemplate(template, path.Join(srcDir, sourceDefinition[0]), ctx); err != nil {
+		if err := writeTemplate(template, filepath.Join(srcDir, sourceDefinition[0]), ctx); err != nil {
 			return fmt.Errorf("write template: %w", err)
 		}
 	}

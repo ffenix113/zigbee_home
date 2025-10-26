@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"os"
-	"path"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -38,7 +38,7 @@ func TestLoadExamples(t *testing.T) {
 	cwd, err := os.Getwd()
 	require.NoError(t, err)
 
-	examplesPath := path.Join(cwd, "..", "examples")
+	examplesPath := filepath.Join(cwd, "..", "examples")
 	examples, err := os.ReadDir(examplesPath)
 	if err != nil {
 		t.Skipf("cannot read examples dir: %s", err.Error())
@@ -54,12 +54,12 @@ func TestLoadExamples(t *testing.T) {
 		}
 
 		t.Run(example.Name(), func(t *testing.T) {
-			examplePath := path.Join(examplesPath, example.Name())
+			examplePath := filepath.Join(examplesPath, example.Name())
 			// We need to change directory as some files can contain includes,
 			// which will be relative to the configuration file.
 			require.NoError(t, os.Chdir(examplePath))
 
-			defaultConfig, err := os.Open(path.Join(examplePath, "zigbee.yaml"))
+			defaultConfig, err := os.Open(filepath.Join(examplePath, "zigbee.yaml"))
 			if errors.Is(err, os.ErrNotExist) {
 				t.Skip("default config not found")
 			}
