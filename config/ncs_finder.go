@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -183,8 +182,8 @@ func listSDKs(ncsBase string) ([]SDKInfo, error) {
 			continue
 		}
 
-		versionFilePath := path.Join(ncsBase, entry.Name(), "nrf", "VERSION")
-		zigbeeAddOnPath := path.Join(ncsBase, entry.Name(), "ncs-zigbee")
+		versionFilePath := filepath.Join(ncsBase, entry.Name(), "nrf", "VERSION")
+		zigbeeAddOnPath := filepath.Join(ncsBase, entry.Name(), "ncs-zigbee")
 
 		bts, err := os.ReadFile(versionFilePath)
 		if err != nil {
@@ -204,7 +203,7 @@ func listSDKs(ncsBase string) ([]SDKInfo, error) {
 		isZigbeeAddOn := err == nil
 
 		sdks = append(sdks, SDKInfo{
-			Path:          path.Join(ncsBase, entry.Name()),
+			Path:          filepath.Join(ncsBase, entry.Name()),
 			Version:       sdkVersion,
 			IsZigbeeAddOn: isZigbeeAddOn,
 		})
