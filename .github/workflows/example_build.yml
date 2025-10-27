@@ -9,7 +9,19 @@ concurrency:
 
 jobs:
   empty:
-    runs-on: self-hosted
+    runs-on: ghcr.io/zephyrproject-rtos/ci:v0.28.6
     steps:
-      - name: empty
-        run: echo 'Nothing to see here'
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+      - name: Pull Nordic Zigbee Add on SDK
+        run: | 
+          west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr v1.2.1
+          west update
+      - name: Build executable
+        run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
+      - name: Build project
+        run: ./zigbee_home --config zigbee.yaml firmware --workdir project build
