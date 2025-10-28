@@ -37,17 +37,24 @@ jobs:
         with:
           path: |
             /root/ncs/toolchains
-            /root/ncs/${SDK_VERSION}
-          key: ${{ runner.os }}-ncs-${SDK_VERSION}
+            /root/ncs/${{ env.SDK_VERSION }}
+          key: ${{ runner.os }}-ncs-${{ env.SDK_VERSION }}
       - name: Download Toolchain and SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
+      - name: Some cache debug
+        run: |
+          echo "U:$(id -u) G:$(id -g)"
+          echo "$(id)"
+          ls -l ~/ncs/toolchains
+          sudo chown -R $(id -u):$(id -g) /root/ncs || true
+
       - name: Cache downloaded SDK
         uses: actions/cache/save@v4
         with:
           path: |
             /root/ncs/toolchains
-            /root/ncs/${SDK_VERSION}
+            /root/ncs/${{ env.SDK_VERSION }}
           key: ${{ steps.cache-sdk-restore.outputs.cache-primary-key }}
 
       - name: Build project
