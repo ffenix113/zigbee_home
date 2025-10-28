@@ -36,6 +36,6 @@ jobs:
         run: |
           ./nrfutil sdk-manager list --all-fields
           ./nrfutil sdk-manager list --json
-          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0])
+          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0])"
           echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
           ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c 'printenv && ./zigbee_home --config zigbee.yaml firmware --workdir project build'
