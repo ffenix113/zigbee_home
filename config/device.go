@@ -225,6 +225,11 @@ func (d *Device) PrependCommonClusters() {
 }
 
 func (g General) GetToochainsPath() NCSLocation {
+	// If we already have env set - don't do anything.
+	if DoNotSetupEnv() {
+		return NCSLocation{}
+	}
+
 	// If env variables are defined - they have higher priority.
 	ncsToolchainPath := os.Getenv("NCS_TOOLCHAIN_BASE")
 	ncsSDKVersion := os.Getenv("NCS_VERSION")
@@ -289,6 +294,8 @@ func ValidateConfiguration(cfg *Device) error {
 	return nil
 }
 
-func resolveStringEnv(input string) string {
-	return os.ExpandEnv(input)
+func DoNotSetupEnv() bool {
+	_, ok := os.LookupEnv("NO_SETUP_ENV")
+
+	return ok
 }
