@@ -25,14 +25,15 @@ jobs:
         run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
       - name: Download nrfutil
         run: | 
-          wget https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
+          wget --progress=dot:binary https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
           chmod +x nrfutil
-      - name: Pull Toolchain and SDK
+      - name: Install Toolchain and SDK managers
         run: |
           ./nrfutil install toolchain-manager
           ./nrfutil install sdk-manager
-          ./nrfutil sdk-manager install ${SDK_VERSION}
+      - name: Download Toolchain and SDK
+        run: ./nrfutil sdk-manager install ${SDK_VERSION}
       - name: Build project
         run: |
           export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq '.data.versions[] | select(.version == "${SDK_VERSION}").dirNames[0]')
-          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} ./zigbee_home --config zigbee.yaml firmware --workdir project build
+          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- ./zigbee_home --config zigbee.yaml firmware --workdir project build
