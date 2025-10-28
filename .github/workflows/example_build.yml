@@ -30,11 +30,29 @@ jobs:
       - name: Install Toolchain and SDK managers
         run: |
           ./nrfutil install toolchain-manager sdk-manager
+
+      - name: Restore cached SDK
+        id: cache-sdk-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /root/ncs/toolchains
+            /root/ncs/${SDK_VERSION}
+          key: ${{ runner.os }}-ncs-${SDK_VERSION}
       - name: Download Toolchain and SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
+      - name: Cache downloaded SDK
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /root/ncs/toolchains
+            /root/ncs/${SDK_VERSION}
+          key: ${{ steps.cache-sdk-restore.outputs.cache-primary-key }}
+
       - name: Build project
         run: |
           ./nrfutil sdk-manager list --all-fields
           export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
           echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
-          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config zigbee.yaml firmware --workdir project build'
+          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
