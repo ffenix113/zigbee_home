@@ -10,7 +10,10 @@ concurrency:
 jobs:
   empty:
     runs-on: ubuntu-latest
-    container: ghcr.io/zephyrproject-rtos/ci:v0.28.6
+    env:
+      SDK_VERSION: v2.9.2
+      # Let zigbee_home know that env is already set up.
+      NO_SETUP_ENV: 1
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -18,11 +21,18 @@ jobs:
         with:
           go-version: '1.24'
           cache-dependency-path: go.sum
-      - name: Pull Nordic Zigbee Add on SDK
-        run: | 
-          west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr v1.2.1
-          west update
       - name: Build executable
         run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
+      - name: Download nrfutil
+        run: | 
+          wget https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
+          chmod +x nrfutil
+      - name: Pull Toolchain and SDK
+        run: |
+          ./nrfutil install toolchain-manager
+          ./nrfutil install sdk-manager
+          ./nrfutil sdk-manager install ${SDK_VERSION}
       - name: Build project
-        run: ./zigbee_home --config zigbee.yaml firmware --workdir project build
+        run: |
+          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq '.data.versions[] | select(.version == "${SDK_VERSION}").dirNames[0]')
+          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} ./zigbee_home --config zigbee.yaml firmware --workdir project build
