@@ -10,6 +10,7 @@ concurrency:
 jobs:
   empty:
     runs-on: ubuntu-latest
+    container: flayer/nordic-sdk:v2.9.2
     env:
       SDK_VERSION: v2.9.2
       # Let zigbee_home know that env is already set up.
@@ -27,14 +28,14 @@ jobs:
         run: | 
           wget --progress=dot:mega https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
           chmod +x nrfutil
-      - name: Install Toolchain and SDK managers
-        run: |
-          ./nrfutil install toolchain-manager sdk-manager
-      - name: Download Toolchain and SDK
-        run: ./nrfutil sdk-manager install ${SDK_VERSION}
+      # - name: Install Toolchain and SDK managers
+      #   run: |
+      #     ./nrfutil install toolchain-manager sdk-manager
+      # - name: Download Toolchain and SDK
+      #   run: ./nrfutil sdk-manager install ${SDK_VERSION}
       - name: Build project
         run: |
           ./nrfutil sdk-manager list --all-fields
-          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0]")/zephyr
+          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
           echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
           ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config zigbee.yaml firmware --workdir project build'
