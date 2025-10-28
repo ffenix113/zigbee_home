@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/ffenix113/zigbee_home/config"
 )
 
 type Cmd struct {
@@ -82,7 +84,7 @@ func WithToolchainPath(ncsToolchainBase, sdkBase string) CmdOpt {
 	// and move it to CLI ASAP.
 	// This could be useful if run inside environment that
 	// is already set up properly.
-	if noSetupEnv() || ncsToolchainBase == "" || sdkBase == "" {
+	if config.DoNotSetupEnv() || ncsToolchainBase == "" || sdkBase == "" {
 		log.Println("environment will not be prepared because either one of the paths is empty, or requested not to")
 
 		return func(c *exec.Cmd) {}
@@ -191,10 +193,4 @@ func updateCurrentPath(envs []string) {
 	if envPath != "" {
 		os.Setenv("PATH", envPath)
 	}
-}
-
-func noSetupEnv() bool {
-	_, ok := os.LookupEnv("NO_SETUP_ENV")
-
-	return ok
 }
