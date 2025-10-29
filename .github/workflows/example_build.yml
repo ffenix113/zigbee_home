@@ -55,7 +55,7 @@ jobs:
       - name: Download Toolchain and SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: |
-          ./nrfutil toolchain-manager install ${TOOLCHAIN_VERSION}
+          ./nrfutil toolchain-manager install --ncs-version ${TOOLCHAIN_VERSION}
           mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
           
           ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
