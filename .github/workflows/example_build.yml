@@ -1,4 +1,4 @@
-name: Prepared SDK env
+name: Build CI firmware
 
 on:
   workflow_dispatch:
@@ -8,56 +8,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  empty:
+  build_firmware:
     runs-on: ubuntu-latest
     env:
       SDK_VERSION: v2.9.2
-      # Let zigbee_home know that env is already set up.
-      NO_SETUP_ENV: 1
+      GO_VERSION: '1.24'
+      NRFUTIL_VERSION: '8.1.1'
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: go.sum
       - name: Build executable
         run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
-      - name: Download nrfutil
-        run: | 
-          wget --progress=dot:mega https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
-          chmod +x nrfutil
-      - name: Install Toolchain and SDK managers
-        run: |
-          ./nrfutil install toolchain-manager sdk-manager
 
       - name: Restore cached SDK
-        id: cache-sdk-restore
+        id: cache-sdk
         uses: actions/cache/restore@v4
         with:
           path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
             ~/ncs/toolchains
             ~/ncs/${{ env.SDK_VERSION }}
-          key: ${{ runner.os }}-ncs-${{ env.SDK_VERSION }}
+          key: ${{ runner.os }}-ncs-${{ env.SDK_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
+      - name: Download nrfutil
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        env:
+          BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
+        run: | 
+          wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}.tar.gz
+          tar -xOf ./nrfutil.tar.gz ./nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
+          rm ./nrfutil.tar.gz
+          chmod +x nrfutil
+      - name: Install Toolchain and SDK managers
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          ./nrfutil install toolchain-manager sdk-manager
+          ./nrfutil list
       - name: Download Toolchain and SDK
-        if: steps.cache-sdk-restore.outputs.cache-hit != 'true'
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
       - name: Verify toolchain and sdk are installed
         run: |
+          ./nrfutil -V
           ./nrfutil toolchain-manager list
           ./nrfutil sdk-manager list --all-fields
       - name: Cache downloaded SDK
-        if: steps.cache-sdk-restore.outputs.cache-hit != 'true'
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
             ~/ncs/toolchains
             ~/ncs/${{ env.SDK_VERSION }}
-          key: ${{ steps.cache-sdk-restore.outputs.cache-primary-key }}
+          key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
 
       - name: Build project
+        env:
+          # Let zigbee_home know that env is already set up.
+          NO_SETUP_ENV: 1
         run: |
-          ./nrfutil sdk-manager list --all-fields
           export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
-          echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
+          echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
           ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
