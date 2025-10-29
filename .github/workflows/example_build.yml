@@ -47,7 +47,7 @@ jobs:
           ./nrfutil toolchain-manager list
           ./nrfutil sdk-manager list --all-fields
       - name: Cache downloaded SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        if: steps.cache-sdk-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
