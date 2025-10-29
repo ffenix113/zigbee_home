@@ -40,7 +40,7 @@ jobs:
             ~/ncs/${{ env.SDK_VERSION }}
           key: ${{ runner.os }}-ncs-${{ env.SDK_VERSION }}
       - name: Download Toolchain and SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        if: steps.cache-sdk-restore.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
       - name: Verify toolchain and sdk are installed
         run: |
