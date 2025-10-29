@@ -11,7 +11,12 @@ jobs:
   build_firmware:
     runs-on: ubuntu-latest
     env:
-      SDK_VERSION: v2.9.2
+      # Somehow we should try to keep Add On and Toolchain in sync.
+      # But as we download toolchain before Add On - we can't fetch 
+      # version from downloaded Add On.
+      # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
+      ZIGBEE_ADD_ON_VERSION: v1.2.1
+      TOOLCHAIN_VERSION: v2.9.2
       GO_VERSION: '1.24'
       NRFUTIL_VERSION: '8.1.1'
     steps:
@@ -31,8 +36,8 @@ jobs:
             ${{ github.workspace }}/nrfutil
             ~/.nrfutil/bin
             ~/ncs/toolchains
-            ~/ncs/${{ env.SDK_VERSION }}
-          key: ${{ runner.os }}-ncs-${{ env.SDK_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
+          key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
       - name: Download nrfutil
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         env:
@@ -45,11 +50,17 @@ jobs:
       - name: Install Toolchain and SDK managers
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: |
-          ./nrfutil install toolchain-manager sdk-manager
+          ./nrfutil install toolchain-manager
           ./nrfutil list
       - name: Download Toolchain and SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
-        run: ./nrfutil sdk-manager install ${SDK_VERSION}
+        run: |
+          ./nrfutil toolchain-manager install ${TOOLCHAIN_VERSION}
+          mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
+          
+          ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
+          bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
+          west update -o=--depth=1 -n'
       - name: List installed toolchains and sdks
         run: |
           ./nrfutil -V
@@ -63,7 +74,7 @@ jobs:
             ${{ github.workspace }}/nrfutil
             ~/.nrfutil/bin
             ~/ncs/toolchains
-            ~/ncs/${{ env.SDK_VERSION }}
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
           key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
 
       - name: Build project
@@ -71,6 +82,6 @@ jobs:
           # Let zigbee_home know that env is already set up.
           NO_SETUP_ENV: 1
         run: |
-          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
+          export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
-          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
