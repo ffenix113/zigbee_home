@@ -15,14 +15,14 @@ jobs:
       # Let zigbee_home know that env is already set up.
       NO_SETUP_ENV: 1
     steps:
-      # - uses: actions/checkout@v4
-      # - name: Set up Go
-      #   uses: actions/setup-go@v5
-      #   with:
-      #     go-version: '1.24'
-      #     cache-dependency-path: go.sum
-      # - name: Build executable
-      #   run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+          cache-dependency-path: go.sum
+      - name: Build executable
+        run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
       - name: Download nrfutil
         run: | 
           wget --progress=dot:mega https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/executables/x86_64-unknown-linux-gnu/nrfutil
@@ -55,9 +55,9 @@ jobs:
             ~/ncs/${{ env.SDK_VERSION }}
           key: ${{ steps.cache-sdk-restore.outputs.cache-primary-key }}
 
-      # - name: Build project
-      #   run: |
-      #     ./nrfutil sdk-manager list --all-fields
-      #     export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
-      #     echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
-      #     ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
+      - name: Build project
+        run: |
+          ./nrfutil sdk-manager list --all-fields
+          export ZEPHYR_BASE=$(./nrfutil sdk-manager list --json | jq -r ".data.versions[] | select(.version == \"${SDK_VERSION}\").dirNames[0] + \"/zephyr\"")
+          echo "Found ZEPHYR_BASE at ${ZEPHYR_BASE}."
+          ./nrfutil toolchain-manager launch --ncs-version ${SDK_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
