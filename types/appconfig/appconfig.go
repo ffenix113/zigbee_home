@@ -106,6 +106,7 @@ type DefaultSysbuildConfigOptions struct {
 
 func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
+		CONFIG_CONSOLE,
 		CONFIG_CPP,
 		CONFIG_REQUIRES_FULL_LIBCPP,
 		CONFIG_STD_CPP17,

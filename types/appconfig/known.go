@@ -14,6 +14,7 @@ var (
 	CONFIG_STD_CPP17            = NewValue("CONFIG_STD_CPP17").Default(Yes)
 
 	// Logging
+	CONFIG_CONSOLE          = NewValue("CONFIG_CONSOLE").Default(No)
 	CONFIG_UART_CONSOLE     = NewValue("CONFIG_UART_CONSOLE").Default(No)
 	CONFIG_UART_LINE_CTRL   = NewValue("CONFIG_UART_LINE_CTRL").Default(Yes)
 	CONFIG_LOG_BACKEND_UART = NewValue("CONFIG_LOG_BACKEND_UART").Default(Yes)

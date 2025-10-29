@@ -119,7 +119,7 @@ func ParseFromFile(configPath string) (*Device, error) {
 					case "darwin":
 						return "/opt/nordic/ncs"
 					default:
-						return "~/ncs"
+						return os.ExpandEnv("$HOME/ncs")
 					}
 				}(),
 			},
