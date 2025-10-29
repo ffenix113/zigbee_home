@@ -58,6 +58,8 @@ jobs:
           ./nrfutil toolchain-manager install --ncs-version ${TOOLCHAIN_VERSION}
           mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
           
+          ln -s /lib/x86_64-linux-gnu/libunistring.so.{5.0.0,2}
+
           ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
           bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
           west update -o=--depth=1 -n'
