@@ -39,8 +39,7 @@ jobs:
           BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
         run: | 
           wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}.tar.gz
-          tar -tf ./nrfutil.tar.gz
-          tar -xOf ./nrfutil.tar.gz ./nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
+          tar -xOf ./nrfutil.tar.gz nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
           rm ./nrfutil.tar.gz
           chmod +x nrfutil
       - name: Install Toolchain and SDK managers
@@ -51,7 +50,7 @@ jobs:
       - name: Download Toolchain and SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
-      - name: Verify toolchain and sdk are installed
+      - name: List installed toolchains and sdks
         run: |
           ./nrfutil -V
           ./nrfutil toolchain-manager list
