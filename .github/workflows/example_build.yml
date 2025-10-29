@@ -42,7 +42,12 @@ jobs:
       - name: Download Toolchain and SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         run: ./nrfutil sdk-manager install ${SDK_VERSION}
+      - name: Verify toolchain and sdk are installed
+        run: |
+          ./nrfutil toolchain-manager list
+          ./nrfutil sdk-manager list --all-fields
       - name: Cache downloaded SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
