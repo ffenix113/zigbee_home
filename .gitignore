@@ -12,6 +12,8 @@
 # Dot files are not necessary, unless forced
 # Especially on MacOS..
 .*
+# But not Github's config!
+!.github
 
 # Test builds
 /_*

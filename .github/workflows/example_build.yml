@@ -1,4 +1,4 @@
-name: Prepared SDK env
+name: Build firmware
 
 on:
   workflow_dispatch:
@@ -8,8 +8,93 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  empty:
-    runs-on: self-hosted
+  build_firmware:
+    runs-on: ubuntu-latest
+    env:
+      # Somehow we should try to keep Add On and Toolchain in sync.
+      # But as we download toolchain before Add On - we can't fetch 
+      # version from downloaded Add On.
+      #
+      # Technically we could resolve latest tag, then fetch the west.yml, 
+      # parse it and return 'manifest.projects[0].revision'. Though sounds like a handful.
+      #
+      # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
+      ZIGBEE_ADD_ON_VERSION: v1.2.1
+      TOOLCHAIN_VERSION: v3.1.1
+      GO_VERSION: '1.24'
+      NRFUTIL_VERSION: '8.1.1'
     steps:
-      - name: empty
-        run: echo 'Nothing to see here'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: go.sum
+      - name: Build executable
+        run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
+
+      - name: Restore cached SDK
+        if: ${{ !env.ACT }}
+        id: cache-sdk
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
+          key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
+      - name: Download nrfutil
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        env:
+          BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
+        run: | 
+          wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}.tar.gz
+          tar -xOf ./nrfutil.tar.gz nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
+          rm ./nrfutil.tar.gz
+          chmod +x nrfutil
+      - name: Install Toolchain and SDK managers
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          ./nrfutil install toolchain-manager
+          ./nrfutil list
+      - name: Download Toolchain and SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          ./nrfutil toolchain-manager install --ncs-version ${TOOLCHAIN_VERSION}
+          mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
+
+          ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
+          bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
+          west update -o=--depth=1 -n'
+      - name: Cache downloaded SDK
+        if: ${{ !env.ACT && steps.cache-sdk.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
+          key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
+      - name: List installed toolchains and sdks
+        run: |
+          echo "::group::NRFUtil version"
+          ./nrfutil -V
+          echo "::endgroup::"
+          echo "::group::Installed toolchains"
+          ./nrfutil toolchain-manager list
+          echo "::endgroup::"
+          echo "::group::Installed SDKs"
+          cd ~/ncs/ && find . -maxdepth 3 -name "VERSION" -exec echo {} \; -exec cat {} \;
+          echo "::endgroup::"
+
+      - name: Build project
+        env:
+          # Let zigbee_home know that env is already set up.
+          NO_SETUP_ENV: 1
+        run: |
+          export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
+          echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
+          echo "::group::Build logs"
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
+          echo "::endgroup::"
