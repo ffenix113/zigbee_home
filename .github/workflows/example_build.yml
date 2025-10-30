@@ -1,4 +1,4 @@
-name: Build CI firmware
+name: Build firmware
 
 on:
   workflow_dispatch:
@@ -14,6 +14,10 @@ jobs:
       # Somehow we should try to keep Add On and Toolchain in sync.
       # But as we download toolchain before Add On - we can't fetch 
       # version from downloaded Add On.
+      #
+      # Technically we could resolve latest tag, then fetch the west.yml, 
+      # parse it and return 'manifest.projects[0].revision'. Though sounds like a handful.
+      #
       # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
       ZIGBEE_ADD_ON_VERSION: v1.2.1
       TOOLCHAIN_VERSION: v3.1.1
@@ -29,6 +33,7 @@ jobs:
         run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
 
       - name: Restore cached SDK
+        if: ${{ !env.ACT }}
         id: cache-sdk
         uses: actions/cache/restore@v4
         with:
@@ -62,7 +67,7 @@ jobs:
           bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
           west update -o=--depth=1 -n'
       - name: Cache downloaded SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        if: ${{ !env.ACT && steps.cache-sdk.outputs.cache-hit != 'true' }}
         uses: actions/cache/save@v4
         with:
           path: |
