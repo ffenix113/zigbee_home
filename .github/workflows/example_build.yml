@@ -16,7 +16,7 @@ jobs:
       # version from downloaded Add On.
       # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
       ZIGBEE_ADD_ON_VERSION: v1.2.1
-      TOOLCHAIN_VERSION: v2.9.2
+      TOOLCHAIN_VERSION: v3.1.1
       GO_VERSION: '1.24'
       NRFUTIL_VERSION: '8.1.1'
     steps:
@@ -57,8 +57,6 @@ jobs:
         run: |
           ./nrfutil toolchain-manager install --ncs-version ${TOOLCHAIN_VERSION}
           mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
-          
-          ln -s /lib/x86_64-linux-gnu/libunistring.so.{5.0.0,2}
 
           ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
           bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
