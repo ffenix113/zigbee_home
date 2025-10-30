@@ -73,8 +73,15 @@ jobs:
           key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
       - name: List installed toolchains and sdks
         run: |
+          echo "::group::NRFUtil version"
           ./nrfutil -V
+          echo "::endgroup::"
+          echo "::group::Installed toolchains"
           ./nrfutil toolchain-manager list
+          echo "::endgroup::"
+          echo "::group::Installed SDKs"
+          cd ~/ncs/ && find . -maxdepth 3 -name "VERSION" -exec echo {} \; -exec cat {} \;
+          echo "::endgroup::"
 
       - name: Build project
         env:
@@ -83,4 +90,6 @@ jobs:
         run: |
           export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
+          echo "::group::Build logs"
           ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
+          echo "::endgroup::"
