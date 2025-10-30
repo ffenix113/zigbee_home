@@ -61,11 +61,6 @@ jobs:
           ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
           bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
           west update -o=--depth=1 -n'
-      - name: List installed toolchains and sdks
-        run: |
-          ./nrfutil -V
-          ./nrfutil toolchain-manager list
-          ./nrfutil sdk-manager list --all-fields
       - name: Cache downloaded SDK
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
@@ -76,6 +71,10 @@ jobs:
             ~/ncs/toolchains
             ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
           key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
+      - name: List installed toolchains and sdks
+        run: |
+          ./nrfutil -V
+          ./nrfutil toolchain-manager list
 
       - name: Build project
         env:
