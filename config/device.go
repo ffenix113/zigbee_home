@@ -1,17 +1,21 @@
 package config
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/ffenix113/zigbee_home/runner"
 	"github.com/ffenix113/zigbee_home/sensor/base"
 	"github.com/ffenix113/zigbee_home/templates/extenders"
 	"github.com/ffenix113/zigbee_home/types"
@@ -143,13 +147,6 @@ func ParseFromFile(configPath string) (*Device, error) {
 		return nil, fmt.Errorf("unmarshal config file: %w", err)
 	}
 
-	if cfg.General.SoC == "" {
-		cfg.General.SoC, err = ResolveBoardSoC(cfg)
-		if err != nil {
-			return nil, fmt.Errorf("resolve board soc: %w", err)
-		}
-	}
-
 	if err := ValidateConfiguration(cfg); err != nil {
 		return nil, fmt.Errorf("validate configuration: %w", err)
 	}
@@ -170,7 +167,12 @@ func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
 	return defConfig, nil
 }
 
-func ResolveBoardSoC(conf *Device) (string, error) {
+// ResolveBoardSoC will resolve which SoC is on the board.
+// It will use Zephyr's board data to fetch this info.
+//
+// It is needed because for different SoCs there may be
+// different configuration or DeviceTree.
+func ResolveBoardSoC(ctx context.Context, conf *Device, runCtx runner.RunContext) (string, error) {
 	boardNameParts := strings.Split(conf.General.Board, "/")
 
 	for _, namePart := range boardNameParts {
@@ -298,4 +300,102 @@ func DoNotSetupEnv() bool {
 	_, ok := os.LookupEnv("NO_SETUP_ENV")
 
 	return ok
+}
+
+// WithToolchainPath updates environment of command
+// to inlcude necessary variables for building firmware.
+func WithToolchainPath(ncsToolchainBase, sdkBase string) runner.CmdOpt {
+	// For now check that we don't want to setup env here,
+	// and move it to CLI ASAP.
+	// This could be useful if run inside environment that
+	// is already set up properly.
+	if DoNotSetupEnv() || ncsToolchainBase == "" || sdkBase == "" {
+		log.Println("environment will not be prepared because either one of the paths is empty, or requested not to")
+
+		return func(c *exec.Cmd) {}
+	}
+
+	return WithEnvironment(extendEnv(ncsToolchainBase, sdkBase)...)
+}
+
+func WithEnvironment(envVals ...string) runner.CmdOpt {
+	return func(c *exec.Cmd) {
+		// Prepend env to try and take higher priority.
+		c.Env = append(c.Env, envVals...)
+	}
+}
+
+// extendEnv will return list of additional environment
+// read from Toolchain configuration.
+//
+// Note: it also sets PATH to additional values,
+// as it is required to run commands.
+func extendEnv(ncsToolchainPath string, sdkPath string) []string {
+	envFilePath := filepath.Join(ncsToolchainPath, "environment.json")
+	envFile, err := os.Open(envFilePath)
+	if err != nil {
+		log.Printf("error opening environment.json file at %q: %v", envFilePath, err)
+		return nil
+	}
+	defer envFile.Close()
+
+	var envConfig struct {
+		EnvVars []struct {
+			Type                   string   `json:"type"`
+			Key                    string   `json:"key"`
+			Values                 []string `json:"values"`
+			Value                  string   `json:"value"`
+			ExistingValueTreatment string   `json:"existing_value_treatment"`
+		} `json:"env_vars"`
+	}
+
+	if err := json.NewDecoder(envFile).Decode(&envConfig); err != nil {
+		log.Printf("error decoding environment.json file: %v", err)
+		return nil
+	}
+
+	envVars := make(map[string]string)
+	for _, envVar := range envConfig.EnvVars {
+		switch envVar.Type {
+		case "relative_paths":
+			paths := generateEnvArray(ncsToolchainPath, envVar.Values)
+			if envVar.ExistingValueTreatment == "prepend_to" {
+				existingValue := os.Getenv(envVar.Key)
+				if existingValue != "" {
+					paths += string(os.PathListSeparator) + existingValue
+				}
+			}
+			envVars[envVar.Key] = paths
+		case "string":
+			envVars[envVar.Key] = envVar.Value
+		}
+	}
+
+	ncsCombinedPath := envVars["PATH"]
+
+	// We will always need to have PATH set to the updated
+	// for utils and other calls (west, nrfutil, etc.).
+	os.Setenv("PATH", ncsCombinedPath+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	// This is Linux specific, so may not work correctly on Windows.
+	ldLibraryPath := generateEnvArray(ncsToolchainPath, []string{
+		"/usr/lib",
+		"/usr/lib/x86_64-linux-gnu",
+		"/usr/local/lib",
+	})
+
+	return []string{
+		"ZEPHYR_BASE=" + sdkPath,
+		"ZEPHYR_SDK_INSTALL_DIR=" + filepath.Join(ncsToolchainPath, "opt", "zephyr-sdk"),
+		"ZEPHYR_TOOLCHAIN_VARIANT=zephyr",
+		"LD_LIBRARY_PATH=" + ldLibraryPath,
+	}
+}
+
+func generateEnvArray(prefix string, vals []string) string {
+	for i := range vals {
+		vals[i] = filepath.Join(prefix, vals[i])
+	}
+
+	return strings.Join(vals, string(filepath.ListSeparator))
 }
