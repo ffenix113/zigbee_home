@@ -12,7 +12,7 @@ import (
 	"github.com/ffenix113/zigbee_home/config"
 	"github.com/ffenix113/zigbee_home/generate"
 	"github.com/ffenix113/zigbee_home/runner"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 const filenameArg = "config"
@@ -20,51 +20,53 @@ const filenameArg = "config"
 // BuildConfig is aimed to provide build information
 // independently of how that information was obtained.
 type BuildConfig struct {
-	WorkDir      string
-	ConfigFile   string
-	OnlyGenerate bool
-	ClearWorkDir bool
+	WorkDir        string
+	ConfigFilePath string
+	OnlyGenerate   bool
+	ClearWorkDir   bool
 }
 
 func buildCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "build",
 		Usage: "build the firmware",
-		Flags: []cli.Flag{
+		Flags: append(configFileFlags(),
 			&cli.BoolFlag{
-				Name: "only-generate",
+				Name:  "only-generate",
+				Usage: "Only generate source files, do not build them.",
 			},
 			&cli.BoolFlag{
-				Name: "clear-work-dir",
+				Name:  "clear-work-dir",
+				Usage: "Will remove all files from specified workspace. Be sure to select correct workspace before running this command!",
 			},
-		},
-		Action: func(ctx *cli.Context) error {
-			buildCtx, err := newBuildConfigFromCLI(ctx)
+		),
+		Action: func(ctx context.Context, cmd *cli.Command) error {
+			buildCtx, err := newBuildConfigFromCLI(cmd)
 			if err != nil {
 				return fmt.Errorf("build context: %w", err)
 			}
 
-			return BuildFirmware(ctx.Context, buildCtx)
+			return BuildFirmware(ctx, buildCtx, cmd.StringSlice("override"))
 		},
 	}
 }
 
-func newBuildConfigFromCLI(ctx *cli.Context) (BuildConfig, error) {
-	workdir, err := getWorkdir(ctx)
+func newBuildConfigFromCLI(cmd *cli.Command) (BuildConfig, error) {
+	workdir, err := getWorkdir(cmd)
 	if err != nil {
 		return BuildConfig{}, fmt.Errorf("get workdir: %w", err)
 	}
 
 	return BuildConfig{
-		WorkDir:      workdir,
-		ConfigFile:   getConfigFile(ctx),
-		OnlyGenerate: ctx.Bool("only-generate"),
-		ClearWorkDir: ctx.Bool("clear-work-dir"),
+		WorkDir:        workdir,
+		ConfigFilePath: getConfigFile(cmd),
+		OnlyGenerate:   cmd.Bool("only-generate"),
+		ClearWorkDir:   cmd.Bool("clear-work-dir"),
 	}, nil
 }
 
-func BuildFirmware(ctx context.Context, buildConfig BuildConfig) error {
-	cfg, err := parseConfig(buildConfig.ConfigFile)
+func BuildFirmware(ctx context.Context, buildConfig BuildConfig, overrides []string) error {
+	cfg, err := parseConfig(buildConfig.ConfigFilePath, overrides)
 	if err != nil {
 		return fmt.Errorf("prepare config: %w", err)
 	}
@@ -114,24 +116,6 @@ func GenerateFirmwareFiles(ctx context.Context, workDir string, shouldClearWorkD
 	}
 
 	return nil
-}
-
-func parseConfig(configPath string) (*config.Device, error) {
-	if configPath == "" {
-		return nil, errors.New("config path cannot be empty (it is set by default)")
-	}
-
-	absConfigPath, err := filepath.Abs(configPath)
-	if err != nil {
-		return nil, fmt.Errorf("make config path %q absolute: %w", configPath, err)
-	}
-
-	conf, err := config.ParseFromFile(absConfigPath)
-	if err != nil {
-		return nil, fmt.Errorf("parse config file: %w", err)
-	}
-
-	return conf, nil
 }
 
 func runBuild(ctx context.Context, device *config.Device, workDir string) error {
@@ -184,8 +168,8 @@ func clearWorkDir(workDir string) error {
 	})
 }
 
-func getWorkdir(ctx *cli.Context) (string, error) {
-	workDir, err := filepath.Abs(ctx.String("workdir"))
+func getWorkdir(cmd *cli.Command) (string, error) {
+	workDir, err := filepath.Abs(cmd.String("workdir"))
 	if err != nil {
 		return "", fmt.Errorf("%w", err)
 	}
@@ -200,9 +184,9 @@ func getWorkdir(ctx *cli.Context) (string, error) {
 	return workDir, nil
 }
 
-func getConfigFile(ctx *cli.Context) string {
-	if ctx.IsSet(filenameArg) {
-		return ctx.String(filenameArg)
+func getConfigFile(cmd *cli.Command) string {
+	if cmd.IsSet(filenameArg) {
+		return cmd.String(filenameArg)
 	}
 
 	preferences := []string{"zigbee.yaml", "zigbee.yml"}
