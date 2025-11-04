@@ -3,7 +3,7 @@
 Project that aims to provide similar functionality to [ESPHome](https://github.com/esphome/esphome), but for Zigbee devices.
 
 # :information_source:  Note
-`dev` branch is for experiments and exploration. 
+`develop` branch is for experiments and exploration. 
 It cannot be used to determine quality of resulting project.
 
 ## Status
@@ -12,8 +12,8 @@ Currently work is being carried to develop CLI application and adding sensors.
 
 Priorities can be ordered as:
 * Board(bootloader) support
-* Adding known sensors
 * Adding Zigbee clusters & templates for unavailable clusters in ZBOSS
+* Adding known sensors
 
 ## Examples
 Some examples of configuration files can be seen in `examples` directory. They do not provide complete and full configuration option usage, at least for now.

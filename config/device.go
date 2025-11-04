@@ -249,7 +249,7 @@ func (g General) GetToochainsPath() NCSLocation {
 			log.Fatalf("find ncs location: %s", err.Error())
 		}
 
-		log.Printf("found toolchain version %q, requested version %q", locations.SDKVersion, ncsSDKVersion)
+		log.Printf("found sdk version %q, toolchain version %q, requested version %q", locations.SDKVersion, locations.ToolchainVersion, ncsSDKVersion)
 	}
 
 	if ncsToolchainPath == "" {
