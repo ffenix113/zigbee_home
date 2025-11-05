@@ -178,12 +178,14 @@ func clearWorkDir(workDir string) error {
 }
 
 func getWorkdir(cmd *cli.Command) (string, error) {
-	workDir, err := filepath.Abs(cmd.String("workdir"))
-	if err != nil {
-		return "", fmt.Errorf("%w", err)
-	}
+	workDir := cmd.String("workdir")
 	if workDir == "" {
 		workDir = "."
+	}
+
+	workDir, err := filepath.Abs(workDir)
+	if err != nil {
+		return "", fmt.Errorf("get workdir absolute path: %w", err)
 	}
 
 	// This will make sure that workdir uses slashes as path separators even on windows,
