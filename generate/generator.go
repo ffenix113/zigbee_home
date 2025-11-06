@@ -53,7 +53,7 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 	return &Generator{
 		AppConfig:      appConfig,
 		SysbuildConfig: sysbuildConfig,
-		DeviceTree:     devicetree.NewDeviceTree(),
+		DeviceTree:     devicetree.NewDeviceTree(device.General.SoC),
 		Source:         source.NewSource(ncsVersion, device.General.TemplatesPath),
 	}, nil
 }
