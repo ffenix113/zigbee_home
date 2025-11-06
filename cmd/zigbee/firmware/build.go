@@ -91,15 +91,6 @@ func BuildFirmware(ctx context.Context, buildConfig BuildConfig, overrides []str
 	toolchainsPath := cfg.General.GetToochainsPath()
 	runCtx := runner.NewRunContext(config.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath))
 
-	if cfg.General.SoC == "" {
-		soc, err := config.ResolveBoardSoC(ctx, cfg, runCtx)
-		if err != nil {
-			return fmt.Errorf("resolve board soc: %w", err)
-		}
-
-		cfg.General.SoC = soc
-	}
-
 	if err := GenerateFirmwareFiles(ctx, buildConfig.WorkDir, buildConfig.ClearWorkDir, cfg); err != nil {
 		return fmt.Errorf("generate firmware files: %w", err)
 	}

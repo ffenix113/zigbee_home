@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -52,7 +51,7 @@ type General struct {
 	DeviceName   string `yaml:"device_name"`
 	// Zephyr name for the board
 	Board string
-	SoC   string
+	SoC   board.SoC
 
 	RunEvery time.Duration
 	// ZigbeeChannels will define which endpoints device should try to use.
@@ -147,6 +146,12 @@ func ParseFromFile(configPath string) (*Device, error) {
 		return nil, fmt.Errorf("unmarshal config file: %w", err)
 	}
 
+	soc, err := resolveBoardSoC(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("resolve board SoC: %w", err)
+	}
+	cfg.General.SoC = soc
+
 	if err := ValidateConfiguration(cfg); err != nil {
 		return nil, fmt.Errorf("validate configuration: %w", err)
 	}
@@ -167,17 +172,27 @@ func ParseFromReader(defConfig *Device, rdr io.Reader) (*Device, error) {
 	return defConfig, nil
 }
 
-// ResolveBoardSoC will resolve which SoC is on the board.
+// resolveBoardSoC will resolve which SoC is on the board.
 // It will use Zephyr's board data to fetch this info.
 //
 // It is needed because for different SoCs there may be
 // different configuration or DeviceTree.
-func ResolveBoardSoC(ctx context.Context, conf *Device, runCtx runner.RunContext) (string, error) {
+func resolveBoardSoC(conf *Device) (board.SoC, error) {
+	// Require board to have SoC qualifier.
+	// It does work with v2.9.2 of SDK & Toolchain
+	// and will provide us with the information required
+	// to properly populate configuration.
+	if !strings.Contains(conf.General.Board, "/") {
+		log.Printf("board %q does not have qualifier part ('/nrf52840' or '/nrf54l15' or other qualifier), assuming '/nrf52840'", conf.General.Board)
+
+		return "nrf52840", nil
+	}
+
 	boardNameParts := strings.Split(conf.General.Board, "/")
 
 	for _, namePart := range boardNameParts {
-		if board.IsKnownSoC(namePart) {
-			return namePart, nil
+		if board.IsKnownSoC(board.SoC(namePart)) {
+			return board.SoC(namePart), nil
 		}
 	}
 
@@ -191,7 +206,7 @@ func ResolveBoardSoC(ctx context.Context, conf *Device, runCtx runner.RunContext
 	// 	}
 	// }
 
-	return "", nil
+	return "", fmt.Errorf("cannot resolve SoC for board %q, please specify it manually, for exanple '%[1]s/nrf52840'", conf.General.Board)
 }
 
 // UnamrshalYAML is implemented to intercept the original

@@ -3,7 +3,7 @@ name: Build firmware
 on:
   workflow_dispatch:
 
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
@@ -12,17 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Somehow we should try to keep Add On and Toolchain in sync.
-      # But as we download toolchain before Add On - we can't fetch 
+      # But as we download toolchain before Add On - we can't fetch
       # version from downloaded Add On.
       #
-      # Technically we could resolve latest tag, then fetch the west.yml, 
+      # Technically we could resolve latest tag, then fetch the west.yml,
       # parse it and return 'manifest.projects[0].revision'. Though sounds like a handful.
       #
       # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
       ZIGBEE_ADD_ON_VERSION: v1.2.1
       TOOLCHAIN_VERSION: v3.1.1
-      GO_VERSION: '1.24'
-      NRFUTIL_VERSION: '8.1.1'
+      GO_VERSION: "1.24"
+      NRFUTIL_VERSION: "8.1.1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -47,7 +47,7 @@ jobs:
         if: steps.cache-sdk.outputs.cache-hit != 'true'
         env:
           BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
-        run: | 
+        run: |
           wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}.tar.gz
           tar -xOf ./nrfutil.tar.gz nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
           rm ./nrfutil.tar.gz
