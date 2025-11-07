@@ -88,12 +88,15 @@ func BuildFirmware(ctx context.Context, buildConfig BuildConfig, overrides []str
 		}
 	}
 
+	toolchainsPath := cfg.General.GetToochainsPath()
+	runCtx := runner.NewRunContext(config.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath))
+
 	if err := GenerateFirmwareFiles(ctx, buildConfig.WorkDir, buildConfig.ClearWorkDir, cfg); err != nil {
 		return fmt.Errorf("generate firmware files: %w", err)
 	}
 
 	if !buildConfig.OnlyGenerate {
-		return runBuild(ctx, cfg, buildConfig.WorkDir)
+		return runBuild(ctx, cfg, runCtx, buildConfig.WorkDir)
 	}
 
 	return nil
@@ -118,8 +121,9 @@ func GenerateFirmwareFiles(ctx context.Context, workDir string, shouldClearWorkD
 	return nil
 }
 
-func runBuild(ctx context.Context, device *config.Device, workDir string) error {
-	build := runner.NewCmd(
+func runBuild(ctx context.Context, device *config.Device, runCtx runner.RunContext, workDir string) error {
+	if err := runCtx.Run(
+		ctx,
 		"west",
 		"build",
 		"--pristine", // For now let's always build Pristine.
@@ -132,13 +136,9 @@ func runBuild(ctx context.Context, device *config.Device, workDir string) error 
 		workDir,
 		"--",
 		"-DNCS_TOOLCHAIN_VERSION=NONE",
-		// FIXME: concat path in a os-appropriate way.
-		fmt.Sprintf("-DCONF_FILE=%s/prj.conf", workDir),
-		fmt.Sprintf("-DDTC_OVERLAY_FILE=%s/app.overlay", workDir),
-	)
-
-	toolchainsPath := device.General.GetToochainsPath()
-	if err := build.Run(ctx, runner.WithToolchainPath(toolchainsPath.ToolchainPath, toolchainsPath.SDKPath)); err != nil {
+		"-DCONF_FILE="+filepath.Join(workDir, "prj.conf"),
+		"-DDTC_OVERLAY_FILE="+filepath.Join(workDir, "app.overlay"),
+	); err != nil {
 		return fmt.Errorf("build firmware: %w", err)
 	}
 
@@ -169,12 +169,14 @@ func clearWorkDir(workDir string) error {
 }
 
 func getWorkdir(cmd *cli.Command) (string, error) {
-	workDir, err := filepath.Abs(cmd.String("workdir"))
-	if err != nil {
-		return "", fmt.Errorf("%w", err)
-	}
+	workDir := cmd.String("workdir")
 	if workDir == "" {
 		workDir = "."
+	}
+
+	workDir, err := filepath.Abs(workDir)
+	if err != nil {
+		return "", fmt.Errorf("get workdir absolute path: %w", err)
 	}
 
 	// This will make sure that workdir uses slashes as path separators even on windows,

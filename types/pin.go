@@ -80,9 +80,19 @@ func (p Pin) Valid() bool {
 	port := p.Port.Value()
 	pin := p.Pin.Value()
 
-	return p.ID != "" ||
-		(p.PinsDefined() && ((port == 0 && pin <= 31) ||
-			(port == 1 && pin <= 15)))
+	hasID := p.ID != ""
+	// FIXME: This check is SoC specific,
+	// but currently it does not check pins
+	// correctly based on available ones on SoC.
+	validPins := p.PinsDefined() && ((port == 0 && pin <= 31) ||
+		(port == 1 && pin <= 15)) ||
+		(port == 2 && pin <= 10)
+
+	// It is valid to have both specified,
+	// for example when specifying new button or led.
+	// Though it may not be valid in other cases
+	// when only reference is needed..
+	return hasID || validPins
 }
 
 var pinRegex = regexp.MustCompile(`^([01])\.([0-3][0-9])$`)
@@ -96,7 +106,7 @@ func (p *Pin) UnmarshalYAML(value *yaml.Node) error {
 		}
 
 		if !p.Valid() {
-			return fmt.Errorf("pin has invalid definition(no pins & no id)")
+			return fmt.Errorf("pin has invalid definition(no id and invalid pins)")
 		}
 
 		return nil

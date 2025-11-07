@@ -39,7 +39,10 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 		appconfig.DefaultSysbuildConfigOptions{
 			// "mcuboot" should not be hardcoded.
 			// TODO: Bootloader type should not be a string.
-			MCUBoot: device.Board.Bootloader != nil && *device.Board.Bootloader == "mcuboot",
+			//
+			// For nRF54L series we always use MCUBoot.
+			MCUBoot: device.Board.Bootloader != nil && *device.Board.Bootloader == "mcuboot" ||
+				device.General.SoC == board.NRF54L10 || device.General.SoC == board.NRF54L15,
 		})
 	if err != nil {
 		return nil, fmt.Errorf("default sysbuild config: %w", err)
@@ -53,7 +56,7 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 	return &Generator{
 		AppConfig:      appConfig,
 		SysbuildConfig: sysbuildConfig,
-		DeviceTree:     devicetree.NewDeviceTree(),
+		DeviceTree:     devicetree.NewDeviceTree(device.General.SoC),
 		Source:         source.NewSource(ncsVersion, device.General.TemplatesPath),
 	}, nil
 }
@@ -170,7 +173,7 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 	}
 
 	if device.Board.Debug != nil && device.Board.Debug.Enabled {
-		providedExtenders = append(providedExtenders, extenders.NewDebugUARTLog(*device.Board.Debug))
+		providedExtenders = append(providedExtenders, extenders.NewDebugLog(*device.Board.Debug))
 
 		if device.Board.Debug.Console == extenders.DebugConsoleUSB {
 			providedExtenders = append(providedExtenders, extenders.NewUSBUART())

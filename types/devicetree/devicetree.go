@@ -3,6 +3,8 @@ package devicetree
 import (
 	"fmt"
 	"io"
+
+	"github.com/ffenix113/zigbee_home/types/board"
 )
 
 const NodeNameRoot = "/"
@@ -37,15 +39,19 @@ type Node struct {
 	SubNodes []*Node
 }
 
-func NewDeviceTree() *DeviceTree {
+func NewDeviceTree(soc board.SoC) *DeviceTree {
+	zigbeeTimer := "timer2"
+	if soc == board.NRF54L10 || soc == board.NRF54L15 {
+		zigbeeTimer = "timer20"
+	}
+
 	return (&DeviceTree{}).
 		AddNodes((&Node{Name: NodeNameRoot}).
 			AddNodes(
 				&Node{
 					Name: NodeNameChosen,
 					Properties: []Property{
-						NewProperty("ncs,zigbee-timer", Label("timer2")),
-						NewProperty("zephyr,entropy", Label("rng")),
+						NewProperty("ncs,zigbee-timer", Label(zigbeeTimer)),
 					},
 				},
 				&Node{
@@ -55,22 +61,11 @@ func NewDeviceTree() *DeviceTree {
 		AddNodes(&Node{Label: NodeLabelPinctrl, Upsert: true}).
 		AddNodes(
 			&Node{
-				Label:  "timer2",
+				Label:  zigbeeTimer,
 				Upsert: true,
 				Properties: []Property{
 					PropertyStatusEnable,
 				},
-			},
-			// Disable unused peripherals to reduce power consumption
-			&Node{
-				Label:      "pwm0",
-				Upsert:     true,
-				Properties: []Property{PropertyStatusDisable},
-			},
-			&Node{
-				Label:      "pwm1",
-				Upsert:     true,
-				Properties: []Property{PropertyStatusDisable},
 			},
 		)
 }

@@ -147,7 +147,7 @@ static void zcl_device_cb(zb_bufid_t bufid)
 	zb_zcl_device_callback_param_t  *device_cb_param =
 		ZB_BUF_GET_PARAM(bufid, zb_zcl_device_callback_param_t);
 
-	LOG_INF("%s id %hd", __func__, device_cb_param->device_cb_id);
+	LOG_DBG("%s id %hd", __func__, device_cb_param->device_cb_id);
 
 	/* Set default response value. */
 	device_cb_param->status = RET_OK;
