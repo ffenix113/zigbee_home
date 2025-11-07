@@ -155,7 +155,6 @@ func NewDefaultSysbuildConfig(opts DefaultSysbuildConfigOptions) (*AppConfig, er
 	appConfig := NewEmptyAppConfig().AddValue(
 		SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE,
 		SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY,
-		SB_CONFIG_MCUBOOT_GENERATE_UNSIGNED_IMAGE,
 	)
 
 	if opts.MCUBoot {
