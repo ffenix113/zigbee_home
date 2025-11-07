@@ -26,7 +26,7 @@ type DebugConfig struct {
 // CONFIG_DEBUG_OPTIMIZATIONS=y
 // CONFIG_DEBUG_THREAD_INFO=y
 
-func NewDebugUARTLog(config DebugConfig) generator.Extender {
+func NewDebugLog(config DebugConfig) generator.Extender {
 	if !config.Enabled {
 		return nil
 	}

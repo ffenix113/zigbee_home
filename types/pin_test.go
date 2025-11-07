@@ -57,6 +57,15 @@ func TestPin(t *testing.T) {
 				},
 			},
 			{
+				name: "valid long, port 2",
+				raw:  `pin: {port: 2, pin: 10, inverted: true}`,
+				unmarshaled: types.Pin{
+					Port:     types.NewOption(uint8(2)),
+					Pin:      types.NewOption(uint8(10)),
+					Inverted: true,
+				},
+			},
+			{
 				name: "invalid long",
 				raw:  `pin: {port: 5, pin: 03, inverted: true}`,
 				err:  true,
@@ -68,6 +77,15 @@ func TestPin(t *testing.T) {
 					ID:   "pin1",
 					Port: types.NewEmptyOption[uint8](),
 					Pin:  types.NewEmptyOption[uint8](),
+				},
+			},
+			{
+				name: "valid long, id with pins",
+				raw:  `pin: {id: pin1, port: 2, pin: 08}`,
+				unmarshaled: types.Pin{
+					ID:   "pin1",
+					Port: types.NewOption(uint8(2)),
+					Pin:  types.NewOption(uint8(8)),
 				},
 			},
 		}

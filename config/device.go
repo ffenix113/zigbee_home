@@ -288,18 +288,24 @@ func (g General) GetToochainsPath() NCSLocation {
 // ValidateConfiuration checks device configuration as much as it can
 // to provide meaningful information about errors in configuration.
 func ValidateConfiguration(cfg *Device) error {
+	// We don't support nRF Secure bootloader, and no alternatives are currently present.
+	// So for nRF54L there either should not be a bootloader, or MCUBoot.
+	if (cfg.General.SoC == board.NRF54L10 || cfg.General.SoC == board.NRF54L15) && (cfg.Board.Bootloader != nil && *cfg.Board.Bootloader != "mcuboot") {
+		log.Fatal("for boards with nRF54L10 or nRF54L15 the only bootloader currently supported is MCUBoot")
+	}
+
 	if cfg.General.TrustCenterKey != "" {
 		log.Println("EXPERIMENTAL: Trust center key configuration is experimental and may not work as expected")
+
+		if colonsCount := strings.Count(cfg.General.TrustCenterKey, ":"); colonsCount != 15 {
+			return fmt.Errorf("trust center key bytes shold be separated by colon: has %d colons, want 15", colonsCount)
+		}
 
 		// Verify that key is of correct length.
 		// 32 chars + 15 colons
 		const keyLength = 32 + 15
 		if providedKeyLen := len(cfg.General.TrustCenterKey); providedKeyLen != keyLength {
 			return fmt.Errorf("trust center key has wrong length: want %d, have %d", keyLength, providedKeyLen)
-		}
-
-		if colonsCount := strings.Count(cfg.General.TrustCenterKey, ":"); colonsCount != 15 {
-			return fmt.Errorf("trust center key bytes shold be separated by colon: has %d colons, want 15", colonsCount)
 		}
 
 		// Trust center key is supported only for router & coordinator roles.
