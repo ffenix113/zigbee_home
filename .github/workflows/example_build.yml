@@ -27,10 +27,16 @@ env:
 jobs:
   prepare_build_matrix:
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{steps.list_examples.outputs.matrix}}
     steps:
       - uses: actions/checkout@v4
       - name: Prepare examples matrix
-        run: echo "examples=$(ls ./examples/**/*.yaml |jq -cnR '[inputs | select(length>0)]')" >> $GITHUB_OUTPUT
+        id: list_examples
+        run: |
+          EXAMPLES=$(ls ./examples/**/zigbee.yaml |jq -cnR '[inputs | select(length>0)]')
+          echo "Found examples: ${EXAMPLES}"
+          echo "examples=${EXAMPLES}" >> $GITHUB_OUTPUT
       - name: Check if toolchain and sdk cache exist
         if: ${{ !env.ACT }}
         id: cache-sdk
