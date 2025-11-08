@@ -34,7 +34,7 @@ jobs:
       - name: Prepare examples matrix
         id: list_examples
         run: |
-          EXAMPLES=$(ls ./examples/**/zigbee.yaml |jq -cnR '[inputs | select(length>0)]')
+          EXAMPLES=$(find ./examples/ -type d -mindepth 1 -maxdepth 1 | sed -nE 's/\.\/examples\/(.*)/\1/p' |jq -cnR '[inputs | select(length>0)]')
           echo "Found examples: ${EXAMPLES}"
           echo "examples=${EXAMPLES}" >> $GITHUB_OUTPUT
       - name: Check if toolchain and sdk cache exist
@@ -133,5 +133,5 @@ jobs:
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
 
           echo "::group::Firmware build logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir project build --config ${{ matrix.examples }}'
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir ./examples/${{ matrix.exmaples}} build --config ./examples/${{ matrix.examples }}/zigbee.yaml'
           echo "::endgroup::"
