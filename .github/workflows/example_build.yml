@@ -28,7 +28,7 @@ jobs:
   prepare_build_matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{steps.list_examples.outputs.matrix}}
+      examples: ${{steps.list_examples.outputs.examples}}
     steps:
       - uses: actions/checkout@v4
       - name: Prepare examples matrix
