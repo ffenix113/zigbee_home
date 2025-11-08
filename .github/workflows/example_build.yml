@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - id: Prepare matrix
+      - name: Prepare examples matrix
         run: echo "examples=$(ls ./examples/**/*.yaml |jq -cnR '[inputs | select(length>0)]')" >> $GITHUB_OUTPUT
       - name: Check if toolchain and sdk cache exist
         if: ${{ !env.ACT }}
