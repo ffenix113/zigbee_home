@@ -10,41 +10,33 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
+env:
+  # Somehow we should try to keep Add On and Toolchain in sync.
+  # But as we download toolchain before Add On - we can't fetch
+  # version from downloaded Add On.
+  #
+  # Technically we could resolve latest tag, then fetch the west.yml,
+  # parse it and return 'manifest.projects[0].revision'. Though sounds like a handful.
+  #
+  # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
+  ZIGBEE_ADD_ON_VERSION: v1.2.1
+  TOOLCHAIN_VERSION: v3.1.1
+  GO_VERSION: "1.24"
+  NRFUTIL_VERSION: "8.1.1"
+
 jobs:
-  build_firmware:
+  prepare_build_matrix:
     runs-on: ubuntu-latest
-    env:
-      # Somehow we should try to keep Add On and Toolchain in sync.
-      # But as we download toolchain before Add On - we can't fetch
-      # version from downloaded Add On.
-      #
-      # Technically we could resolve latest tag, then fetch the west.yml,
-      # parse it and return 'manifest.projects[0].revision'. Though sounds like a handful.
-      #
-      # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
-      ZIGBEE_ADD_ON_VERSION: v1.2.1
-      TOOLCHAIN_VERSION: v3.1.1
-      GO_VERSION: "1.24"
-      NRFUTIL_VERSION: "8.1.1"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: go.sum
-      - name: Build executable
-        run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
-
-      - name: Restore cached SDK
+      - id: Prepare matrix
+        run: echo "examples=$(ls ./examples/**/*.yaml |jq -cnR '[inputs | select(length>0)]')" >> $GITHUB_OUTPUT
+      - name: Check if toolchain and sdk cache exist
         if: ${{ !env.ACT }}
         id: cache-sdk
         uses: actions/cache/restore@v4
         with:
-          path: |
-            ${{ github.workspace }}/nrfutil
-            ~/.nrfutil/bin
-            ~/ncs/toolchains
-            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
+          lookup-only: true
           key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
       - name: Download nrfutil
         if: steps.cache-sdk.outputs.cache-hit != 'true'
@@ -79,6 +71,36 @@ jobs:
             ~/ncs/toolchains
             ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
           key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
+
+  build_firmware:
+    runs-on: ubuntu-latest
+    needs: [prepare_build_matrix]
+    strategy:
+      matrix:
+        examples: ${{fromJson(needs.prepare_build_matrix.outputs.examples)}}
+        # Add root configuration as well, to make sure that it works.
+        include:
+          - examples: ./zigbee.yaml
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: go.sum
+      - name: Build executable
+        run: go build -o zigbee_home ./cmd/zigbee/; chmod +x ./zigbee_home
+
+      - name: Restore cached SDK
+        if: ${{ !env.ACT }}
+        id: cache-sdk
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
+          key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
       - name: List installed toolchains and sdks
         run: |
           echo "::group::NRFUtil version"
@@ -91,7 +113,7 @@ jobs:
           cd ~/ncs/ && find . -maxdepth 3 -name "VERSION" -exec echo {} \; -exec cat {} \;
           echo "::endgroup::"
 
-      - name: Build project
+      - name: Build firmware
         env:
           # Let zigbee_home know that env is already set up.
           NO_SETUP_ENV: 1
@@ -99,12 +121,6 @@ jobs:
           export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
 
-          echo "::group::Root firmware logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir project build --config ./examples/basic/zigbee.yaml'
+          echo "::group::Firmware build logs"
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir project build --config ${{ matrix.examples }}'
           echo "::endgroup::"
-
-          for f in ./examples/**/zigbee.yaml; do
-            echo "::group::Building $f"
-            ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c "./zigbee_home firmware --workdir project build --config $f"
-            echo "::endgroup";
-          done
