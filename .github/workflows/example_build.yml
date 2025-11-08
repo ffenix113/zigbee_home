@@ -37,6 +37,11 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           lookup-only: true
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
           key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
       - name: Download nrfutil
         if: steps.cache-sdk.outputs.cache-hit != 'true'
