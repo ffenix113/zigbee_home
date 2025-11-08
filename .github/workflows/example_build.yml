@@ -2,6 +2,9 @@ name: Build firmware
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - develop
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
@@ -20,7 +23,7 @@ jobs:
       #
       # Though I can confirm that having SDK verion of 2.9.2 works with Toolchain v3.1.0
       ZIGBEE_ADD_ON_VERSION: v1.2.1
-      TOOLCHAIN_VERSION: v3.1.1
+      TOOLCHAIN_VERSION: v2.9.2
       GO_VERSION: "1.24"
       NRFUTIL_VERSION: "8.1.1"
     steps:
@@ -95,6 +98,13 @@ jobs:
         run: |
           export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
-          echo "::group::Build logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home --config ./examples/basic/zigbee.yaml firmware --workdir project build'
+
+          echo "::group::Root firmware logs"
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir project build --config ./examples/basic/zigbee.yaml'
           echo "::endgroup::"
+
+          for f in ./examples/**/zigbee.yaml; do
+            echo "::group::Building $f"
+            ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c "./zigbee_home firmware --workdir project build --config $f"
+            echo "::endgroup";
+          done
