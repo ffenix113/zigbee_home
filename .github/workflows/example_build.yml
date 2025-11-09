@@ -86,12 +86,16 @@ jobs:
   build_firmware:
     runs-on: ubuntu-latest
     needs: [prepare_build_matrix]
+    # Run all builds once to see what we have.
+    continue-on-error: true
     strategy:
+      # Do not be greedy. We already have 15 jobs to run.
+      max-parallel: 8
       matrix:
         examples: ${{fromJson(needs.prepare_build_matrix.outputs.examples)}}
         # Add root configuration as well, to make sure that it works.
         include:
-          - examples: ./zigbee.yaml
+          - examples: ..
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -133,5 +137,6 @@ jobs:
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
 
           echo "::group::Firmware build logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir ./examples/${{ matrix.exmaples}} build --config ./examples/${{ matrix.examples }}/zigbee.yaml'
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} # -- bash -c '
+          ./zigbee_home firmware --workdir ./examples/${{ matrix.exmaples}} build --config ./examples/${{ matrix.examples }}/zigbee.yaml #'
           echo "::endgroup::"
