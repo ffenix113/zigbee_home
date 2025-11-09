@@ -4,13 +4,13 @@ general:
 board:
   bootloader: adafruit_nrf52_sd140_v6
   debug:
-    enabled: false
+    enabled: true
     console: usb
     leds:
       enabled: true
       power: led1
-      connection: led2
+      connection: led32
   leds:
     - id: led1
-    - id: led2
+    - id: led32
       pin: 0.04

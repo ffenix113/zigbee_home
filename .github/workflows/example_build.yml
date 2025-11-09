@@ -132,6 +132,8 @@ jobs:
         env:
           # Let zigbee_home know that env is already set up.
           NO_SETUP_ENV: 1
+          # Env for example with resolution of custom tags & env variables.
+          ZBHOME_BOARD: xiao_ble
         run: |
           export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
