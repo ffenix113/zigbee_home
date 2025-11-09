@@ -104,7 +104,7 @@ type NCS struct {
 }
 
 func ParseFromFile(configPath string) (*Device, error) {
-	var minimumSDKVersion = types.NewSemver(2, 6, 0)
+	var minimumSDKVersion = types.NewSemver(2, 9, 2)
 
 	cfg := &Device{
 		configPath: filepath.Dir(configPath),

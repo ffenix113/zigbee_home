@@ -2,7 +2,16 @@ name: Build firmware
 
 on:
   workflow_dispatch:
-  push:
+  # Runs when PR events occur (opened, reopened, synchronize = new commits on the PR, etc.)
+  pull_request:
+    types: [
+        opened,
+        reopened,
+        synchronize,
+        # ready_for_review,
+        # edited,
+        # converted_to_draft,
+      ]
     branches:
       - develop
 
