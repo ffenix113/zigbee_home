@@ -137,6 +137,6 @@ jobs:
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
 
           echo "::group::Firmware build logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} # -- bash -c '
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} --shell # -- bash -c '
           ./zigbee_home firmware --workdir ./examples/${{ matrix.exmaples}} build --config ./examples/${{ matrix.examples }}/zigbee.yaml #'
           echo "::endgroup::"
