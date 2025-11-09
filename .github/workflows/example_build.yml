@@ -138,6 +138,4 @@ jobs:
           export ZEPHYR_BASE=~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}/zephyr
           echo "Set ZEPHYR_BASE at ${ZEPHYR_BASE}."
 
-          echo "::group::Firmware build logs"
-          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir ./examples/${{ matrix.exmaples}} build --config ./examples/${{ matrix.examples }}/zigbee.yaml'
-          echo "::endgroup::"
+          ./nrfutil toolchain-manager launch --ncs-version ${TOOLCHAIN_VERSION} -- bash -c './zigbee_home firmware --workdir ./examples/${{ matrix.examples }} build --config ./examples/${{ matrix.examples }}/zigbee.yaml'
