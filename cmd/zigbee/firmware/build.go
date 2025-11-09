@@ -136,6 +136,7 @@ func runBuild(ctx context.Context, device *config.Device, runCtx runner.RunConte
 		workDir,
 		"--",
 		"-DNCS_TOOLCHAIN_VERSION=NONE",
+		"-DBOARD_ROOT="+workDir,
 		"-DCONF_FILE="+filepath.Join(workDir, "prj.conf"),
 		"-DDTC_OVERLAY_FILE="+filepath.Join(workDir, "app.overlay"),
 	); err != nil {

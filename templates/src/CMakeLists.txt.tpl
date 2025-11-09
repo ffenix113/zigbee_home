@@ -16,7 +16,6 @@ cmake_minimum_required(VERSION 3.20.0)
 
 # The application uses the configuration/<board> scheme for configuration files.
 set(APPLICATION_CONFIG_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(BOARD_ROOT "${CMAKE_CURRENT_LIST_DIR}")
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(zigbee_common)
@@ -26,7 +25,7 @@ project(zigbee_common)
 # NORDIC SDK APP START
 FILE(GLOB app_sources_cpp src/*.cpp src/**/*.cpp)
 FILE(GLOB app_sources src/*.c src/**/*.c)
-target_sources(app 
+target_sources(app
   PRIVATE ${app_sources_cpp}
   PRIVATE ${app_sources}
 )

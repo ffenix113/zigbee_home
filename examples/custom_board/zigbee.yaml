@@ -1,7 +1,13 @@
 general:
-  # Because this board is not supported by zephyr yet, we need to provide its whole definition by ourselves, this can be found in the "boards" folder.
+  # Because Pro Micro nRF52840 board is not supported by zephyr yet, we need to provide its whole definition by ourselves, this can be found in the "boards" folder.
   # The details on the capability of supporting custom boards can be found at: https://docs.zephyrproject.org/latest/hardware/porting/board_porting.html
-  board: nice_nano_v2
+  #
+  # This board will be supported in Zephyr v4.1.0, but nRF Connect Zigbee AddOn may not support Zephyr v4.1.0 for some time,
+  # so it is a good candidate.
+  #
+  # It is defined in this example with `custom_` prefix to make sure that this will work
+  # even when nRF Connect will support this board natively.
+  board: custom_promicro_nrf52840/nrf52840
 
 board:
   bootloader: adafruit_nrf52_sd140_v6
