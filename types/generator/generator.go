@@ -8,8 +8,16 @@ import (
 	"github.com/ffenix113/zigbee_home/types/devicetree"
 )
 
+// TODO: This is a nightmare.
+// Rethink this and rework so it would be easier to work with extenders.
+// Maybe just have a
+// func(generatorBase *GeneratorData) error
+// , where `GeneratorData` would hold all necessary
+// configuration to write the files needed for firmware.
+
 type Adder interface {
 	AppConfig() []appconfig.ConfigValue
+	SysbuildConfig() []appconfig.ConfigValue
 	ApplyOverlay(overlay *devicetree.DeviceTree) error
 }
 
@@ -60,6 +68,7 @@ type SimpleExtender struct {
 	FilesToWrite      []WriteFile
 	ZephyrModuleNames []string
 	Config            []appconfig.ConfigValue
+	Sysbuild          []appconfig.ConfigValue
 	OverlayFn         func(overlay *devicetree.DeviceTree) error
 }
 
@@ -96,6 +105,10 @@ func (e SimpleExtender) ZephyrModules() []string {
 
 func (e SimpleExtender) AppConfig() []appconfig.ConfigValue {
 	return e.Config
+}
+
+func (e SimpleExtender) SysbuildConfig() []appconfig.ConfigValue {
+	return e.Sysbuild
 }
 
 func (e SimpleExtender) ApplyOverlay(overlay *devicetree.DeviceTree) error {
