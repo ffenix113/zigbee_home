@@ -11,6 +11,10 @@ type Provider interface {
 	AppConfig() []ConfigValue
 }
 
+type SysbuildProvider interface {
+	SysbuildConfig() []ConfigValue
+}
+
 type ConfigValue struct {
 	Name          string
 	DefaultValue  string
