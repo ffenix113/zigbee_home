@@ -86,6 +86,7 @@ func (v ConfigValue) Copy() ConfigValue {
 	return ConfigValue{
 		Name:          v.Name,
 		DefaultValue:  v.DefaultValue,
+		QuotedValue:   v.QuotedValue,
 		RequiredValue: v.RequiredValue,
 
 		Dependencies: append([]ConfigValue(nil), v.Dependencies...),
