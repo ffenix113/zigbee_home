@@ -34,6 +34,11 @@ type Device struct {
 	General General
 	Board   Board
 
+	// Experimental contains configuration that is not considered fully supported yet,
+	// or experiments that may or may not be included in the future versions
+	// of this project.
+	Experimental Experimental
+
 	Sensors sensor.Sensors
 }
 
@@ -101,6 +106,10 @@ type NCS struct {
 
 	SDKBasePath string `yaml:"sdk_base_path"`
 	SDKVersion  string `yaml:"sdk_version"`
+}
+
+type Experimental struct {
+	BLEOTA *extenders.BLEOTA
 }
 
 func ParseFromFile(configPath string) (*Device, error) {

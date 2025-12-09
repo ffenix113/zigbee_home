@@ -197,6 +197,18 @@ func getExtenders(workDir string, device *config.Device) ([]generator.Extender, 
 		providedExtenders = append(providedExtenders, extenders.NewButtons(device.Board.Buttons.ToPins()...))
 	}
 
+	if device.Experimental.BLEOTA != nil {
+		if device.Board.Bootloader == nil || *device.Board.Bootloader != "mcuboot" {
+			return nil, fmt.Errorf("mcuboot bootloader is required for ble ota, but it is not forced in configuration")
+		}
+
+		otaExtender, err := extenders.NewBLEOTA(workDir, device.General.DeviceName, *device.Experimental.BLEOTA)
+		if err != nil {
+			return nil, fmt.Errorf("ble ota: %w", err)
+		}
+		providedExtenders = append(providedExtenders, otaExtender)
+	}
+
 	return providedExtenders, nil
 }
 
