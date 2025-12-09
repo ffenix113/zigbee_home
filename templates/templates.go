@@ -24,7 +24,11 @@ import (
 // TemplateFS is for sensor templates.
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
-//go:embed src/*.hpp src/*.cpp src/*.tpl src/*/*.tpl src/*/*/*.tpl
+//go:embed src/VERSION
+//go:embed src/mcuboot_key.pem
+//go:embed src/*.hpp src/*.cpp
+//go:embed src/*/*.hpp src/*/*.cpp
+//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/sysbuild/*
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var embTemplateFS embed.FS
@@ -63,15 +67,19 @@ var knownClusterTemplates = map[cluster.ID]string{
 var sourceFiles = [][2]string{
 	{filepath.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
 	{filepath.Join("..", "Kconfig"), "Kconfig.tpl"},
+	{filepath.Join("..", "VERSION"), "VERSION"},
 	{filepath.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
 	{filepath.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
 	{filepath.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
 	{"main.cpp", "main.cpp.tpl"},
+	{"extenders.hpp", "extenders.hpp"},
 	{"watchdog.hpp", "watchdog.hpp"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
 	{"types.cpp", "types.cpp"},
+	{"settings.hpp", "settings.hpp"},
+	{"settings.cpp", "settings.cpp"},
 	{"types_button_handler.hpp", "types_button_handler.hpp"},
 	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
@@ -141,6 +149,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"sum":                   sum,
 		"formatHex":             formatHex,
 		"trustCenterKeyToArray": trustCenterKeyToArray,
+		"timeToVersion":         timeToVersion,
 		// Specific functions to check exact version
 		// so we would know where each one is used,
 		// and what we can deprecate.
@@ -259,7 +268,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 	}
 
 	ctx := Context{
-		GeneratedOn: time.Now().UTC(),
+		GeneratedOn: time.Now().Local(),
 		Version:     appVersion,
 		Device:      device,
 
