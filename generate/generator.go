@@ -62,7 +62,7 @@ func NewGenerator(device *config.Device) (*Generator, error) {
 }
 
 func (g *Generator) Generate(workDir string, device *config.Device) error {
-	providedExtenders, err := getExtenders(device)
+	providedExtenders, err := getExtenders(workDir, device)
 	if err != nil {
 		return fmt.Errorf("get extenders: %w", err)
 	}
@@ -86,6 +86,11 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	// Write app config (prj.conf)
 	if err := updateAppConfig(device, g.AppConfig, providedExtenders); err != nil {
 		return fmt.Errorf("update app config: %w", err)
+	}
+
+	// Write sysbuild config (sysbuild.conf)
+	if err := updateSysbuildConfig(g.SysbuildConfig, providedExtenders); err != nil {
+		return fmt.Errorf("update sysbuild config: %w", err)
 	}
 
 	appConfigFile, err := os.Create(workDir + "/prj.conf")
@@ -124,7 +129,7 @@ func (g *Generator) Generate(workDir string, device *config.Device) error {
 	return nil
 }
 
-func getExtenders(device *config.Device) ([]generator.Extender, error) {
+func getExtenders(workDir string, device *config.Device) ([]generator.Extender, error) {
 	var providedExtenders []generator.Extender
 
 	uniqueExtenders := map[string]struct{}{}
@@ -143,7 +148,7 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 		forcedBootloader)
 
 	if forcedBootloader && bootloaderConfig == nil {
-		return nil, fmt.Errorf("Bootloader %q was forced, but is not found in known bootloaders", *device.Board.Bootloader)
+		return nil, fmt.Errorf("bootloader %q was forced, but is not found in known bootloaders", *device.Board.Bootloader)
 	}
 
 	if bootloaderConfig != nil {
@@ -192,6 +197,18 @@ func getExtenders(device *config.Device) ([]generator.Extender, error) {
 		providedExtenders = append(providedExtenders, extenders.NewButtons(device.Board.Buttons.ToPins()...))
 	}
 
+	if device.Experimental.BLEOTA != nil {
+		if device.Board.Bootloader == nil || *device.Board.Bootloader != "mcuboot" {
+			return nil, fmt.Errorf("mcuboot bootloader is required for ble ota, but it is not forced in configuration")
+		}
+
+		otaExtender, err := extenders.NewBLEOTA(workDir, device.General.DeviceName, *device.Experimental.BLEOTA)
+		if err != nil {
+			return nil, fmt.Errorf("ble ota: %w", err)
+		}
+		providedExtenders = append(providedExtenders, otaExtender)
+	}
+
 	return providedExtenders, nil
 }
 
@@ -223,6 +240,19 @@ func updateAppConfig(device *config.Device, appConfig *appconfig.AppConfig, exte
 	for _, sensor := range device.Sensors {
 		appConfig.AddValue(sensor.AppConfig()...)
 	}
+
+	return nil
+}
+
+func updateSysbuildConfig(sysbuildConfig *appconfig.AppConfig, extenders []generator.Extender) error {
+	for _, extender := range extenders {
+		if withAppConfigProvider, ok := extender.(appconfig.SysbuildProvider); ok {
+			sysbuildConfig.AddValue(withAppConfigProvider.SysbuildConfig()...)
+		}
+	}
+
+	// Sensors should not add any Sysbuild configuration.
+	// Extenders (OTA and similar) - will.
 
 	return nil
 }

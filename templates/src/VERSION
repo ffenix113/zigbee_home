@@ -1,0 +1,14 @@
+{{/* 
+	The version is extracted from the time of the build,
+	which means that the version will always be increasing,
+	and does not rely on anything except the time.
+
+	This allows to always increase the version of the firmware.
+	*/}}
+{{- $versionParts := timeToVersion .GeneratedOn }}
+# Generated from time {{ .GeneratedOn }}
+VERSION_MAJOR = {{ index $versionParts 0 }}
+VERSION_MINOR = {{ index $versionParts 1 }}
+PATCHLEVEL = {{ index $versionParts 2 }}
+VERSION_TWEAK = {{ index $versionParts 3}}
+EXTRAVERSION = zbhome
