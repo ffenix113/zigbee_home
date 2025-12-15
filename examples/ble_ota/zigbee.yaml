@@ -1,0 +1,51 @@
+general:
+  runevery: 2m
+  board: nrf54l15dk/nrf54l15/cpuapp
+
+  ncs:
+    sdk_version: v2.9.2
+
+board:
+  # This value must be set to `mcuboot` for any board.
+  # Otherwise it is not possible to perform DFU operations.
+  #
+  # Note that for now not all boards may support MCUBoot
+  # out of the box. This is because not all boards 
+  # define partitions for MCUBoot and second image.
+  bootloader: mcuboot
+
+  # It makes no difference if board is set to be router or not for BLE OTA.
+  # But be aware that OTA consumes more energy!
+  # is_router: true
+
+experimental:
+  bleota:
+    # This is optional parameter for suffix of BLE device name.
+    # In this case scannable device name will be `ZBHome nrf54l`
+    #
+    # If it is not specified or empty - the value from the `general.device_name` will be used.
+    device_name: nrf54l
+    # This option can be set to modify the prefix for BLE device name.
+    # This value can be set to empty string to fully remove the prefix.
+    #
+    # Space will always be present between prefix and device name.
+    #
+    # If this value would be `Random`, for exmaple, then full name would be `Random nrf54l`.
+    # And if this value would be '' - then device name will be `nrf54l`.
+    #device_name_prefix: ''
+
+    # Key that will be used to sign the image.
+    # It will also be used to verify image on boot.
+    #
+    # Suggested length of key is at least 6 characters.
+    #
+    # Note: This value must be unique for each device!
+    #
+    # The key itself is not used directly, but as a "seed"
+    # that will be used to generate the ED25519 private key,
+    # which then will be used where needed.
+    #
+    # Note that after firmware with this key is uploaded and successfully booted -
+    # it will not be possible to change the key without flashing firmware with SWD/JLink,
+    # otherwise new images will not boot.
+    key: 'A strong key that nobody will guess'

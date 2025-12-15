@@ -11,6 +11,10 @@ type Provider interface {
 	AppConfig() []ConfigValue
 }
 
+type SysbuildProvider interface {
+	SysbuildConfig() []ConfigValue
+}
+
 type ConfigValue struct {
 	Name          string
 	DefaultValue  string
@@ -82,6 +86,7 @@ func (v ConfigValue) Copy() ConfigValue {
 	return ConfigValue{
 		Name:          v.Name,
 		DefaultValue:  v.DefaultValue,
+		QuotedValue:   v.QuotedValue,
 		RequiredValue: v.RequiredValue,
 
 		Dependencies: append([]ConfigValue(nil), v.Dependencies...),
@@ -124,6 +129,10 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 		CONFIG_NET_UDP,
 		CONFIG_USB_DEVICE_STACK,
 
+		CONFIG_ZMS,
+		CONFIG_SETTINGS,
+		CONFIG_SETTINGS_ZMS,
+
 		CONFIG_ZBHOME_WATCHDOG_ENABLE.RequiredBool(opts.EnableWatchdog),
 	)
 
@@ -153,8 +162,10 @@ func NewDefaultAppConfig(opts DefaultAppConfigOptions) (*AppConfig, error) {
 
 func NewDefaultSysbuildConfig(opts DefaultSysbuildConfigOptions) (*AppConfig, error) {
 	appConfig := NewEmptyAppConfig().AddValue(
-		SB_CONFIG_BOOT_SIGNATURE_TYPE_NONE,
-		SB_CONFIG_MCUBOOT_MODE_OVERWRITE_ONLY,
+		SB_CONFIG_BOOT_SIGNATURE_TYPE_ED25519,
+		// Signature key is not specified by default,
+		// as it will be signed with static key by default.
+		// In other configs - it will be specified by configuration.
 	)
 
 	if opts.MCUBoot {

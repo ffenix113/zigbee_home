@@ -24,6 +24,11 @@ type Flasher interface {
 func NewFlasher(device *config.Device) Flasher {
 	// Sane default to flash with `west`.
 	flasherName := "west"
+	// FIXME: This should be comparison to string
+	if device.Board.Bootloader != nil && *device.Board.Bootloader == "mcuboot" {
+		flasherName = "mcuboot"
+	}
+
 	if device.General.Flasher != "" {
 		flasherName = device.General.Flasher
 	}

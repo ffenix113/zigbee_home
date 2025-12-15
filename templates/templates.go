@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime/debug"
-	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -25,7 +24,11 @@ import (
 // TemplateFS is for sensor templates.
 // For example src/extenders/sensors/bosch/bme280.tpl
 //
-//go:embed src/*.hpp src/*.cpp src/*.tpl src/*/*.tpl src/*/*/*.tpl
+//go:embed src/VERSION
+//go:embed src/mcuboot_key.pem
+//go:embed src/*.hpp src/*.cpp
+//go:embed src/*/*.hpp src/*/*.cpp
+//go:embed src/*.tpl src/*/*.tpl src/*/*/*.tpl
 //go:embed src/sysbuild/*
 //go:embed src/modules/*/dts/bindings/sensor/*.yaml src/modules/*/zephyr/*
 var embTemplateFS embed.FS
@@ -64,15 +67,19 @@ var knownClusterTemplates = map[cluster.ID]string{
 var sourceFiles = [][2]string{
 	{filepath.Join("..", "CMakeLists.txt"), "CMakeLists.txt.tpl"},
 	{filepath.Join("..", "Kconfig"), "Kconfig.tpl"},
+	{filepath.Join("..", "VERSION"), "VERSION"},
 	{filepath.Join("..", "Kconfig.sysbuild"), "Kconfig.sysbuild.tpl"},
 	{filepath.Join("..", "sysbuild", "802154_rpmsg.overlay"), "sysbuild/802154_rpmsg.overlay"},
 	{filepath.Join("..", "sysbuild", "mcuboot.conf"), "sysbuild/mcuboot.conf"},
 	{"main.cpp", "main.cpp.tpl"},
+	{"extenders.hpp", "extenders.hpp"},
 	{"watchdog.hpp", "watchdog.hpp"},
 	{"device.hpp", "device.hpp.tpl"},
 	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
 	{"types.cpp", "types.cpp"},
+	{"settings.hpp", "settings.hpp"},
+	{"settings.cpp", "settings.cpp"},
 	{"types_button_handler.hpp", "types_button_handler.hpp"},
 	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
@@ -142,10 +149,14 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"sum":                   sum,
 		"formatHex":             formatHex,
 		"trustCenterKeyToArray": trustCenterKeyToArray,
+		"timeToVersion":         timeToVersion,
 		// Specific functions to check exact version
 		// so we would know where each one is used,
 		// and what we can deprecate.
-		"ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
+		//
+		// Support for version is done in the configuration step,
+		// so we support minimum version that should work with generated code.
+		// "ncsVersionIs_2_6": ncsVersionIs(ncsVersion, types.Semver{2, 6, 0}),
 	})
 
 	must(t.parseByDir(templateFS, nil))
@@ -257,7 +268,7 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 	}
 
 	ctx := Context{
-		GeneratedOn: time.Now().UTC(),
+		GeneratedOn: time.Now().Local(),
 		Version:     appVersion,
 		Device:      device,
 
@@ -343,6 +354,9 @@ func (t *Templates) WriteTo(srcDir string, device *config.Device, extenders []ge
 	return nil
 }
 
+// TODO: Probably should be deprecated.
+// C++ implementation moved into abstract classes
+// instead of Go template blocks.
 func (t *Templates) verifyExtender(extender generator.Extender) error {
 	if extender.Template() == "" {
 		return nil
@@ -484,80 +498,6 @@ func (t *Templates) maybeRenderExtender(tplPath, tplName string, ctx any) (strin
 	}
 
 	return buf.String(), nil
-}
-
-func typeFromSensor(sensor SensorCtx) string {
-	return sensor.Sensor.CPPComponentType()
-}
-
-func toButtonBit(btnID string) string {
-	return "BUTTON_BIT(" + btnID + ")"
-}
-
-func sensorCtx(endpoint int, device *config.Device, sensor sensor.Sensor, extender generator.Extender) SensorCtx {
-	return SensorCtx{
-		Endpoint: endpoint,
-		Device:   device,
-		Sensor:   sensor,
-		Extender: extender,
-	}
-}
-
-func clusterCtx(endpoint int, cluster cluster.Cluster) ClusterCtx {
-	return ClusterCtx{
-		Endpoint: endpoint,
-		Cluster:  cluster,
-	}
-}
-
-func isLast(i, arrLen int) bool {
-	return i+1 == arrLen
-}
-
-func sum(a, b int) int {
-	return a + b
-}
-
-func formatHex(val any) (string, error) {
-	switch i := val.(type) {
-	case uint8, uint16, uint32, uint64, uint,
-		int8, int16, int32, int64, int:
-		return fmt.Sprintf("%#x", i), nil
-	default:
-		return "", fmt.Errorf("unknown type to format: %T", val)
-	}
-}
-
-// trustCenterKeyToArray will return trust key as C array item values.
-func trustCenterKeyToArray(key string) (string, error) {
-	key = strings.ReplaceAll(key, ":", "")
-
-	var sb strings.Builder
-
-	for i := 0; i < 16; i++ {
-		bytePart := key[i*2 : i*2+2]
-
-		_, err := strconv.ParseUint(bytePart, 16, 16)
-		if err != nil {
-			return "", fmt.Errorf("parse trust center key part %q: %w", bytePart, err)
-		}
-
-		if i != 0 {
-			sb.WriteString(", ")
-		}
-
-		sb.WriteString("0x" + bytePart)
-	}
-
-	return sb.String(), nil
-}
-
-func ncsVersionIs(current, another types.Semver) func() bool {
-	isSame := current.SameMajorMinor(another)
-
-	return func() bool {
-		return isSame
-	}
 }
 
 func must(err error) {

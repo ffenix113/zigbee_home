@@ -13,7 +13,7 @@
 
 #include <dk_buttons_and_leds.h>
 
-#include "zephyr/logging/log.h"
+#include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(app, LOG_LEVEL_DBG);
 
 #ifdef __cplusplus
@@ -28,6 +28,9 @@ extern "C" {
 
 #include <zigbee/zigbee_app_utils.h>
 #include <zigbee/zigbee_error_handler.h>
+
+#include "settings.hpp"
+#include "extenders.hpp"
 
 #include "watchdog.hpp"
 
@@ -461,6 +464,13 @@ int main(void)
 	wait_for_console();
 	#endif /* CONFIG_USB_DEVICE_STACK */
 
+	// Setup available extenders.
+	// Settings are not loaded at this point, but extenders
+	// will be able to add callback to notify when they will be.
+	zbhome::experimental::extenders::Registry::instance().run_all();
+
+	zbhome::settings::load();
+
 	/* Register device context (endpoint) */
 	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);
 
@@ -504,8 +514,19 @@ int main(void)
 		// power_down_unused_ram();
 	}
 
-	/* Start Zigbee stack */
-	zigbee_enable();
+	// Start Zigbee stack if not disabled.
+	// It could be disabled by BLE OTA, for example.
+	bool enable_zigbee = zbhome::settings::set_enable_zigbee(true);
+	if (enable_zigbee)
+	{
+		// FIXME: Ideally this probably should be extracted so main.cpp
+		// would not have knowledge of Zigbee/Matter stack.
+		zigbee_enable();
+	}
+	else
+	{
+		LOG_WRN("Zigbee stack was requested to be disabled. Restart the board to enable it again.");
+	}
 
 	#if CONFIG_ZBHOME_DEBUG_LEDS
 	gpio_pin_set_dt({{ if .Device.Board.Debug.IsEnabled}}&{{.Device.Board.Debug.LEDs.Power}}{{else}}none{{end}}, 1);
