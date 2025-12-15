@@ -22,7 +22,7 @@ namespace zbhome
     // and other helpful things.
     void button_changed(uint32_t button_state, uint32_t has_changed)
     {
-        LOG_DBG("button_changed: 0x%08u, 0x%08u", button_state, has_changed);
+        LOG_DBG("button_changed: state: 0x%08u, changed: 0x%08u", button_state, has_changed);
 
 #if CONFIG_ZIGBEE_ROLE_END_DEVICE
         /* Inform default signal handler about user input at the device */

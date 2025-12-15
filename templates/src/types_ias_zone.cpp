@@ -80,10 +80,8 @@ namespace zbhome
                 break;
             }
 
-            if (bufid)
-            {
-                zb_buf_free(bufid);
-            }
+            // Buffer here should not be freed.
+            // Otherwise it crashes ZBOSS stack (for some reason).
         };
     }
 }
