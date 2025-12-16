@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ffenix113/zigbee_home/cmd/zigbee/firmware"
+	"github.com/ffenix113/zigbee_home/cmd/zigbee_home/firmware"
 	"github.com/ffenix113/zigbee_home/config"
 	"github.com/stretchr/testify/require"
 )
