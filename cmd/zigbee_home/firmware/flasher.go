@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ffenix113/zigbee_home/cmd/zigbee/firmware/flasher"
+	"github.com/ffenix113/zigbee_home/cmd/zigbee_home/firmware/flasher"
 	"github.com/ffenix113/zigbee_home/config"
 	"gopkg.in/yaml.v3"
 )

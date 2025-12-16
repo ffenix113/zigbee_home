@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/ffenix113/zigbee_home/cmd/zigbee/firmware"
+	"github.com/ffenix113/zigbee_home/cmd/zigbee_home/firmware"
 	"github.com/urfave/cli/v3"
 )
 
