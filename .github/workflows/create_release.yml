@@ -1,15 +1,24 @@
 name: Create release
 
 on:
-  push: 
+  push:
     tags:
       - '*'
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  build:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-latest
+            artifact: macos-arm64
+          - runner: macos-15-intel
+            artifact: macos-amd64
+          - runner: windows-latest
+            artifact: windows-amd64.exe
+          - runner: ubuntu-slim
+            artifact: linux-amd64
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -17,18 +26,29 @@ jobs:
         with:
           go-version: '1.24'
           cache-dependency-path: go.sum
-      - name: Install dependencies
-        run: go mod download
-      - name: Build executables
-        # Yes, build matrix can be used, but I don't want to create multiple jobs
-        # for something that can be done in one step.
-        # This list should be kept in sync with the one in test/build steps for branch push.
-        run: |
-          export GOOS=windows; export GOARCH=amd64; go build -o builds/zigbee_home_${GOOS}_${GOARCH}.exe ./cmd/zigbee/
-          export GOOS=linux; export GOARCH=amd64; go build -o builds/zigbee_home_${GOOS}_${GOARCH} ./cmd/zigbee/
-          export GOOS=darwin; export GOARCH=arm64; go build -o builds/zigbee_home_${GOOS}_${GOARCH} ./cmd/zigbee/
+      - name: Build executable
+        run: mkdir builds && cd builds && go build -o zigbee_home-${{ matrix.artifact }} ../cmd/zigbee_home/
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: zigbee_home-${{ matrix.artifact }}
+          if-no-files-found: error
+          path: builds/*
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: zigbee_home*
+          merge-multiple: true
+      - name: make executable
+        run: chmod +x zigbee_home*
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: builds/*
+          files: zigbee_home*

@@ -25,6 +25,11 @@ jobs:
         run: go test -v ./...
 
   build:
+    # Do not do builds on pull requests.
+    # Maybe this will be lifted in the future,
+    # if MR builds would be useful for users
+    # before they are merged.
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     # While Go supports native cross-compilation - there are still platform-specific things.
     # For example libraries and headers.
     runs-on: ${{ matrix.runner }}
@@ -32,16 +37,13 @@ jobs:
       matrix:
         include:
           - runner: macos-latest
-            artifact: macos
+            artifact: macos-arm64
+          - runner: macos-15-intel
+            artifact: macos-amd64
           - runner: windows-latest
-            artifact: windows
+            artifact: windows-amd64.exe
           - runner: ubuntu-slim
-            artifact: linux
-    # Do not do builds on pull requests.
-    # Maybe this will be lifted in the future,
-    # if MR builds would be useful for users
-    # before they are merged.
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+            artifact: linux-amd64
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -50,7 +52,7 @@ jobs:
           go-version: '1.24'
           cache-dependency-path: go.sum
       - name: Build executable
-        run: mkdir builds && cd builds && go build ../cmd/zigbee_home/
+        run: mkdir builds && cd builds && go build -o zigbee_home-${{ matrix.artifact }} ../cmd/zigbee_home/
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
