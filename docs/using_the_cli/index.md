@@ -25,15 +25,15 @@ Default configuration file called `zigbee.yml`.
 For example
 
 ```bash
-$ go run ./cmd/zigbee/... --config ../zigbee.yml
+$ go run ./cmd/zigbee_home/... --config ../zigbee.yml
 $ # Or if used with installed CLI
-$ zigbee --config ../zigbee.yml
+$ zigbee_home --config ../zigbee.yml
 ```
 
 ### `firmware`
 This is a base command for sub-commands, and so it is not useful on it's own.
 ```bash
-zigbee firmware
+zigbee_home firmware
 ```
 
 #### Flags
@@ -54,7 +54,7 @@ firmware build --only-generate
 
 For example
 ```bash
-$ zigbee --config ../zigbee.yml firmware build --only-generate
+$ zigbee_home --config ../zigbee.yml firmware build --only-generate
 ```
 
 #### Build the firmware
@@ -75,7 +75,7 @@ This command does not need to be executed inside the generate source directory. 
 
 For example
 ```bash
-$ go run ./cmd/zigbee/... firmware --workdir ~/firmware/soil_moisture_sensor build
+$ go run ./cmd/zigbee_home/... firmware --workdir ~/firmware/soil_moisture_sensor build
 ```
 
 ### Flashing the firmware
@@ -85,7 +85,7 @@ firmware flash
 ```
 For example
 ```bash
-$ zigbee firmware --workdir ~/firmware/soil_moisture_sensor flash
+$ zigbee_home firmware --workdir ~/firmware/soil_moisture_sensor flash
 ```
 
 ## Full example
@@ -116,12 +116,12 @@ sensors:
       id: i2c0
 $ ls
 zigbee.yml
-$ zigbee firmware --workdir ./firmware build --only-generate
+$ zigbee_home firmware --workdir ./firmware build --only-generate
 $ # Now user goes to VS Code, opens the ./firmware directory and compiles the source code
 $ # See 'Building the firmware' page for instructions on how to do it.
 $ # As a verification that the firmware was built correctly execute following command:
 $ ls ./firmware/build/zephyr/zephyr.hex
 zephyr.hex
 $ # User starts bootloader mode on the board by clicking reset button twice
-$ zigbee firmware --workdir ./firmware flash
+$ zigbee_home firmware --workdir ./firmware flash
 ```
