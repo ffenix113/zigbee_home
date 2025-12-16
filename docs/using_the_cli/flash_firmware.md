@@ -9,7 +9,7 @@ Device already has to be in a mode that will allow flashing(DFU, for example).
 
 Example:
 ```sh
-go run ./cmd/zigbee --config ./zigbee_test.yml firmware --workdir ./firmware flash
+go run ./cmd/zigbee_home --config ./zigbee_test.yml firmware --workdir ./firmware flash
 ```
 
 Also see [full example](index.md#full-example) for flashing instructions.
