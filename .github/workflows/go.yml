@@ -30,12 +30,18 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        runner: [macos-latest, windows-latest, ubuntu-slim]
+        include:
+          - runner: macos-latest
+            artifact: macos
+          - runner: windows-latest
+            artifact: windows
+          - runner: ubuntu-slim
+            artifact: linux
     # Do not do builds on pull requests.
     # Maybe this will be lifted in the future,
     # if MR builds would be useful for users
     # before they are merged.
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -48,6 +54,6 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: zigbee_home
+          name: zigbee_home-${{ matrix.artifact }}
           if-no-files-found: error
           path: builds/*
