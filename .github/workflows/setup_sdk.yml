@@ -1,0 +1,69 @@
+on:
+  workflow_call:
+    inputs:
+      runs-on:
+        description: 'Runner to use'
+        required: true
+        type: string
+      binary:
+        required: true
+        type: string
+      zigbee-version:
+        required: true
+        type: string
+      nrfutil-version:
+        required: true
+        type: string
+      toolchain-version:
+        required: true
+        type: string
+
+jobs:
+  prepare_sdk_cache:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - name: Check if toolchain and sdk cache exist
+        if: ${{ !env.ACT }}
+        id: cache-sdk
+        uses: actions/cache/restore@v4
+        with:
+          lookup-only: true
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ inputs.zigbee-version }}
+          key: ${{ runner.os }}-zigbee-sdk-${{ inputs.zigbee-version }}-nrfutil-${{ inputs.nrfutil-version }}
+      - name: Download nrfutil
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        env:
+          BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
+        run: |
+          wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-${{ inputs.binary }}-${{ inputs.nrfutil-version }}.tar.gz
+          tar -xOf ./nrfutil.tar.gz nrfutil-${{ inputs.binary }}-${{ inputs.nrfutil-version }}/data/bin/nrfutil > nrfutil
+          rm ./nrfutil.tar.gz
+          chmod +x nrfutil
+      - name: Install Toolchain and SDK managers
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          ./nrfutil install toolchain-manager
+          ./nrfutil list
+      - name: Download Toolchain and SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          ./nrfutil toolchain-manager install --ncs-version ${{ inputs.toolchain-version }}
+          mkdir ~/ncs/zigbee_sdk_${{ inputs.zigbee-version }}
+
+          ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${{ inputs.zigbee-version }} --ncs-version ${{ inputs.toolchain-version }} -- \
+          bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${{ inputs.zigbee-version }} && \
+          west update -o=--depth=1 -n'
+      - name: Cache downloaded SDK
+        if: ${{ !env.ACT && steps.cache-sdk.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ${{ github.workspace }}/nrfutil
+            ~/.nrfutil/bin
+            ~/ncs/toolchains
+            ~/ncs/zigbee_sdk_${{ inputs.zigbee-version }}
+          key: ${{ steps.cache-sdk.outputs.cache-primary-key }}

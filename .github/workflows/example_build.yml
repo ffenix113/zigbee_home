@@ -35,7 +35,7 @@ env:
 
 jobs:
   prepare_build_matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       examples: ${{steps.list_examples.outputs.examples}}
     steps:
@@ -46,59 +46,77 @@ jobs:
           EXAMPLES=$(find ./examples/ -type d -mindepth 1 -maxdepth 1 | sed -nE 's/\.\/examples\/(.*)/\1/p' |jq -cnR '[inputs | select(length>0)]')
           echo "Found examples: ${EXAMPLES}"
           echo "examples=${EXAMPLES}" >> $GITHUB_OUTPUT
-      - name: Check if toolchain and sdk cache exist
-        if: ${{ !env.ACT }}
-        id: cache-sdk
-        uses: actions/cache/restore@v4
-        with:
-          lookup-only: true
-          path: |
-            ${{ github.workspace }}/nrfutil
-            ~/.nrfutil/bin
-            ~/ncs/toolchains
-            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
-          key: ${{ runner.os }}-zigbee-sdk-${{ env.ZIGBEE_ADD_ON_VERSION }}-nrfutil-${{ env.NRFUTIL_VERSION }}
-      - name: Download nrfutil
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
-        env:
-          BASE_URL: https://files.nordicsemi.com/artifactory/swtools/external/nrfutil/packages/nrfutil
-        run: |
-          wget --progress=dot:mega -O nrfutil.tar.gz ${BASE_URL}/nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}.tar.gz
-          tar -xOf ./nrfutil.tar.gz nrfutil-x86_64-unknown-linux-gnu-${NRFUTIL_VERSION}/data/bin/nrfutil > nrfutil
-          rm ./nrfutil.tar.gz
-          chmod +x nrfutil
-      - name: Install Toolchain and SDK managers
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
-        run: |
-          ./nrfutil install toolchain-manager
-          ./nrfutil list
-      - name: Download Toolchain and SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
-        run: |
-          ./nrfutil toolchain-manager install --ncs-version ${TOOLCHAIN_VERSION}
-          mkdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION}
+  prepare_sdk_cache:
+    strategy:
+      matrix: 
+        include:
+          - runs-on: ubuntu-latest
+            binary: x86_64-unknown-linux-gnu
+            nrfutil-version: 8.1.1
+            zigbee-version: v1.2.1
+            toolchain-version: v3.1.1
+          # - runs-on: macos-latest
+          #   binary: aarch64-apple-darwin
+          #   nrfutil-version: 8.1.1
+          #   zigbee-version: v1.2.1
+          #   toolchain-version: v3.1.1
+          # - runs-on: windows-latest
+          #   binary: x86_64-pc-windows-msvc
+          #   nrfutil-version: 8.1.1
+          #   zigbee-version: v1.2.1
+          #   toolchain-version: v3.1.1
+    uses: ./.github/workflows/setup_sdk.yml
+    with:
+      runs-on: ${{ matrix.runs-on }}
+      binary: ${{ matrix.binary }}
+      nrfutil-version: ${{ matrix.nrfutil-version }}
+      zigbee-version: ${{ matrix.zigbee-version }}
+      toolchain-version: ${{ matrix.toolchain-version }}
 
-          ./nrfutil toolchain-manager launch --chdir ~/ncs/zigbee_sdk_${ZIGBEE_ADD_ON_VERSION} --ncs-version ${TOOLCHAIN_VERSION} -- \
-          bash -c 'west init -m "http://github.com/nrfconnect/ncs-zigbee" --mr ${ZIGBEE_ADD_ON_VERSION} && \
-          west update -o=--depth=1 -n'
-      - name: Cache downloaded SDK
-        if: ${{ !env.ACT && steps.cache-sdk.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v4
+  # This job will run builders on multiple OSes,
+  # so we know that they will all work.
+  # Cache may not work here, as it is os-specific.
+  build_oses:
+    needs: [prepare_sdk_cache]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-latest
+            exe: zigbee_home
+            nrfutil_path:
+          - runner: windows-latest
+            exe: zigbee_home.exe
+            nrfutil_path:
+          - runner: ubuntu-slim
+            exe: zigbee_home
+            nrfutil_path:
+    # Run all builds once to see what we have.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          path: |
-            ${{ github.workspace }}/nrfutil
-            ~/.nrfutil/bin
-            ~/ncs/toolchains
-            ~/ncs/zigbee_sdk_${{ env.ZIGBEE_ADD_ON_VERSION }}
-          key: ${{ steps.cache-sdk.outputs.cache-primary-key }}
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: go.sum
+      - name: Build executable
+        run: go build ./cmd/zigbee_home/; chmod +x ./${{ matrix.exe }}
+
+      - name: Generate firmware
+        env:
+          # Let zigbee_home know that env is already set up.
+          NO_SETUP_ENV: 1
+          # Env for example with resolution of custom tags & env variables.
+          ZBHOME_BOARD: xiao_ble
+        run: ./${{ matrix.exe }} firmware --workdir ./build build --only-generate --config zigbee.yaml
+
 
   build_firmware:
     runs-on: ubuntu-latest
-    needs: [prepare_build_matrix]
+    needs: [prepare_build_matrix, prepare_sdk_cache]
     # Run all builds once to see what we have.
     continue-on-error: true
     strategy:
-      # Do not be greedy. We already have 15 jobs to run.
+      # Do not be greedy. We already have at least 15 jobs to run.
       max-parallel: 8
       matrix:
         examples: ${{fromJson(needs.prepare_build_matrix.outputs.examples)}}
@@ -112,7 +130,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache-dependency-path: go.sum
       - name: Build executable
-        run: go build -o zigbee_home ./cmd/zigbee_home/; chmod +x ./zigbee_home
+        run: go build ./cmd/zigbee_home/; chmod +x ./zigbee_home
 
       - name: Restore cached SDK
         if: ${{ !env.ACT }}
