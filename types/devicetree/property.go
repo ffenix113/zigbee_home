@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/ffenix113/zigbee_home/types"
 )
 
 var PropertyStatusEnable = NewProperty(PropertyNameStatus, StatusOkay)
@@ -60,6 +62,17 @@ func Quoted(value string) PropertyValue {
 
 func Label(label string) PropertyValue {
 	return rawValue("&" + label)
+}
+
+func GPIOPin(pin types.Pin) PropertyValue {
+	activeState := "(GPIO_ACTIVE_LOW | GPIO_PULL_DOWN)"
+	if pin.Inverted {
+		activeState = "(GPIO_ACTIVE_HIGH | GPIO_PULL_UP)"
+	}
+
+	formatted := fmt.Sprintf("gpio%d %d %s", pin.Port, pin.Pin, activeState)
+
+	return Angled(Label(formatted))
 }
 
 // NrfPSel

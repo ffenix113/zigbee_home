@@ -17,6 +17,7 @@
 
 # Test builds
 /_*
+/zigbee_*
 
 # Test configurations
 zigbee_*.yaml

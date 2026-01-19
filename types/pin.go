@@ -10,6 +10,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// TODO: Leave only one type for pin which includes
+// all necessary and optional information
+// and provide unmashaler for it to hande all necessary cases.
+
 var _ yaml.Unmarshaler = (*Pin)(nil)
 
 // PinWithID is similar to Pin,

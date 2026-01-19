@@ -56,6 +56,7 @@ var knownClusterTemplates = map[cluster.ID]string{
 	cluster.ID_POWER_CONFIG:              "power_config",
 	cluster.ID_DEVICE_TEMP_CONFIG:        "device_temp_config",
 	cluster.ID_ON_OFF:                    "on_off",
+	cluster.ID_LEVEL_CONTROL:             "level_control",
 	cluster.ID_TEMP_MEASUREMENT:          "temperature",
 	cluster.ID_REL_HUMIDITY_MEASUREMENT:  "water_content",
 	cluster.ID_PRESSURE_MEASUREMENT:      "pressure",

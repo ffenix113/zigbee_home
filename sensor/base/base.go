@@ -1,6 +1,8 @@
 package base
 
 import (
+	"strings"
+
 	"github.com/ffenix113/zigbee_home/types/appconfig"
 	"github.com/ffenix113/zigbee_home/types/devicetree"
 	"github.com/ffenix113/zigbee_home/zcl/cluster"
@@ -21,6 +23,10 @@ type Base struct {
 
 func (b *Base) Label() string {
 	return b.label
+}
+
+func (b *Base) DeviceTreeLabel() string {
+	return strings.ReplaceAll(b.Label(), "_", "-")
 }
 
 func (b *Base) SetLabel(label string) {

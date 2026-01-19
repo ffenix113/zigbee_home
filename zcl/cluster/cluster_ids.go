@@ -64,6 +64,8 @@ func (id ID) ToName() (string, error) {
 		value = "identify"
 	case ID_ON_OFF:
 		value = "on_off"
+	case ID_LEVEL_CONTROL:
+		value = "level_control"
 	case ID_TEMP_MEASUREMENT:
 		value = "temp_measurement"
 	case ID_PRESSURE_MEASUREMENT:
@@ -95,10 +97,11 @@ func (id ID) ToZCL() (string, error) {
 }
 
 const ID_BASIC ID = 0              // Basic cluster identifier.
+const ID_POWER_CONFIG ID = 1       // Device power configration
 const ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
 const ID_IDENTIFY ID = 3           // Identify cluster identifier.
 const ID_ON_OFF ID = 6             // On/Off cluster identifier.
-const ID_POWER_CONFIG ID = 1
+const ID_LEVEL_CONTROL ID = 8      // Level control
 
 /* Measurement and Sensing */
 const ID_TEMP_MEASUREMENT ID = 0x0402          // Temperature measurement
