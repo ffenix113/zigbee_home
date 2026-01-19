@@ -21,7 +21,7 @@ namespace zbhome
         {
         public:
             IASZone(uint32_t button_bit);
-            bool setup();
+            bool setup() override;
 
         private:
             static void update_zone_status(zb_bufid_t bufid, zb_uint16_t cb_data);

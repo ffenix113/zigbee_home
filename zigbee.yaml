@@ -220,3 +220,27 @@ sensors:
   #     oversampling: 4
   #   min_moisture_mv: 730
   #   max_moisture_mv: 430
+  #
+  # Rotary encoder that will provide up/down action.
+  # This example will work if pins A and B are
+  # connected as defined, and pin C is connected to Ground.
+  # 
+  # Please note that you may need to have different 
+  # pin configuration than in this example if you would have
+  # pin C connected to IO voltage.
+  #
+  # Also if the resulting actions are reverted, 
+  # i.e. received event is "down" when scrolling clockwise -
+  # you can just swap A and B pins to fix it.
+  # - type: rotary_encoder
+  #   pins:
+  #     a:
+  #       pin:
+  #         port: 1
+  #         pin: 14
+  #         inverted: true
+  #     b:
+  #       pin:
+  #         port: 1
+  #         pin: 15
+  #         inverted: true

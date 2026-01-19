@@ -23,13 +23,8 @@ func fromConstructor(constr any) func() Sensor {
 	return func() Sensor {
 		rVal := reflect.ValueOf(constr)
 
-		numOut := rVal.Type().NumOut()
-		switch {
-		case numOut == 0:
-			panic("constructor must have 1 return value")
-		case numOut > 1:
-			retType := rVal.Type().Out(0)
-			panic(fmt.Sprintf("constructor %q should return exactly 1 value", retType.String()))
+		if numOut := rVal.Type().NumOut(); numOut != 1 {
+			panic(fmt.Sprintf("constructor should return exactly 1 value, but has %d", numOut))
 		}
 
 		ret := rVal.Call(nil)[0]
@@ -43,6 +38,9 @@ var knownSensors = map[string]func() Sensor{
 	"on_off":       fromType[*base.OnOff],
 	"power_config": fromType[*base.PowerConfiguration],
 	"contact":      fromConstructor(base.NewContact),
+
+	"rotary_encoder": fromConstructor(base.NewRotaryEncoder),
+
 	// Later we can just alias this to `soil_moisture`
 	// if `soil_moisture` will not be used otherwise.
 	"soil_moisture_adc": fromType[*base.SoilMoistureADC],

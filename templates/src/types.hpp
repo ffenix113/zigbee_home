@@ -42,7 +42,7 @@ namespace zbhome
             //
             // A component may also have a specific constructor,
             // i.e. to add a device reference, or set min/max values, etc.
-            bool setup();
+            virtual bool setup();
 
         private:
             uint8_t m_endpoint = 0;
