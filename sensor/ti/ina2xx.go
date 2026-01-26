@@ -99,6 +99,7 @@ func (i *INA2XX) ApplyOverlay(overlay *dt.DeviceTree) error {
 
 	// 1 lsb step in microvolts.
 	LsbUvForModel := map[string]float32{
+		"ina219": 10,     // 10 uV
 		"ina226": 2.5,    // 2.5 uV
 		"ina228": 0.3125, // 312.5 nV, ADCRANGE = 0
 		"ina230": 2.5,    // 2.5 uV
@@ -134,13 +135,18 @@ func (i *INA2XX) ApplyOverlay(overlay *dt.DeviceTree) error {
 			dt.NewProperty(dt.PropertyNameCompatible, dt.Quoted("ti,"+i.Model)),
 
 			dt.NewProperty("reg", dt.Angled(dt.String(i.I2C.Reg()))),
-			dt.NewProperty("avg-count", dt.FromValue(i.Avg)),
-			dt.NewProperty("rshunt-micro-ohms", dt.Angled(dt.String(shuntMicroOhmsStr))),
-			dt.NewProperty("current-lsb-microamps", dt.Angled(dt.String(currentMicroAmpsStr))),
 		},
 	}
 
-	i2c.AddNodes(inaNode)
+	var modelProps []dt.Property
+	// INA219 needs some other (older?) properties
+	if i.Model == "ina219" {
+		modelProps = i.dtProperties_ina219(shuntMicroOhmsStr, currentMicroAmpsStr)
+	} else {
+		modelProps = i.dtProperties_ina2xx(shuntMicroOhmsStr, currentMicroAmpsStr)
+	}
+
+	i2c.AddNodes(inaNode.AddProperties(modelProps...))
 
 	return nil
 }
@@ -149,5 +155,20 @@ func (*INA2XX) Extenders() []generator.Extender {
 	return []generator.Extender{
 		extenders.NewSensor(),
 		extenders.ElectricalMeasurement{},
+	}
+}
+
+func (i *INA2XX) dtProperties_ina219(shuntUOhms, currentUAmps string) []dt.Property {
+	return []dt.Property{
+		dt.NewProperty("shunt-milliohm", dt.Angled(dt.String(shuntUOhms))),
+		dt.NewProperty("lsb-microamp", dt.Angled(dt.String(currentUAmps))),
+	}
+}
+
+func (i *INA2XX) dtProperties_ina2xx(shuntUOhms, currentUAmps string) []dt.Property {
+	return []dt.Property{
+		dt.NewProperty("avg-count", dt.FromValue(i.Avg)),
+		dt.NewProperty("rshunt-micro-ohms", dt.Angled(dt.String(shuntUOhms))),
+		dt.NewProperty("current-lsb-microamps", dt.Angled(dt.String(currentUAmps))),
 	}
 }
