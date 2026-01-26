@@ -62,7 +62,7 @@ namespace zbhome
                 .multiplier = ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER,
             },
 // It is not always defined, so check before including.
-#if ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
+#ifdef ZB_ZCL_CLUSTER_ID_CARBON_DIOXIDE
             {
                 .channel = SENSOR_CHAN_CO2,
                 .channelName = "co2",
@@ -71,6 +71,7 @@ namespace zbhome
                 .multiplier = ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER,
             },
 #endif
+#ifdef ZCL_DC_VOLTAGE_VALUE_DIVISOR
             {
                 .channel = SENSOR_CHAN_VOLTAGE,
                 .channelName = "dc_voltage",
@@ -92,6 +93,7 @@ namespace zbhome
                 .attrValueId = ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_DCPOWER_ID,
                 .multiplier = ZCL_DC_POWER_VALUE_DIVISOR,
             },
+#endif
         };
     }
 }
