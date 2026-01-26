@@ -73,7 +73,7 @@ func parseConfigFile(configPath string) (*config.Device, error) {
 
 	conf, err := config.ParseFromFile(absConfigPath)
 	if err != nil {
-		return nil, fmt.Errorf("parse config file: %w", err)
+		return nil, fmt.Errorf("parse config file at %q: %w", absConfigPath, err)
 	}
 
 	return conf, nil

@@ -323,6 +323,8 @@ func ValidateConfiguration(cfg *Device) error {
 		}
 	}
 
+	// TODO: Add some recursive validation.
+
 	return nil
 }
 

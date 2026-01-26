@@ -78,6 +78,8 @@ func (id ID) ToName() (string, error) {
 		value = "ias_zone"
 	case ID_SOIL_MOISTURE_MEASUREMENT:
 		value = "soil_moisture"
+	case ID_ELECTRICAL_MEASUREMENT:
+		value = "electrical_measurement"
 	}
 
 	if value == "" {
@@ -96,18 +98,22 @@ func (id ID) ToZCL() (string, error) {
 	return "ZB_ZCL_CLUSTER_ID_" + strings.ToUpper(clusterName), nil
 }
 
-const ID_BASIC ID = 0              // Basic cluster identifier.
-const ID_POWER_CONFIG ID = 1       // Device power configration
-const ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
-const ID_IDENTIFY ID = 3           // Identify cluster identifier.
-const ID_ON_OFF ID = 6             // On/Off cluster identifier.
-const ID_LEVEL_CONTROL ID = 8      // Level control
+const (
+	ID_BASIC              ID = 0 // Basic cluster identifier.
+	ID_POWER_CONFIG       ID = 1 // Device power configration
+	ID_DEVICE_TEMP_CONFIG ID = 2 // Device temperature cluster.
+	ID_IDENTIFY           ID = 3 // Identify cluster identifier.
+	ID_ON_OFF             ID = 6 // On/Off cluster identifier.
+	ID_LEVEL_CONTROL      ID = 8 // Level control
 
-/* Measurement and Sensing */
-const ID_TEMP_MEASUREMENT ID = 0x0402          // Temperature measurement
-const ID_PRESSURE_MEASUREMENT ID = 0x0403      // Pressure measurement
-const ID_REL_HUMIDITY_MEASUREMENT ID = 0x0405  // Relative humidity measurement
-const ID_SOIL_MOISTURE_MEASUREMENT ID = 0x0408 // Soil moisture measurement
-const ID_CARBON_DIOXIDE ID = 0x040d
+	/* Measurement and Sensing */
+	ID_TEMP_MEASUREMENT          ID = 0x0402 // Temperature measurement
+	ID_PRESSURE_MEASUREMENT      ID = 0x0403 // Pressure measurement
+	ID_REL_HUMIDITY_MEASUREMENT  ID = 0x0405 // Relative humidity measurement
+	ID_SOIL_MOISTURE_MEASUREMENT ID = 0x0408 // Soil moisture measurement
+	ID_CARBON_DIOXIDE            ID = 0x040d
 
-const ID_IAS_ZONE ID = 0x0500
+	ID_IAS_ZONE ID = 0x0500
+
+	ID_ELECTRICAL_MEASUREMENT ID = 0x0b04
+)

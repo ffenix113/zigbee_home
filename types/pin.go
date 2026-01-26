@@ -99,7 +99,7 @@ func (p Pin) Valid() bool {
 	return hasID || validPins
 }
 
-var pinRegex = regexp.MustCompile(`^([01])\.([0-3][0-9])$`)
+var pinRegex = regexp.MustCompile(`^([012])\.([0-3][0-9])$`)
 
 func (p *Pin) UnmarshalYAML(value *yaml.Node) error {
 	if value.Kind != yaml.ScalarNode {

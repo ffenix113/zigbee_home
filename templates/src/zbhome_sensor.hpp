@@ -2,6 +2,18 @@
 
 #include <zephyr/drivers/sensor.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+// Not ideal, maybe there is a better way.
+#include <zboss_api.h>
+#include <zcl/zb_zcl_el_measurement.h>
+
+#ifdef __cplusplus
+}
+#endif
+
 #include "types.hpp"
 #include "clusters.hpp"
 
@@ -9,7 +21,7 @@ namespace zbhome
 {
     namespace sensors
     {
-        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint8_t valueId);
+        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint16_t valueId);
         int updateFetchedSamples(const struct device *sensor, int endpoint);
         int read_adc_mv(const struct adc_dt_spec *spec, int32_t *valp);
 
@@ -18,7 +30,7 @@ namespace zbhome
             sensor_channel channel;
             const char *channelName;
             uint16_t clusterId;
-            uint8_t attrValueId;
+            uint16_t attrValueId;
             float multiplier;
         };
 
@@ -59,6 +71,27 @@ namespace zbhome
                 .multiplier = ZCL_CARBON_DIOXIDE_MEASURED_VALUE_MULTIPLIER,
             },
 #endif
+            {
+                .channel = SENSOR_CHAN_VOLTAGE,
+                .channelName = "dc_voltage",
+                .clusterId = ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                .attrValueId = ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_DC_VOLTAGE_ID,
+                .multiplier = ZCL_DC_VOLTAGE_VALUE_DIVISOR,
+            },
+            {
+                .channel = SENSOR_CHAN_CURRENT,
+                .channelName = "dc_current",
+                .clusterId = ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                .attrValueId = ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_DC_CURRENT_ID,
+                .multiplier = ZCL_DC_CURRENT_VALUE_DIVISOR,
+            },
+            {
+                .channel = SENSOR_CHAN_POWER,
+                .channelName = "dc_power",
+                .clusterId = ZB_ZCL_CLUSTER_ID_ELECTRICAL_MEASUREMENT,
+                .attrValueId = ZB_ZCL_ATTR_ELECTRICAL_MEASUREMENT_DCPOWER_ID,
+                .multiplier = ZCL_DC_POWER_VALUE_DIVISOR,
+            },
         };
     }
 }

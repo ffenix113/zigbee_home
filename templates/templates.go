@@ -51,17 +51,10 @@ var TemplateFS = func(templatesPath string) fs.FS {
 // This map can be removed in favor of cluster telling
 // which template it want's to use, or try
 // CVarName value as template as well.
-var knownClusterTemplates = map[cluster.ID]string{
-	cluster.ID_BASIC:                     "basic",
-	cluster.ID_POWER_CONFIG:              "power_config",
-	cluster.ID_DEVICE_TEMP_CONFIG:        "device_temp_config",
-	cluster.ID_ON_OFF:                    "on_off",
-	cluster.ID_LEVEL_CONTROL:             "level_control",
+var clusterTemplateCustomName = map[cluster.ID]string{
 	cluster.ID_TEMP_MEASUREMENT:          "temperature",
 	cluster.ID_REL_HUMIDITY_MEASUREMENT:  "water_content",
 	cluster.ID_PRESSURE_MEASUREMENT:      "pressure",
-	cluster.ID_CARBON_DIOXIDE:            "carbon_dioxide",
-	cluster.ID_IAS_ZONE:                  "ias_zone",
 	cluster.ID_SOIL_MOISTURE_MEASUREMENT: "water_content",
 }
 
@@ -440,10 +433,13 @@ func (t *Templates) findTemplate(templateName string) *template.Template {
 }
 
 func (t *Templates) clusterTpl(clusterID cluster.ID, tplSuffix string) (string, error) {
-	tplName, ok := knownClusterTemplates[clusterID]
+	tplName, ok := clusterTemplateCustomName[clusterID]
 	if !ok {
-		val, _ := clusterID.ToZCL()
-		return "", fmt.Errorf("unknown cluster ID: %q(%d)", val, clusterID)
+		var err error
+		tplName, err = clusterID.ToName()
+		if err != nil {
+			return "", fmt.Errorf("get cluster %d name: %w", clusterID, err)
+		}
 	}
 
 	return tplName + "_" + tplSuffix, nil
