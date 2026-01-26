@@ -12,7 +12,7 @@ namespace zbhome
 {
     namespace sensors
     {
-        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint8_t valueId)
+        uint8_t setAttrValue(int endpoint, uint8_t *data_ptr, uint16_t clusterId, uint16_t valueId)
         {
             return (uint8_t)zb_zcl_set_attr_val(
                 endpoint,

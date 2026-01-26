@@ -59,7 +59,7 @@ func (s SCD4X) ApplyOverlay(tree *dt.DeviceTree) error {
 		return dt.ErrNodeNotFound(s.I2C.ID)
 	}
 	// SCD4X address is static
-	s.I2C.Addr = "0x62"
+	s.I2C.Addr = 0x62
 
 	i2cNode.AddNodes(&dt.Node{
 		Name:        "scd4x",

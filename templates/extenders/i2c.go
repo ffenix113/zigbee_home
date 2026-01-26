@@ -27,8 +27,15 @@ type I2C struct {
 
 func NewI2C(instances ...I2CInstance) I2C {
 	for i, instance := range instances {
-		if len(instance.ID) != 4 || !strings.HasPrefix(instance.ID, "i2c") || (instance.ID[3] < '0' || instance.ID[3] > '9') {
-			panic(fmt.Sprintf("i2c instance %d must have `id` format of 'i2c[0-9]'", i))
+		validLength := len(instance.ID) == 4 || len(instance.ID) == 5
+		hasPrefix := strings.HasPrefix(instance.ID, "i2c")
+		validNum := (instance.ID[3] >= '0' || instance.ID[3] <= '9')
+		if len(instance.ID) == 5 {
+			validNum = validNum && (instance.ID[4] >= '0' || instance.ID[4] <= '9')
+		}
+
+		if !validLength || !hasPrefix || !validNum {
+			panic(fmt.Sprintf("i2c instance %d must have `id` format of 'i2c[0-9]' or 'i2c[0-9][0-9]'", i))
 		}
 	}
 
@@ -41,17 +48,32 @@ func (i I2C) ApplyOverlay(dt *devicetree.DeviceTree) error {
 	pinctrl := dt.FindSpecificNode(devicetree.SearchByLabel(devicetree.NodeLabelPinctrl))
 
 	for _, instance := range i.Instances {
+		pinsDefined := instance.SDA.PinsDefined() && instance.SCL.PinsDefined()
 		// Add pin definitions only if we have some.
 		// Otherwise just enable the I2C instance.
-		if instance.SDA.PinsDefined() && instance.SCL.PinsDefined() {
+		if pinsDefined {
 			pinctrl.AddNodes(buildI2C(instance.ID, instance)...)
 		}
 
-		dt.AddNodes(&devicetree.Node{
-			Label:      instance.ID,
-			Upsert:     true,
-			Properties: []devicetree.Property{devicetree.PropertyStatusEnable},
-		})
+		pinctrlDefault := devicetree.Angled(devicetree.Label(instance.ID + "_default"))
+		pinctrlSleep := devicetree.Angled(devicetree.Label(instance.ID + "_sleep"))
+		pinctrlNames := devicetree.Array(devicetree.Quoted("default"), devicetree.Quoted("sleep"))
+
+		i2cNode := &devicetree.Node{
+			Label:  instance.ID,
+			Upsert: true,
+			Properties: []devicetree.Property{
+				devicetree.PropertyStatusEnable,
+			},
+		}
+
+		if pinsDefined {
+			i2cNode.AddProperties(devicetree.NewProperty("pinctrl-0", pinctrlDefault),
+				devicetree.NewProperty("pinctrl-1", pinctrlSleep),
+				devicetree.NewProperty("pinctrl-names", pinctrlNames))
+		}
+
+		dt.AddNodes(i2cNode)
 	}
 
 	return nil

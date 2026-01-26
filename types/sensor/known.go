@@ -9,6 +9,7 @@ import (
 	"github.com/ffenix113/zigbee_home/sensor/base"
 	"github.com/ffenix113/zigbee_home/sensor/bosch"
 	"github.com/ffenix113/zigbee_home/sensor/sensirion"
+	"github.com/ffenix113/zigbee_home/sensor/ti"
 )
 
 func fromType[T Sensor]() Sensor {
@@ -66,4 +67,7 @@ var knownSensors = map[string]func() Sensor{
 
 	// Sensirion
 	"scd4x": fromType[*sensirion.SCD4X],
+
+	// Texas Instruments
+	"ina2xx": fromType[*ti.INA2XX],
 }
