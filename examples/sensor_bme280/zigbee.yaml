@@ -20,4 +20,4 @@ sensors:
       # I2C instance ID. Should be defined in Zephyr's board definition.
       id: i2c0
       # Default address for BME280.
-      addr: '0x76'
+      addr: 0x76

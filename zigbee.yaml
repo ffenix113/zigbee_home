@@ -176,7 +176,7 @@ sensors:
       # which can be defined here.
       # Note: this does not change the device address,
       # only tells which address to use.
-      addr: '0x76'
+      addr: 0x76
   - type: scd4x
     i2c:
       id: i2c0
