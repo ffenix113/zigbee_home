@@ -18,7 +18,7 @@ sensors:
   - type: ina2xx
     # Must specify which model of sensor is being used.
     # Note that currently only INA226 was tested, 
-    # but other INA22X and INA23X should work as well.
+    # but other INA2XX should work as well.
     model: ina226
     # We also need to tell which I2C bus to use.
     # It must be defined in board.i2c configuration,
@@ -29,6 +29,8 @@ sensors:
     # It tells how many measurements sensor will 
     # use to average and return as result.
     # Can be from 1 to 1024, as a power of 2 (so 1, 2, 4, 8, 16, ...).
+    #
+    # Does nothing if model is 'ina219'.
     avg: 4
     # Reuiqred configuration.
     # Value in milliohms of shunt resistor used together
