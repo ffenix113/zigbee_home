@@ -16,4 +16,4 @@ if (err != 0) {
 }
 {{end}}
 
-{{ define "component_constructor_argument_names"}} {{.Sensor.Pin.Label}} {{end}}
+{{ define "component_constructor_argument_names"}} {{.Sensor.Pin.Label}} , {{ if not (eq .Sensor.ControlButton "")}} BUTTON_BIT({{.Sensor.ControlButton}}) {{ else }} 0 {{ end }} {{end}}
