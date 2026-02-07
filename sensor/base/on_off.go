@@ -12,6 +12,14 @@ import (
 type OnOff struct {
 	*Base `yaml:",inline"`
 	Pin   types.Pin
+	// Button will be a on/off physical switch somewhere.
+	// For example a button on the board.
+	// This will also change the state of this OnOff.
+	//
+	// Take an example of a power socket:
+	// you may want to control it with Home Assistant,
+	// but you also sure want to control it from the device itself.
+	ControlButton string `yaml:"control_button"`
 }
 
 func (*OnOff) String() string {
