@@ -1,0 +1,42 @@
+general:
+  board: xiao_ble/nrf52840
+
+board:
+  # Set board to be router so it will always be available
+  # to receive commands (i.e. switch power).
+  is_router: true
+  i2c:
+    - id: i2c0
+  buttons:
+    - id: button11
+      pin:
+        port: 1
+        pin: 15
+
+sensors:
+  - type: ina2xx
+    model: ina219
+    i2c:
+      id: i2c0
+    # Reuiqred configuration.
+    # Value in milliohms of shunt resistor used together
+    # with INA2XX. Please be sure that the value is correct,
+    # otherwise current and power values would be wrong.
+    #
+    # Value 2 in this example means 0.002 Ohm == 2 mOhm.
+    shunt_resistance_mohms: 100
+    # This value is required (maybe for now).
+    # It specifies maximum expected current,
+    # in Amps, that circuit would measure.
+    # Generally it defines the step of the sensor.
+    max_current_amps: 3.2
+  # On_off sensor will provide ability to monitor and change
+  # the power output state physically and remotely.
+  - type: on_off
+    # This pin is for the output
+    pin:
+      port: 0
+      pin: 2
+    # Control button optionally specifies which
+    # button can be used to switch output manually. 
+    control_button: "button1"
