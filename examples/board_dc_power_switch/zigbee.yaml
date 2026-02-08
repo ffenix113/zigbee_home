@@ -6,9 +6,9 @@ board:
   # to receive commands (i.e. switch power).
   is_router: true
   i2c:
-    - id: i2c0
+    - id: i2c1
   buttons:
-    - id: button11
+    - id: button1
       pin:
         port: 1
         pin: 15
@@ -17,7 +17,7 @@ sensors:
   - type: ina2xx
     model: ina219
     i2c:
-      id: i2c0
+      id: i2c1
     # Reuiqred configuration.
     # Value in milliohms of shunt resistor used together
     # with INA2XX. Please be sure that the value is correct,
@@ -39,4 +39,4 @@ sensors:
       pin: 2
     # Control button optionally specifies which
     # button can be used to switch output manually. 
-    control_button: "button1"
+    control_button: button1
