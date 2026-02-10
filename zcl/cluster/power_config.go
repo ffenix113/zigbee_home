@@ -1,5 +1,7 @@
 package cluster
 
+var _ Cluster = PowerConfiguration{}
+
 type PowerConfiguration struct {
 	BatteryRatedVoltage        uint16 `yaml:"battery_rated_voltage"`
 	BatteryVoltageMinThreshold uint16 `yaml:"battery_voltage_min_threshold"`
@@ -22,4 +24,8 @@ func (PowerConfiguration) ReportAttrCount() int {
 
 func (PowerConfiguration) Side() Side {
 	return Server
+}
+
+func (c PowerConfiguration) CPPArgs() []any {
+	return []any{c.BatteryRatedVoltage, c.BatteryVoltageMinThreshold}
 }

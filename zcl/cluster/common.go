@@ -29,6 +29,12 @@ type Cluster interface {
 	ReportAttrCount() int
 	// Side tells if the cluster is client and/or server. ZCL 1.3.
 	Side() Side
+	// CPPArgs provide arguments that are necessary to construct C++ cluster.
+	// They will be passed to a C++ constructor in order they are provided.
+	// They can be empty.
+	//
+	// Each value will be formatted to a string before passing to a constructor.
+	CPPArgs() []any
 }
 
 type Clusters []Cluster

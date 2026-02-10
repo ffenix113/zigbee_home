@@ -51,3 +51,8 @@ func (WaterContent) ReportAttrCount() int {
 func (WaterContent) Side() Side {
 	return Server
 }
+
+func (c WaterContent) CPPArgs() []any {
+	// Tolerance is not present, but define it to be consistent.
+	return []any{c.MinMeasuredValue, c.MaxMeasuredValue, 0}
+}

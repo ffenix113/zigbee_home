@@ -74,6 +74,8 @@ var sourceFiles = [][2]string{
 	{"types.cpp", "types.cpp"},
 	{"settings.hpp", "settings.hpp"},
 	{"settings.cpp", "settings.cpp"},
+	{"zigbee.hpp", "zigbee.hpp"},
+	{"zigbee.cpp", "zigbee.cpp"},
 	{"types_button_handler.hpp", "types_button_handler.hpp"},
 	{"types_button_handler.cpp", "types_button_handler.cpp"},
 }
@@ -142,6 +144,7 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 		"isLast":                isLast,
 		"sum":                   sum,
 		"formatHex":             formatHex,
+		"formatClusterArgs":     formatClusterArgs,
 		"trustCenterKeyToArray": trustCenterKeyToArray,
 		"timeToVersion":         timeToVersion,
 		// Specific functions to check exact version
@@ -168,8 +171,6 @@ func NewTemplates(templateFS fs.FS, ncsVersion types.Semver) *Templates {
 }
 
 func (t *Templates) parseByDir(tplFS fs.FS, validateTpl func(t *template.Template) error) error {
-	// FIXME: it
-
 	err := fs.WalkDir(tplFS, "src", func(path string, d fs.DirEntry, err error) error {
 		if d.IsDir() {
 			return nil

@@ -25,3 +25,7 @@ func (Identify) Side() Side {
 	// when supported by templates.
 	return Server
 }
+
+func (Identify) CPPArgs() []any {
+	return nil
+}

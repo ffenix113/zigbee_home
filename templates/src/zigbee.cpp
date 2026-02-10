@@ -21,7 +21,7 @@ LOG_MODULE_REGISTER(zigbee, LOG_LEVEL_DBG);
 #define ZB_HA_DEVICE_VER 1
 
 /* Manufacturer name (32 bytes). */
-#define DEVICE_INIT_BASIC_MANUF_NAME "FFexix114"
+#define DEVICE_INIT_BASIC_MANUF_NAME "FFexix113"
 
 /* Model number assigned by manufacturer (32-bytes long string). */
 #define DEVICE_INIT_BASIC_MODEL_ID "dongle"
@@ -117,20 +117,21 @@ namespace zbhome
                 //     &cluster->attrs.ph_env,
                 //     cluster->attrs.sw_ver);
 
-                cluster->attr_list = {{0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
-                                      {ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zcl_version)},
-                                      {ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.app_version)},
-                                      {ZB_ZCL_ATTR_BASIC_STACK_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.stack_version)},
-                                      {ZB_ZCL_ATTR_BASIC_HW_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.hw_version)},
-                                      {ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.mf_name)},
-                                      {ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.model_id)},
-                                      {ZB_ZCL_ATTR_BASIC_DATE_CODE_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.date_code)},
-                                      {ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 0x30U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.power_source)},
-                                      {ZB_ZCL_ATTR_BASIC_SW_BUILD_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.sw_ver)},
-                                      {ZB_ZCL_ATTR_BASIC_DEVICE_ENABLED_ID, 0x10U, (0x01U | 0x02U), (0xFFFFU), (void *)&(cluster->device_enable_attr_list)},
-                                      {ZB_ZCL_ATTR_BASIC_LOCATION_DESCRIPTION_ID, 0x42U, (0x01U | 0x02U), (0xFFFFU), (void *)(cluster->attrs.location_id)},
-                                      {ZB_ZCL_ATTR_BASIC_PHYSICAL_ENVIRONMENT_ID, 0x30U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.ph_env)},
-                                      {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
+                cluster->attr_list = {
+                    {0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
+                    {ZB_ZCL_ATTR_BASIC_ZCL_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zcl_version)},
+                    {ZB_ZCL_ATTR_BASIC_APPLICATION_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.app_version)},
+                    {ZB_ZCL_ATTR_BASIC_STACK_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.stack_version)},
+                    {ZB_ZCL_ATTR_BASIC_HW_VERSION_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.hw_version)},
+                    {ZB_ZCL_ATTR_BASIC_MANUFACTURER_NAME_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.mf_name)},
+                    {ZB_ZCL_ATTR_BASIC_MODEL_IDENTIFIER_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.model_id)},
+                    {ZB_ZCL_ATTR_BASIC_DATE_CODE_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.date_code)},
+                    {ZB_ZCL_ATTR_BASIC_POWER_SOURCE_ID, 0x30U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.power_source)},
+                    {ZB_ZCL_ATTR_BASIC_SW_BUILD_ID, 0x42U, 0x01U, (0xFFFFU), (void *)(cluster->attrs.sw_ver)},
+                    {ZB_ZCL_ATTR_BASIC_DEVICE_ENABLED_ID, 0x10U, (0x01U | 0x02U), (0xFFFFU), (void *)&(cluster->device_enable_attr_list)},
+                    {ZB_ZCL_ATTR_BASIC_LOCATION_DESCRIPTION_ID, 0x42U, (0x01U | 0x02U), (0xFFFFU), (void *)(cluster->attrs.location_id)},
+                    {ZB_ZCL_ATTR_BASIC_PHYSICAL_ENVIRONMENT_ID, 0x30U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.ph_env)},
+                    {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
 
                 cluster->cluster = ZB_ZCL_CLUSTER_DESC(
                     ZB_ZCL_CLUSTER_ID_BASIC,
@@ -193,19 +194,20 @@ namespace zbhome
                 cluster->attrs.current_zone_sens_level = ZB_ZCL_IAS_ZONE_CURRENT_ZONE_SENSITIVITY_LEVEL_DEFAULT_VALUE;
                 cluster->attrs.zone_id = ZB_ZCL_IAS_ZONEID_ID_DEF_VALUE;
 
-                cluster->attr_list = {{0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_ZONESTATE_ID, 0x30U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_state)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, 0x31U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_type)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, 0x19U, 0x01U | 0x04U, (0xFFFFU), (void *)(&cluster->attrs.zone_status)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID, 0xf0U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.ias_cie_address)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_ZONEID_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_id)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_NUMBER_OF_ZONE_SENSITIVITY_LEVELS_SUPPORTED_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.number_of_zone_sens_levels_supported)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_CURRENT_ZONE_SENSITIVITY_LEVEL_ID, 0x20U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.current_zone_sens_level)},
-                                      {ZB_ZCL_ATTR_IAS_ZONE_INT_CTX_ID, 0x00U, 0x40U, (0xFFFFU), (void *)&(cluster->int_ctx_attr_list)},
-                                      {ZB_ZCL_ATTR_CUSTOM_CIE_SHORT_ADDR, 0x21U, 0x40U, (0xFFFFU), (void *)(&cluster->attrs.cie_short_addr)},
-                                      {ZB_ZCL_ATTR_CUSTOM_CIE_EP, 0x20U, 0x40U, (0xFFFFU), (void *)(&cluster->attrs.cie_ep)},
-                                      {ZB_ZCL_ATTR_CUSTOM_CIE_ADDR_IS_SET, 0x20U, 0x40U, (0xFFFFU), (void *)&(cluster->cie_addr_is_set_attr_list)},
-                                      {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
+                cluster->attr_list = {
+                    {0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_ZONESTATE_ID, 0x30U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_state)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_ZONETYPE_ID, 0x31U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_type)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_ZONESTATUS_ID, 0x19U, 0x01U | 0x04U, (0xFFFFU), (void *)(&cluster->attrs.zone_status)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_IAS_CIE_ADDRESS_ID, 0xf0U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.ias_cie_address)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_ZONEID_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.zone_id)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_NUMBER_OF_ZONE_SENSITIVITY_LEVELS_SUPPORTED_ID, 0x20U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.number_of_zone_sens_levels_supported)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_CURRENT_ZONE_SENSITIVITY_LEVEL_ID, 0x20U, (0x01U | 0x02U), (0xFFFFU), (void *)(&cluster->attrs.current_zone_sens_level)},
+                    {ZB_ZCL_ATTR_IAS_ZONE_INT_CTX_ID, 0x00U, 0x40U, (0xFFFFU), (void *)&(cluster->int_ctx_attr_list)},
+                    {ZB_ZCL_ATTR_CUSTOM_CIE_SHORT_ADDR, 0x21U, 0x40U, (0xFFFFU), (void *)(&cluster->attrs.cie_short_addr)},
+                    {ZB_ZCL_ATTR_CUSTOM_CIE_EP, 0x20U, 0x40U, (0xFFFFU), (void *)(&cluster->attrs.cie_ep)},
+                    {ZB_ZCL_ATTR_CUSTOM_CIE_ADDR_IS_SET, 0x20U, 0x40U, (0xFFFFU), (void *)&(cluster->cie_addr_is_set_attr_list)},
+                    {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
 
                 cluster->cluster = ZB_ZCL_CLUSTER_DESC(
                     ZB_ZCL_CLUSTER_ID_IAS_ZONE,
@@ -234,12 +236,13 @@ namespace zbhome
                 //     &cluster->attrs.max_measure_value,
                 //     &cluster->attrs.tolerance);
 
-                cluster->attr_list = {{0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
-                                      {ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID, 0x29U, 0x01U | 0x04U, (0xFFFFU), (void *)(&cluster->attrs.measure_value)},
-                                      {ZB_ZCL_ATTR_TEMP_MEASUREMENT_MIN_VALUE_ID, 0x29U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.min_measure_value)},
-                                      {ZB_ZCL_ATTR_TEMP_MEASUREMENT_MAX_VALUE_ID, 0x29U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.max_measure_value)},
-                                      {ZB_ZCL_ATTR_TEMP_MEASUREMENT_TOLERANCE_ID, 0x21U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.tolerance)},
-                                      {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
+                cluster->attr_list = {
+                    {0xfffdU, 0x21U, 0x01U, 0xFFFFU, (void *)&(cluster->cluster_revision_attr_list)},
+                    {ZB_ZCL_ATTR_TEMP_MEASUREMENT_VALUE_ID, 0x29U, 0x01U | 0x04U, (0xFFFFU), (void *)(&cluster->attrs.measure_value)},
+                    {ZB_ZCL_ATTR_TEMP_MEASUREMENT_MIN_VALUE_ID, 0x29U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.min_measure_value)},
+                    {ZB_ZCL_ATTR_TEMP_MEASUREMENT_MAX_VALUE_ID, 0x29U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.max_measure_value)},
+                    {ZB_ZCL_ATTR_TEMP_MEASUREMENT_TOLERANCE_ID, 0x21U, 0x01U, (0xFFFFU), (void *)(&cluster->attrs.tolerance)},
+                    {(zb_uint16_t)(-1), 0, 0, 0xFFFFU, __null}};
 
                 cluster->cluster = ZB_ZCL_CLUSTER_DESC(
                     ZB_ZCL_CLUSTER_ID_TEMP_MEASUREMENT,

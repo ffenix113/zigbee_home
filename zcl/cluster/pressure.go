@@ -27,3 +27,7 @@ func (Pressure) ReportAttrCount() int {
 func (Pressure) Side() Side {
 	return Server
 }
+
+func (p Pressure) CPPArgs() []any {
+	return []any{p.MinMeasuredValue, p.MaxMeasuredValue, p.Tolerance}
+}

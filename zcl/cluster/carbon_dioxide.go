@@ -27,3 +27,7 @@ func (CarbonDioxide) ReportAttrCount() int {
 func (CarbonDioxide) Side() Side {
 	return Server
 }
+
+func (d CarbonDioxide) CPPArgs() []any {
+	return []any{d.MinMeasuredValue, d.MaxMeasuredValue, d.Tolerance}
+}

@@ -23,3 +23,7 @@ func (DeviceTemperature) ReportAttrCount() int {
 func (DeviceTemperature) Side() Side {
 	return Server
 }
+
+func (DeviceTemperature) CPPArgs() []any {
+	return nil
+}

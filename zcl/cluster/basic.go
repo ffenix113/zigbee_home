@@ -23,3 +23,9 @@ func (Basic) ReportAttrCount() int {
 func (Basic) Side() Side {
 	return Server
 }
+
+func (Basic) CPPArgs() []any {
+	// Ideally this should return device information,
+	// but it is provided via templates for now.
+	return nil
+}

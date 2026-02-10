@@ -34,6 +34,8 @@ extern "C" {
 
 #include "watchdog.hpp"
 
+#include "zigbee.hpp"
+
 // Header only, why not?
 #include "device.hpp"
 
@@ -82,6 +84,9 @@ extern "C" {
 std::vector<std::shared_ptr<zbhome::types::Component>> components;
 std::vector<std::shared_ptr<zbhome::types::Sensor>> sensors;
 std::vector<std::shared_ptr<zbhome::types::ZCLCommandHandler>> zclCommandHandlers;
+
+std::vector<zbhome::experimental::zigbee::Endpoint *> endpoints;
+std::vector<zb_af_endpoint_desc_t *> zb_eps_vector;
 
 static const uint32_t loop_sleep_milis = {{.Device.General.RunEvery.Milliseconds}};
 
@@ -309,6 +314,8 @@ void store_component(std::shared_ptr<T> obj) {
     }
 }
 
+static zb_af_device_ctx_t device_ctx_new;
+
 bool setup_components() {
 	{{- /* Loop here over all sensors and add them */ -}}
 	{{- range $i, $sensor := .Device.Sensors }}
@@ -324,11 +331,24 @@ bool setup_components() {
 			to reduce Golang templates needed and move closer to just C++.
 			*/ -}}
 		{{- $sensorCtx := sensorCtx $endpoint $.Device $sensor nil -}}
+		{{- range $j, $cluster := $sensor.Clusters}}
+		const auto {{$cluster.CVarName}}_{{$j}} = zbhome::experimental::zigbee::{{$cluster.CVarName}}_cluster({{formatClusterArgs $cluster.CPPArgs}});
+		{{- end -}}
+
+		{{- $clustersLen := len $sensor.Clusters}}
+		const auto ep = zbhome::experimental::zigbee::endpoint({		
+			{{- range $j, $cluster := $sensor.Clusters}}
+			{{$cluster.CVarName}}_{{$j}}{{if not (isLast $i $clustersLen)}},{{end}}
+			{{- end }}
+		});
+		endpoints.push_back(ep);
+
 		{{- with $componentType := typeFromSensor $sensorCtx -}}
-		{{- maybeRenderExtender $sensor.Template "component_constructor_arguments" $sensorCtx}}
+		{{- maybeRenderExtender $sensor.Template "component_constructor_arguments" $sensorCtx -}}
 		{{- $constructorArgNames := maybeRenderExtender $sensor.Template "component_constructor_argument_names" $sensorCtx}}
-		auto component_{{$i}} = std::make_shared<zbhome::components::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
-		component_{{$i}}->setEndpoint({{$endpoint}});
+		
+		const auto component_{{$i}} = std::make_shared<zbhome::components::{{typeFromSensor $sensorCtx}}>({{$constructorArgNames}});
+		component_{{$i}}->setEndpoint(ep->endpoint_id());
 		{{ if $sensor.NeedsDevice -}}
 		{{- /* 
 			Static name for device var is okay, as it is scoped. 
@@ -337,16 +357,16 @@ bool setup_components() {
 			*/ -}}
 		const struct device * dev = DEVICE_DT_GET(DT_NODELABEL({{$sensor.Label}}));
 		component_{{$i}}->setDevice(dev);
-		{{- end }}
+		{{- end -}}
 
 		if (!component_{{$i}}->setup()) {
 			LOG_ERR("{{$sensor.Label}}_{{$endpoint}} failed setup");
 			return false;
 		};
 		store_component(std::move(component_{{$i}}));
-		{{ end }}
+		{{- end}}
 	}
-	{{ end }}
+	{{- end }}
 
 	return true;
 }
@@ -354,36 +374,25 @@ bool setup_components() {
 bool init_zbhome()
 {
 	gpio_init(FACTORY_RESET_BUTTON, IDENTIFY_MODE_BUTTON);
-	// This part is done in Zigbee thread as I had exceptions
-	// while trying to run it from main().
-	// It should be okay anyway, as without Zigbee init we
-	// can't use these anyway..
+
+	// Enable watchdog only on "production" configuration.
+	// On debugging it will be just annoying to constantly reset SoC
+	// while trying to read logs or debug.
+#if CONFIG_ZBHOME_WATCHDOG_ENABLE && !CONFIG_ZBHOME_DEBUG_ENABLE
+	if (int err = setup_watchdog(); err != 0)
+	{
+		LOG_ERR("setup watchdog err: %d", err);
+	}
+	else
+	{
+		LOG_INF("watchdog was set");
+	}
+#endif
+
 	if (!setup_components())
 	{
 		LOG_ERR("could not add some component");
 		return false;
-	}
-
-	// ZBOSS framework has started - schedule first loop iteration
-	// Though if there are no sensors - no need to loop.
-	//
-	// As a special case - we also will not loop if user requested
-	// 'general.runevery' of 0s.
-	if (loop_sleep_milis != 0 && sensors.size() != 0)
-	{
-		int err = ZB_SCHEDULE_APP_ALARM(loop,
-										0,
-										ZB_MILLISECONDS_TO_BEACON_INTERVAL(
-											DEVICE_INITIAL_DELAY_MSEC));
-		if (err)
-		{
-			LOG_ERR("Failed to schedule app alarm: %d", err);
-			return false;
-		}
-	}
-	else
-	{
-		LOG_WRN("No sensors or zero loop sleep - not starting looping. Button and command handlers are still active");
 	}
 
 	LOG_DBG("zbhome is initiated");
@@ -405,23 +414,26 @@ void zboss_signal_handler(zb_bufid_t bufid)
 	/* Detect ZBOSS startup */
 	switch (signal) {
 	case ZB_ZDO_SIGNAL_SKIP_STARTUP:
-	// Enable watchdog only on "production" configuration.
-	// On debugging it will be just annoying to constantly reset SoC
-	// while trying to read logs or debug.
-#if CONFIG_ZBHOME_WATCHDOG_ENABLE && !CONFIG_ZBHOME_DEBUG_ENABLE
-		if (int err = setup_watchdog(); err != 0)
+		// ZBOSS framework has started - schedule first loop iteration
+		// Though if there are no sensors - no need to loop.
+		//
+		// As a special case - we also will not loop if user requested
+		// 'general.runevery' of 0s.
+		if (loop_sleep_milis != 0 && sensors.size() != 0)
 		{
-			LOG_ERR("setup watchdog err: %d", err);
+			int err = ZB_SCHEDULE_APP_ALARM(loop,
+											0,
+											ZB_MILLISECONDS_TO_BEACON_INTERVAL(
+												DEVICE_INITIAL_DELAY_MSEC));
+			if (err)
+			{
+				LOG_ERR("Failed to schedule app alarm: %d", err);
+				return;
+			}
 		}
 		else
 		{
-			LOG_INF("watchdog was set");
-		}
-#endif
-
-		if (!init_zbhome())
-		{
-			LOG_ERR("cannot initiate zbhome");
+			LOG_WRN("No sensors or zero loop sleep - not starting looping. Button and command handlers are still active");
 		}
 		break;
 	{{ if not (eq .Device.Board.NetworkStateLED "") }}
@@ -471,17 +483,25 @@ int main(void)
 
 	zbhome::settings::load();
 
+	if (!init_zbhome())
+	{
+		LOG_ERR("cannot initiate zbhome");
+	}
+
+	for (auto &ep : endpoints)
+	{
+		zb_eps_vector.push_back(&ep->ep);
+	}
+
+	device_ctx_new = zb_af_device_ctx_t{
+		zb_uint8_t(zb_eps_vector.size()),
+		&zb_eps_vector[0]};
+
 	/* Register device context (endpoint) */
-	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx);
+	ZB_AF_REGISTER_DEVICE_CTX(&device_ctx_new);
 
 	/* Register callback for handling ZCL commands. */
 	ZB_ZCL_REGISTER_DEVICE_CB(zcl_device_cb);
-
-	/* Init Basic and Identify attributes */
-	mandatory_clusters_attr_init();
-
-	/* Init measurements-related attributes */
-	measurements_clusters_attr_init();
 
 	int init_result = 0;
 	init_result = init_templates();

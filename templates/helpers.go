@@ -56,6 +56,24 @@ func formatHex(val any) (string, error) {
 	}
 }
 
+func formatClusterArgs(args []any) string {
+	var result string
+
+	for i, arg := range args {
+		if i != 0 {
+			result += ","
+		}
+
+		if stringer, ok := arg.(fmt.Stringer); ok {
+			result += stringer.String()
+		} else {
+			result += fmt.Sprintf("%v", arg)
+		}
+	}
+
+	return result
+}
+
 // trustCenterKeyToArray will return trust key as C array item values.
 func trustCenterKeyToArray(key string) (string, error) {
 	key = strings.ReplaceAll(key, ":", "")

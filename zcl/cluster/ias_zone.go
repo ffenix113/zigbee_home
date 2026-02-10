@@ -47,3 +47,7 @@ func (IASZone) ReportAttrCount() int {
 func (z IASZone) Side() Side {
 	return Server
 }
+
+func (IASZone) CPPArgs() []any {
+	return nil
+}

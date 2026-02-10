@@ -24,3 +24,7 @@ func (LevelControl) ReportAttrCount() int {
 func (z LevelControl) Side() Side {
 	return Client
 }
+
+func (LevelControl) CPPArgs() []any {
+	return nil
+}

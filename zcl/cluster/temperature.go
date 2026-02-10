@@ -27,3 +27,7 @@ func (Temperature) ReportAttrCount() int {
 func (Temperature) Side() Side {
 	return Server
 }
+
+func (t Temperature) CPPArgs() []any {
+	return []any{t.MinMeasuredValue, t.MaxMeasuredValue, t.Tolerance}
+}

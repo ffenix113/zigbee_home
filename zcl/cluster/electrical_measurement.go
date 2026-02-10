@@ -27,3 +27,7 @@ func (ElectricalMeasurement) Side() Side {
 	// when supported by templates.
 	return Server
 }
+
+func (ElectricalMeasurement) CPPArgs() []any {
+	return nil
+}

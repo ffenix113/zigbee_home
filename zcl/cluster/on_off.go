@@ -1,5 +1,7 @@
 package cluster
 
+var _ Cluster = OnOff{}
+
 type OnOff struct {
 	PinLabel string
 }
@@ -24,4 +26,8 @@ func (OnOff) Side() Side {
 	// i.e. home assistant.
 	// But it cannot be controlled from device for now.
 	return Server
+}
+
+func (OnOff) CPPArgs() []any {
+	return nil
 }
