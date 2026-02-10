@@ -1,6 +1,5 @@
 #include <memory>
 #include <vector>
-#include "zigbee.hpp"
 
 #ifdef __cplusplus
 extern "C"
@@ -15,45 +14,18 @@ extern "C"
 #endif
 
 #include "zephyr/logging/log.h"
+
+#include "zigbee.hpp"
+
 LOG_MODULE_REGISTER(zigbee, LOG_LEVEL_DBG);
-
-#define MANUFACTURER_CODE ZB_ZCL_MANUF_CODE_INVALID
-#define ZB_HA_DEVICE_VER 1
-
-/* Manufacturer name (32 bytes). */
-#define DEVICE_INIT_BASIC_MANUF_NAME "FFexix113"
-
-/* Model number assigned by manufacturer (32-bytes long string). */
-#define DEVICE_INIT_BASIC_MODEL_ID "dongle"
-
-/* First 8 bytes specify the date of manufacturer of the device
- * in ISO 8601 format (YYYYMMDD). The rest (8 bytes) are manufacturer specific.
- */
-#define DEVICE_INIT_BASIC_DATE_CODE "20250923"
-
-/* Describes the physical location of the device (16 bytes).
- * May be modified during commissioning process.
- */
-#define DEVICE_INIT_BASIC_LOCATION_DESC ""
-/* Describes the type of physical environment.
- * For possible values see section 3.2.2.2.10 of ZCL specification.
- */
-#define DEVICE_INIT_BASIC_PH_ENV ZB_ZCL_BASIC_ENV_UNSPECIFIED
-
-/* Zigbee Cluster Library 4.4.2.1.1: MeasuredValue = 100x temperature in degrees Celsius */
-#define ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
-/* Zigbee Cluster Library 4.5.2.2.1.1: MeasuredValue = 10x pressure in kPa */
-#define ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 10
-/* Zigbee Cluster Library 4.7.2.1.1: MeasuredValue = 100x water content in % */
-#define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
 
 namespace zbhome
 {
-    namespace zigbee
+    namespace experimental
     {
         // static zb_af_device_ctx_t device_ctx;
 
-        namespace experimental
+        namespace zigbee
         {
 
             zb_uint8_t next_endpoint_id()

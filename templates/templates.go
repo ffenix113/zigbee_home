@@ -68,8 +68,6 @@ var sourceFiles = [][2]string{
 	{"main.cpp", "main.cpp.tpl"},
 	{"extenders.hpp", "extenders.hpp"},
 	{"watchdog.hpp", "watchdog.hpp"},
-	{"device.hpp", "device.hpp.tpl"},
-	{"clusters.hpp", "clusters.hpp.tpl"},
 	{"types.hpp", "types.hpp"},
 	{"types.cpp", "types.cpp"},
 	{"settings.hpp", "settings.hpp"},

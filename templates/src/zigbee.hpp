@@ -16,6 +16,58 @@ extern "C"
 }
 #endif
 
+/* Delay for console initialization */
+#define WAIT_FOR_CONSOLE_MSEC 100
+#define WAIT_FOR_CONSOLE_DEADLINE_MSEC 500
+/* Time of LED on state while blinking for identify mode */
+#define IDENTIFY_LED_BLINK_TIME_MSEC 500
+
+/* LED indicating that device successfully joined Zigbee network */
+#define ZIGBEE_NETWORK_STATE_LED {{ if not (eq .Device.Board.NetworkStateLED "") -}}
+{{ toButtonBit .Device.Board.NetworkStateLED }}
+{{- else -}}LED_BLUE{{ end }}
+
+/* LED used for device identification */
+#define IDENTIFY_LED LED_RED
+
+/* Button used to enter the Identify mode */
+#define IDENTIFY_MODE_BUTTON {{ if not (eq .Device.Board.FactoryResetButton "") -}}
+{{ toButtonBit .Device.Board.FactoryResetButton }}
+{{- else -}}DK_BTN1_MSK{{ end }}
+
+/* Button to start Factory Reset */
+#define FACTORY_RESET_BUTTON IDENTIFY_MODE_BUTTON
+
+#define MANUFACTURER_CODE ZB_ZCL_MANUF_CODE_INVALID
+#define ZB_HA_DEVICE_VER 1
+
+/* Manufacturer name (32 bytes). */
+#define DEVICE_INIT_BASIC_MANUF_NAME "{{ .Device.General.Manufacturer }}"
+
+/* Model number assigned by manufacturer (32-bytes long string). */
+#define DEVICE_INIT_BASIC_MODEL_ID "{{ .Device.General.DeviceName }}"
+
+/* First 8 bytes specify the date of manufacturer of the device
+ * in ISO 8601 format (YYYYMMDD). The rest (8 bytes) are manufacturer specific.
+ */
+#define DEVICE_INIT_BASIC_DATE_CODE "{{ .GeneratedOn.Format `20060102` }}" // "20250923"
+
+/* Describes the physical location of the device (16 bytes).
+ * May be modified during commissioning process.
+ */
+#define DEVICE_INIT_BASIC_LOCATION_DESC ""
+/* Describes the type of physical environment.
+ * For possible values see section 3.2.2.2.10 of ZCL specification.
+ */
+#define DEVICE_INIT_BASIC_PH_ENV ZB_ZCL_BASIC_ENV_UNSPECIFIED
+
+/* Zigbee Cluster Library 4.4.2.1.1: MeasuredValue = 100x temperature in degrees Celsius */
+#define ZCL_TEMPERATURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
+/* Zigbee Cluster Library 4.5.2.2.1.1: MeasuredValue = 10x pressure in kPa */
+#define ZCL_PRESSURE_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 10
+/* Zigbee Cluster Library 4.7.2.1.1: MeasuredValue = 100x water content in % */
+#define ZCL_HUMIDITY_MEASUREMENT_MEASURED_VALUE_MULTIPLIER 100
+
 typedef ZB_PACKED_PRE struct zb_af_simple_desc_s
 {
     zb_uint8_t endpoint;                                                        /* Endpoint */
@@ -31,9 +83,9 @@ typedef ZB_PACKED_PRE struct zb_af_simple_desc_s
 
 namespace zbhome
 {
-    namespace zigbee
+    namespace experimental
     {
-        namespace experimental
+        namespace zigbee
         {
             typedef struct
             {

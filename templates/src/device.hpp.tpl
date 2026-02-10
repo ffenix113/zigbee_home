@@ -3,37 +3,15 @@
 #include <zboss_api_addons.h>
 #include "clusters.hpp"
 
-/* Delay for console initialization */
-#define WAIT_FOR_CONSOLE_MSEC 100
-#define WAIT_FOR_CONSOLE_DEADLINE_MSEC 500
 
 /* Weather check period */
 #define WEATHER_CHECK_PERIOD_MSEC {{.Device.General.RunEvery.Milliseconds}}
-
-/* Time of LED on state while blinking for identify mode */
-#define IDENTIFY_LED_BLINK_TIME_MSEC 500
 
 #define LED_POWER DK_LED1
 /* In Thingy53 each LED is a RGB component of a single LED */
 #define LED_RED DK_LED2
 #define LED_GREEN DK_LED3
 #define LED_BLUE DK_LED4
-
-/* LED indicating that device successfully joined Zigbee network */
-#define ZIGBEE_NETWORK_STATE_LED {{ if not (eq .Device.Board.NetworkStateLED "") -}}
-{{ toButtonBit .Device.Board.NetworkStateLED }}
-{{- else -}}LED_BLUE{{ end }}
-
-/* LED used for device identification */
-#define IDENTIFY_LED LED_RED
-
-/* Button used to enter the Identify mode */
-#define IDENTIFY_MODE_BUTTON {{ if not (eq .Device.Board.FactoryResetButton "") -}}
-{{ toButtonBit .Device.Board.FactoryResetButton }}
-{{- else -}}DK_BTN1_MSK{{ end }}
-
-/* Button to start Factory Reset */
-#define FACTORY_RESET_BUTTON IDENTIFY_MODE_BUTTON
 
 {{template "device_ctx" .Device.Sensors }}
 

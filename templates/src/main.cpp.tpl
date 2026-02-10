@@ -36,8 +36,6 @@ extern "C" {
 
 #include "zigbee.hpp"
 
-// Header only, why not?
-#include "device.hpp"
 
 #include "types.hpp"
 #include "types_button_handler.hpp"
